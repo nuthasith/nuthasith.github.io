@@ -1,0 +1,51 @@
+baseURL = 'https://nat9dai.github.io/nuthasith/'
+languageCode = 'en-us'
+title = 'Nuthasith G.'
+description = "Hello! I'm Nuthasith G., a second-year master's student at Kyushu University"
+theme = 'hugo_theme_LoveIt'
+
+gitRepo = "https://github.com/nat9dai"
+images = ["/logo.png"]
+
+[params.header.title]
+    name = "Nuthasith G."
+
+[params.author]
+    name = "Nuthasith Gerdpratoom"
+    email = "nuthasith.g@gmail.com"
+    link = "https://www.linkedin.com/in/nuthasith-gerdpratoom/"
+
+[params.home.profile]
+    # gravatarEmail = "nuthasith.g@gmail.com"
+    avatarURL = "images/drone.jpg"
+    title = "Nuthasith Gerdpratoom"
+    subtitle = "Hello! I'm a second-year master's student at Kyushu University."
+
+[params.social]
+    GitHub = "nat9dai"
+    Linkedin = "nuthasith-gerdpratoom/"
+    Googlescholar = "user=dnLflKgAAAAJ&hl=en&authuser=2"
+    Researchgate = "Nuthasith-Gerdpratoom"
+    Email = "nuthasith.g@gmail.com"
+
+[params.footer]
+    copyright = false
+    author = false
+
+[menu]
+  [[menu.main]]
+    name = "About"
+    url = "/about/"
+    weight = 1
+  [[menu.main]]
+    name = "Publications"
+    url = "/publications/"
+    weight = 2
+  [[menu.main]]
+    name = "Awards"
+    url = "/awards/"
+    weight = 2
+  [[menu.main]]
+    name = "Projects"
+    url = "/projects/"
+    weight = 3

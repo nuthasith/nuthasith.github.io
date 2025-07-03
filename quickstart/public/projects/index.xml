@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Projects on Nuthasith G.</title>
+    <link>http://localhost:1313/projects/</link>
+    <description>Recent content in Projects on Nuthasith G.</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <managingEditor>nuthasith.g@gmail.com (Nuthasith Gerdpratoom)</managingEditor>
+    <webMaster>nuthasith.g@gmail.com (Nuthasith Gerdpratoom)</webMaster>
+    <lastBuildDate>Wed, 02 Apr 2025 18:50:32 +0900</lastBuildDate>
+    <atom:link href="http://localhost:1313/projects/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Projects</title>
+      <link>http://localhost:1313/projects/projects/</link>
+      <pubDate>Wed, 02 Apr 2025 18:50:32 +0900</pubDate><author>nuthasith.g@gmail.com (Nuthasith Gerdpratoom)</author>
+      <guid>http://localhost:1313/projects/projects/</guid>
+      <description>&lt;h1 id=&#34;comming-soon-&#34;&gt;Comming soon &amp;hellip;&lt;/h1&gt;</description>
+    </item>
+  </channel>
+</rss>

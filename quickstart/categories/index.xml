@@ -1,0 +1,8 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>Categories - Category - Nuthasith G.</title>
+        <link>https://example.org/categories/</link>
+        <description>Categories - Category - Nuthasith G.</description>
+        <generator>Hugo -- gohugo.io</generator><language>en-us</language><managingEditor>nuthasith.g@gmail.com (Nuthasith Gerdpratoom)</managingEditor>
+            <webMaster>nuthasith.g@gmail.com (Nuthasith Gerdpratoom)</webMaster><lastBuildDate>Wed, 02 Apr 2025 15:10:30 &#43;0900</lastBuildDate><atom:link href="https://example.org/categories/" rel="self" type="application/rss+xml" /></channel>
+</rss>

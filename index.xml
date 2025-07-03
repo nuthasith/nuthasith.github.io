@@ -1,0 +1,10 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>Nuthasith G.</title>
+        <link>https://nat9dai.github.io/nuthasith/</link>
+        <description>This is my cool site</description>
+        <generator>Hugo -- gohugo.io</generator><language>en-us</language><managingEditor>nuthasith.g@gmail.com (Nuthasith Gerdpratoom)</managingEditor>
+            <webMaster>nuthasith.g@gmail.com (Nuthasith Gerdpratoom)</webMaster><lastBuildDate>Sat, 24 May 2025 19:58:09 &#43;0900</lastBuildDate>
+            <atom:link href="https://nat9dai.github.io/nuthasith/index.xml" rel="self" type="application/rss+xml" />
+        </channel>
+</rss>
