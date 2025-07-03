@@ -1,8 +1,8 @@
 <rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
     <channel>
         <title>Tags - Tag - Nuthasith G.</title>
-        <link>https://nat9dai.github.io/nuthasith/tags/</link>
+        <link>http://localhost:1313/tags/</link>
         <description>Tags - Tag - Nuthasith G.</description>
         <generator>Hugo -- gohugo.io</generator><language>en-us</language><managingEditor>nuthasith.g@gmail.com (Nuthasith Gerdpratoom)</managingEditor>
-            <webMaster>nuthasith.g@gmail.com (Nuthasith Gerdpratoom)</webMaster><atom:link href="https://nat9dai.github.io/nuthasith/tags/" rel="self" type="application/rss+xml" /></channel>
+            <webMaster>nuthasith.g@gmail.com (Nuthasith Gerdpratoom)</webMaster><atom:link href="http://localhost:1313/tags/" rel="self" type="application/rss+xml" /></channel>
 </rss>

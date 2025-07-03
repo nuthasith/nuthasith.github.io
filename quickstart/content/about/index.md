@@ -25,7 +25,7 @@ title = 'Profile'
 - Mechanical Engineer (Full-time)
   - *Obodroid Corporation Limited, Bangkok, Thailand*
   - *2020 - 2022*
-- Mechanical Engineering (Intern)
+- Mechanical Engineer (Intern)
   - *Bangchak Corporation Public Company Limited, Bangkok, Thailand*
   - *Summer 2019*
 

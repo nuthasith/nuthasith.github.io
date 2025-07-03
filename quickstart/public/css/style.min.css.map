@@ -1,7 +1,7 @@
 {
 	"version": 3,
 	"file": "style.min.css",
-	"sourceRoot": "/Users/nuthasith/Documents/nuthasith/quickstart",
+	"sourceRoot": "/Users/nuthasith/Documents/nuthasith.github.io/quickstart",
 	"sources": [
 		"themes/hugo_theme_LoveIt/assets/css/style.scss",
 		"themes/hugo_theme_LoveIt/assets/lib/modern-normalize/modern-normalize.css",
