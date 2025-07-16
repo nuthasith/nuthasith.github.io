@@ -7,15 +7,18 @@ title = 'Profile'
 # Education
 - PhD in Electrical and Computer Engineering
   - *National University of Singapore, Singapore*
-  - *Fully Funded*
-  - *Start in August 2025*
+  - *Commence in August 2025*
 - MSc in Electrical and Electronic Engineering
   - *Kyushu University, Fukuoka, Japan*
-  - *Fully Funded – Japanese Government (MEXT) Scholarship*
+  - *Japanese Government (MEXT) Scholarship: Embassy Recommended*
   - *October 2023 - September 2025*
+  - *Affiliation: [Control & Optimization Lab.](https://sites.google.com/view/kyamamotolab/home-english?authuser=0)*
+  - *Supervisor: Associate Professor [Kaoru Yamamoto](https://sites.google.com/site/kaoruyamamotoweb/home?authuser=0)*
+  - *Thesis: Nonlinear Model Predictive Control: From Distributed Control to Lifted Enhancement*
 - BEng in Mechanical Engineering (Honors)
   - *Chulalongkorn University, Bangkok, Thailand*
   - *July 2016 - July 2020*
+  - *Thesis: Computer Vision-based UAV for Indoor Applications*
 - Junior High & High School Diploma
   - *Horwang School, Bangkok, Thailand*
   - *2010 - 2016*
@@ -25,7 +28,7 @@ title = 'Profile'
 - Mechanical Engineer (Full-time)
   - *Obodroid Corporation Limited, Bangkok, Thailand*
   - *2020 - 2022*
-- Mechanical Engineer (Intern)
+- Mechanical Engineering (Intern)
   - *Bangchak Corporation Public Company Limited, Bangkok, Thailand*
   - *Summer 2019*
 
@@ -48,4 +51,3 @@ title = 'Profile'
   - TOEFL iBT: 103/120 (R:26, L:25, S:25, W:27) (2025)
   - TOEIC: 930/990 (2022)
 - Japanese (Elementary proficiency)
-- Chinese (Elementary proficiency)
