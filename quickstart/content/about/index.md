@@ -7,7 +7,6 @@ title = 'Profile'
 # Education
 - PhD in Electrical and Computer Engineering
   - *National University of Singapore, Singapore*
-  - *Commence in August 2025*
 - MSc in Electrical and Electronic Engineering
   - *Kyushu University, Fukuoka, Japan*
   - *Japanese Government (MEXT) Scholarship: Embassy Recommended*
