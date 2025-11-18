@@ -1,7 +1,7 @@
 baseURL = 'https://nuthasith.github.io/'
 languageCode = 'en-us'
 title = 'Nuthasith G.'
-description = "Hello! I'm Nuthasith G., a second-year master's student at Kyushu University"
+description = "Hello! I'm Nuthasith G., a graduate student at NUS."
 theme = 'hugo_theme_LoveIt'
 
 gitRepo = "https://github.com/nat9dai"

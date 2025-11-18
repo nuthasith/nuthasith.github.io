@@ -7,6 +7,7 @@ title = 'Profile'
 # Education
 - PhD in Electrical and Computer Engineering
   - *National University of Singapore, Singapore*
+  - *NUS ASEAN Research Scholarship*
   - *August 2025 - Present*
 - MEng in Electrical and Electronic Engineering
   - *Kyushu University, Fukuoka, Japan*
@@ -24,7 +25,9 @@ title = 'Profile'
   - *2010 - 2016*
 
 # Work Experiences
-
+- Research Student (Full-time)
+  - *Kyushu University, Fukuoka, Japan*
+  - *April 2023 - September 2025*
 - Mechanical Engineer (Full-time)
   - *Obodroid Corporation Limited, Bangkok, Thailand*
   - *2020 - 2022*
