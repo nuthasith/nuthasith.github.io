@@ -19,7 +19,7 @@ images = ["/logo.png"]
     # gravatarEmail = "nuthasith.g@gmail.com"
     avatarURL = "images/drone.jpg"
     title = "Nuthasith Gerdpratoom"
-    subtitle = "Hello! I'm a second-year master's student at Kyushu University."
+    subtitle = "Hello! I'm Nuthasith G., a graduate student at NUS."
 
 [params.social]
     GitHub = "nat9dai"
