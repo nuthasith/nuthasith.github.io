@@ -1,7 +1,7 @@
 baseURL = 'https://nuthasith.github.io/'
 languageCode = 'en-us'
 title = 'Nuthasith G.'
-description = "Hello! I'm Nuthasith G., a graduate student at NUS."
+description = ""
 theme = 'hugo_theme_LoveIt'
 
 gitRepo = "https://github.com/nat9dai"
@@ -18,8 +18,8 @@ images = ["/logo.png"]
 [params.home.profile]
     # gravatarEmail = "nuthasith.g@gmail.com"
     avatarURL = "images/drone.jpg"
-    title = "Nuthasith Gerdpratoom"
-    subtitle = "Hello! I'm Nuthasith G., a graduate student at NUS."
+    title = "Nuthasith Gerdpratoom<br>ณัฐสิทธิ์ เกิดประทุม<br>ゲドプラトーム ナタシット"
+    subtitle = "Hello! I'm currently a PhD student at NUS!"
 
 [params.social]
     GitHub = "nat9dai"
