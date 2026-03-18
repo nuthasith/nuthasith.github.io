@@ -4,5 +4,6 @@ draft = false
 title = 'Awards'
 +++
 
+- **NUS ASEAN Research Scholarship** – *National University of Singapore*, August 2025.
 - **Best Poster Award Finalist** – *The 8th International Symposium on Swarm Behavior and Bio-Inspired Robotics*, Kyoto, Japan, September 2024. [[Link](https://www.swarm-systems.org/swarm2024/awards)]
 - **Japanese Government (Monbukagakusho: MEXT) Scholarship** – *The Embassy of Japan in Thailand*, 2023.
