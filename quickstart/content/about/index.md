@@ -8,6 +8,8 @@ title = 'Profile'
 - PhD in Electrical and Computer Engineering
   - *National University of Singapore, Singapore*
   - *NUS ASEAN Research Scholarship*
+  - *Affiliation: CORE Lab*
+  - *Supervisor: Assistant Professor [Lin Zhao](https://sites.google.com/view/lzhao)*
   - *August 2025 - Present*
 - MEng in Electrical and Electronic Engineering
   - *Kyushu University, Fukuoka, Japan*
@@ -16,7 +18,7 @@ title = 'Profile'
   - *Affiliation: [Control & Optimization Lab.](https://sites.google.com/view/kyamamotolab/home-english?authuser=0)*
   - *Supervisor: Associate Professor [Kaoru Yamamoto](https://sites.google.com/site/kaoruyamamotoweb/home?authuser=0)*
   - *Thesis: Nonlinear Model Predictive Control: From Distributed Control to Lifted Enhancement*
-- BEng in Mechanical Engineering (Honors)
+- BEng in Mechanical Engineering (Honours)
   - *Chulalongkorn University, Bangkok, Thailand*
   - *July 2016 - July 2020*
   - *Thesis: Computer Vision-based UAV for Indoor Applications*
@@ -25,6 +27,10 @@ title = 'Profile'
   - *2010 - 2016*
 
 # Work Experiences
+- Teaching Assistant (Part-time)
+  - *NUS College of Design & Engineering, Singapore*
+  - *January 2026 - Present*
+  - AY2025/2026: CG2023 Signals and Systems, EE4308 Autonomous Robot Systems
 - Research Student (Full-time)
   - *Kyushu University, Fukuoka, Japan*
   - *April 2023 - September 2025*
