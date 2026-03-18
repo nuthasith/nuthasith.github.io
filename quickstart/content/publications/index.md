@@ -10,7 +10,7 @@ title = 'Publications'
 - Nuthasith Gerdpratoom and Kaoru Yamamoto, "Decentralized Nonlinear Model Predictive Control-Based Flock Navigation with Real-Time Obstacle Avoidance in Unknown Obstructed Environments," *Frontiers in Robotics and AI*, vol. 12, p. 1540808, Frontiers, 2025. [[Link](https://www.frontiersin.org/journals/robotics-and-ai/articles/10.3389/frobt.2025.1540808/abstract)]
 
 # Preprints
-- Tianchen Sun, Bingheng Wang, Nuthasith Gerdpratoom, Longbin Tang, Yichao Gao, and Lin Zhao. "Learning Agile Gate Traversal via Analytical Optimal Policy Gradient." *arXiv preprint arXiv:2508.21592*, 2025. [[Link](https://arxiv.org/abs/2508.21592)]
+- Tianchen Sun, Bingheng Wang, Nuthasith Gerdpratoom, Longbin Tang, Yichao Gao, and Lin Zhao. "Learning Agile Gate Traversal via Analytical Optimal Policy Gradient." *arXiv preprint arXiv:2508.21592*, 2026. [[Link](https://arxiv.org/abs/2508.21592)]
 
 # Conference Papers
 - Nuthasith Gerdpratoom and Kaoru Yamamoto, "Decentralized Nonlinear MPC-Based Flock Navigation with Real-Time Obstacle Avoidance in Unknown Obstructed Environments," in *Proceedings of the 8th International Symposium on Swarm Behavior and Bio-inspired Robotics*, Kyoto, Japan, September 2024. [[Link](https://www.swarm-systems.org/swarm2024)]
