@@ -15,8 +15,8 @@ title = 'Profile'
   - *Kyushu University, Fukuoka, Japan*
   - *Japanese Government (MEXT) Scholarship: Embassy Recommended*
   - *October 2023 - September 2025*
-  - *Affiliation: [Control & Optimization Lab.](https://sites.google.com/view/kyamamotolab/home-english?authuser=0)*
-  - *Supervisor: Associate Professor [Kaoru Yamamoto](https://sites.google.com/site/kaoruyamamotoweb/home?authuser=0)*
+  - *Affiliation: [Control & Optimization Lab.](https://sites.google.com/view/kyamamotolab/home-english)*
+  - *Supervisor: Associate Professor [Kaoru Yamamoto](https://sites.google.com/site/kaoruyamamotoweb/home)*
   - *Thesis: Nonlinear Model Predictive Control: From Distributed Control to Lifted Enhancement*
 - BEng in Mechanical Engineering (Honours)
   - *Chulalongkorn University, Bangkok, Thailand*
