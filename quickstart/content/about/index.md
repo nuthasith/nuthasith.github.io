@@ -42,7 +42,7 @@ title = 'Profile'
   - *Summer 2019*
 
 # Activities and Societies
-- The 17th Singapore Amazing Flying Machine Competition (SAFMC) 2026, Category: High-speed Drone Flock, Singapore, April 2026 (Champion) [[Link](https://www.safmc.com.sg/hall-of-fame/)]
+- The 17th Singapore Amazing Flying Machine Competition (SAFMC) 2026, Category: High-Speed Drone Flock, Singapore, April 2026 (Champion) [[Link](https://www.safmc.com.sg/)]
 - Participated in a discussion video recording for the SENTAN-Q Diversity and Super Global Training Program for Female and Young Faculty with Professor Kaoru Yamamoto (山本 薫), Kyushu University, October 2024. [[Link](https://sentan-q.kyushu-u.ac.jp/movies/)]
 - Presentation on MEXT Scholarship and Student Life – Virtual Graduate Study Fair, Kyushu University, April 2024. [[Link](https://www.kyushu-u.ac.jp/en/events/view/454/)]
 - Presentation in Lab’s Academic Seminar on Stability of Dynamical Systems, Optimal Control, Robot Kinematics, Localization, and Data-Driven LQR.
