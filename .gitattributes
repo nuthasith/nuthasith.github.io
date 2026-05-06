@@ -1,0 +1,2 @@
+quickstart/static/cad/*.glb -text
+quickstart/static/cad/*.stl -text

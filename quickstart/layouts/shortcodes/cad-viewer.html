@@ -1,0 +1,39 @@
+{{- $src := .Get "src" -}}
+{{- $title := .Get "title" | default "3D Model" -}}
+{{- $id := .Get "id" | default "cad" -}}
+
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+
+<div style="margin: 2rem 0;">
+  <h3 style="font-size: 1.375rem; font-weight: 700; margin: 1rem 0;">
+    <span style="color: #2d96bd; margin-right: .3125rem; font-weight: bolder;">|</span>{{ $title }}
+  </h3>
+  {{ with .Inner }}<p style="margin: .5rem 0 1rem;">{{ . | safeHTML }}</p>{{ end }}
+  <model-viewer
+    id="cad-{{ $id }}"
+    src="{{ $src }}"
+    alt="{{ $title }}"
+    auto-rotate
+    camera-controls
+    shadow-intensity="0.4"
+    camera-orbit="45deg 70deg auto"
+    style="width:100%;height:480px;background:#f5f5f5;border:1px solid #f0f0f0;--progress-bar-color:#2d96bd;--progress-bar-height:2px;"
+  ></model-viewer>
+  <p style="font-size: .875rem; color: #a9a9b3; margin-top: .5rem; text-align: center;">
+    Drag to orbit &middot; scroll to zoom &middot; right-click drag to pan
+  </p>
+</div>
+
+<script>
+(function () {
+  var el = document.getElementById('cad-{{ $id }}');
+  if (!el) return;
+  function applyTheme() {
+    var dark = document.body.getAttribute('theme') === 'dark';
+    el.style.background = dark ? '#1d2128' : '#f5f5f5';
+    el.style.borderColor = dark ? '#363636' : '#f0f0f0';
+  }
+  applyTheme();
+  new MutationObserver(applyTheme).observe(document.body, { attributes: true, attributeFilter: ['theme'] });
+})();
+</script>

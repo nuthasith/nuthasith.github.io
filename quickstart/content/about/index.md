@@ -5,26 +5,34 @@ title = 'Profile'
 +++
 
 # Education
-- PhD in Electrical and Computer Engineering
-  - *National University of Singapore, Singapore*
-  - *NUS ASEAN Research Scholarship*
-  - *Affiliation: CORE Lab*
-  - *Supervisor: Assistant Professor [Lin Zhao](https://sites.google.com/view/lzhao)*
-  - *August 2025 - Present*
-- MEng in Electrical and Electronic Engineering
-  - *Kyushu University, Fukuoka, Japan*
-  - *Japanese Government (MEXT) Scholarship: Embassy Recommended*
-  - *October 2023 - September 2025*
-  - *Affiliation: [Control & Optimization Lab.](https://sites.google.com/view/kyamamotolab/home-english)*
-  - *Supervisor: Associate Professor [Kaoru Yamamoto](https://sites.google.com/site/kaoruyamamotoweb/home)*
-  - *Thesis: Nonlinear Model Predictive Control: From Distributed Control to Lifted Enhancement*
-- BEng in Mechanical Engineering (Honours)
-  - *Chulalongkorn University, Bangkok, Thailand*
-  - *July 2016 - July 2020*
-  - *Thesis: Computer Vision-based UAV for Indoor Applications*
-- Junior High & High School Diploma
-  - *Horwang School, Bangkok, Thailand*
-  - *2010 - 2016*
+
+{{< edu-entry logo="/images/logos/nus.png" degree="PhD in Electrical and Computer Engineering" >}}
+- *National University of Singapore, Singapore*
+- *NUS ASEAN Research Scholarship*
+- *Affiliation: CORE Lab*
+- *Supervisor: Assistant Professor [Lin Zhao](https://sites.google.com/view/lzhao)*
+- *August 2025 - Present*
+{{< /edu-entry >}}
+
+{{< edu-entry logo="/images/logos/kyushu.png" degree="MEng in Electrical and Electronic Engineering" >}}
+- *Kyushu University, Fukuoka, Japan*
+- *Japanese Government (MEXT) Scholarship: Embassy Recommended*
+- *October 2023 - September 2025*
+- *Affiliation: [Control & Optimization Lab.](https://sites.google.com/view/kyamamotolab/home-english)*
+- *Supervisor: Associate Professor [Kaoru Yamamoto](https://sites.google.com/site/kaoruyamamotoweb/home)*
+- *Thesis: Nonlinear Model Predictive Control: From Distributed Control to Lifted Enhancement*
+{{< /edu-entry >}}
+
+{{< edu-entry logo="/images/logos/chula.png" degree="BEng in Mechanical Engineering (Honours)" >}}
+- *Chulalongkorn University, Bangkok, Thailand*
+- *July 2016 - July 2020*
+- *Thesis: Computer Vision-based UAV for Indoor Applications*
+{{< /edu-entry >}}
+
+{{< edu-entry degree="Junior High & High School Diploma" >}}
+- *Horwang School, Bangkok, Thailand*
+- *2010 - 2016*
+{{< /edu-entry >}}
 
 # Work Experiences
 - Teaching Assistant (Part-time)
