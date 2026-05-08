@@ -11,3 +11,5 @@ Custom high-speed quadcopter built for the 17th Singapore Amazing Flying Machine
 {{< figure src="/images/charpi_vision_photo.png" caption="The assembled quadcopter. White 3D-printed parts hold the four fisheye cameras and protect the onboard compute." >}}
 
 {{< cad-viewer id="ninja" src="/cad/ninja_turtle.glb" title="A Compact Four-Fisheye Quadcopter" >}}{{< /cad-viewer >}}
+
+{{< cad-viewer id="fuku" src="/cad/fuku.glb" title="A Tiltable-frame Quadrotor" >}}{{< /cad-viewer >}}
