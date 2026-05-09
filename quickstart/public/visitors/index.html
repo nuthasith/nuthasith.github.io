@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <title>Visitor Map | Nuthasith G.</title><meta name="Description" content="This is my cool site"><meta property="og:url" content="https://nuthasith.github.io/visitors/">
+  <meta property="og:site_name" content="Nuthasith G.">
+  <meta property="og:title" content="Visitor Map">
+  <meta property="og:description" content="This is my cool site">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Visitor Map">
+  <meta name="twitter:description" content="This is my cool site">
+<meta name="application-name" content="My cool site">
+<meta name="apple-mobile-web-app-title" content="My cool site">
+<meta name="referrer" content="no-referrer" /><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><meta name="google-site-verification" content="JYs5MnrP8-eEacmfmGbsH6-4LSKKoDpdSrkGH-I8wBQ" />
+<script data-goatcounter="https://nuthasith.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://nuthasith.github.io/visitors/" /><link rel="next" href="https://nuthasith.github.io/about/" /><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"></noscript><link rel="preload" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"></noscript><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Visitor Map",
+        "inLanguage": "en-us",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/nuthasith.github.io\/visitors\/"
+        },"genre": "visitors","wordcount":  0 ,
+        "url": "https:\/\/nuthasith.github.io\/visitors\/","publisher": {
+            "@type": "Organization",
+            "name": ""},"author": {
+                "@type": "Person",
+                "name": "Nuthasith Gerdpratoom"
+            },"description": ""
+    }
+    </script></head>
+    <body data-header-desktop="fixed" data-header-mobile="auto"><script>(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('auto' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'auto' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="Nuthasith G.">Nuthasith G.</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/about/"> About </a><a class="menu-item" href="/awards/"> Awards </a><a class="menu-item" href="/publications/"> Publications </a><a class="menu-item" href="/projects/"> Projects </a><span class="menu-item delimiter"></span><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="Nuthasith G.">Nuthasith G.</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><a class="menu-item" href="/about/" title="">About</a><a class="menu-item" href="/awards/" title="">Awards</a><a class="menu-item" href="/publications/" title="">Publications</a><a class="menu-item" href="/projects/" title="">Projects</a><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+            </a></div>
+    </div>
+</header><main class="main">
+                <div class="container"><div class="page single">
+    <div class="content" id="content">
+        <h1 class="single-title animated flipInX">Visitor Map</h1>
+        <p style="opacity: 0.65; margin-bottom: 1.5rem;">
+            Where in the world are visitors coming from?
+            Tracked by <a href="https://www.goatcounter.com" rel="noopener" target="_blank">GoatCounter</a> — cookie-free.
+        </p>
+
+        <div id="chartdiv" style="width: 100%; height: 480px;"></div>
+        <div id="visitor-table" style="margin-top: 2rem;"></div>
+    </div>
+</div>
+
+<script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/map.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/geodata/worldLow.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+
+<script>
+(async function () {
+    var start = '2020-01-01';
+    var end = new Date().toISOString().slice(0, 10);
+    var apiUrl = 'https://nuthasith.goatcounter.com/api/v0/stats/countries?start=' + start + '&end=' + end + '&limit=100';
+
+    var stats = [];
+    try {
+        var res = await fetch(apiUrl);
+        if (!res.ok) throw new Error('not public');
+        var data = await res.json();
+        stats = data.stats || [];
+    } catch (e) {
+        document.getElementById('chartdiv').style.display = 'none';
+        document.getElementById('visitor-table').innerHTML =
+            '<div class="gc-fallback">' +
+            '<p>Live country data requires an API token.</p>' +
+            '<a class="gc-btn" href="https://nuthasith.goatcounter.com" target="_blank" rel="noopener">' +
+            '<i class="fas fa-external-link-alt fa-fw" aria-hidden="true"></i> View full stats on GoatCounter' +
+            '</a></div>';
+        return;
+    }
+
+    var isDark = document.body.getAttribute('theme') === 'dark';
+    var validStats = stats.filter(function (s) { return s.id && s.id.length === 2; });
+    var mapData = validStats.map(function (s) {
+        return { id: s.id.toUpperCase(), name: s.name, value: s.count_unique || 0 };
+    });
+
+    var root = am5.Root.new('chartdiv');
+    root.setThemes([am5themes_Animated.new(root)]);
+
+    var chart = root.container.children.push(am5map.MapChart.new(root, {
+        panX: 'translateX',
+        panY: 'translateY',
+        projection: am5map.geoMercator(),
+        paddingTop: 10,
+        paddingBottom: 10,
+    }));
+
+    var polygonSeries = chart.series.push(am5map.MapPolygonSeries.new(root, {
+        geoJSON: am5geodata_worldLow,
+        valueField: 'value',
+        calculateAggregates: true,
+    }));
+
+    polygonSeries.mapPolygons.template.setAll({
+        tooltipText: '{name}: {value} visitors',
+        interactive: true,
+        fill: am5.color(isDark ? 0x363c47 : 0xe8eef4),
+        stroke: am5.color(isDark ? 0x292a2d : 0xf0f0f0),
+        strokeWidth: 0.5,
+    });
+
+    polygonSeries.mapPolygons.template.states.create('hover', {
+        fill: am5.color(isDark ? 0x55bde2 : 0x2d96bd),
+    });
+
+    polygonSeries.set('heatRules', [{
+        target: polygonSeries.mapPolygons.template,
+        dataField: 'value',
+        min: am5.color(isDark ? 0x1e4060 : 0xaad0ee),
+        max: am5.color(isDark ? 0x55bde2 : 0x1a6bbf),
+        key: 'fill',
+    }]);
+
+    polygonSeries.data.setAll(mapData);
+    chart.appear(1000, 100);
+
+    var total = validStats.reduce(function (sum, s) { return sum + (s.count_unique || 0); }, 0);
+    var tableEl = document.getElementById('visitor-table');
+    tableEl.innerHTML =
+        '<h3>' + total + ' unique visitors from ' + validStats.length + ' countries</h3>' +
+        '<table class="gc-table"><thead><tr><th>Country</th><th>Unique visitors</th></tr></thead><tbody>' +
+        validStats.map(function (s) {
+            return '<tr><td>' + (s.name || s.id) + '</td><td>' + (s.count_unique || 0) + '</td></tr>';
+        }).join('') +
+        '</tbody></table>';
+})();
+</script>
+
+<style>
+.gc-table {
+    width: 100%;
+    max-width: 480px;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    margin-top: 0.75rem;
+}
+.gc-table th,
+.gc-table td {
+    padding: 0.45rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+[theme=dark] .gc-table th,
+[theme=dark] .gc-table td {
+    border-bottom-color: #363636;
+}
+.gc-table th {
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.55;
+}
+.gc-table tr:last-child td {
+    border-bottom: none;
+}
+.gc-fallback {
+    padding: 2rem 0;
+}
+.gc-fallback p {
+    opacity: 0.6;
+    margin-bottom: 1rem;
+}
+.gc-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 0.4rem;
+    background: #2d96bd;
+    color: #fff !important;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+.gc-btn:hover {
+    background: #1a7a9e;
+}
+</style></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">
+                </div><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork"></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="Back to Top">
+                <i class="fas fa-arrow-up fa-fw" aria-hidden="true"></i>
+            </a>
+        </div>
+
+        <div id="fixed-buttons-hidden"><a href="#" id="view-comments" class="fixed-button" title="View Comments">
+                <i class="fas fa-comment fa-fw" aria-hidden="true"></i>
+            </a>
+        </div><script src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.2/lazysizes.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script><script src="https://cdn.jsdelivr.net/npm/sharer.js@0.5.2/sharer.min.js"></script><script>window.config=null;</script><script src="/js/theme.min.js"></script></body>
+</html>

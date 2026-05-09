@@ -1,0 +1,99 @@
+{{- define "content" -}}
+    {{- $params := .Scratch.Get "params" -}}
+    {{- $profile := .Site.Params.home.profile -}}
+    {{- $posts := .Site.Params.home.posts -}}
+
+    <div class="page home"{{ if ne $posts.enable false }} data-home="posts"{{ end }}>
+        {{- if ne $profile.enable false -}}
+            {{- partial "home/profile.html" . -}}
+        {{- end -}}
+
+        {{- if .Content -}}
+            <div class="single">
+                <div class="content" id="content">
+                    {{- dict "Content" .Content "Ruby" $params.ruby "Fraction" $params.fraction "Fontawesome" $params.fontawesome | partial "function/content.html" | safeHTML -}}
+                </div>
+            </div>
+        {{- end -}}
+
+        {{- if ne $posts.enable false | and .Site.RegularPages -}}
+            {{- $pages := where .Site.RegularPages "Type" "posts" -}}
+            {{- if .Site.Params.page.hiddenFromHomePage -}}
+                {{- $pages = where $pages "Params.hiddenfromhomepage" false -}}
+            {{- else -}}
+                {{- $pages = where $pages "Params.hiddenfromhomepage" "!=" true -}}
+            {{- end -}}
+            {{- with $posts.paginate | default .Site.Params.paginate -}}
+                {{- $pages = $.Paginate $pages . -}}
+            {{- else -}}
+                {{- $pages = .Paginate $pages -}}
+            {{- end -}}
+            {{- range $pages.Pages -}}
+                {{- .Render "summary" -}}
+            {{- end -}}
+            {{- partial "paginator.html" . -}}
+        {{- end -}}
+    </div>
+
+    {{- /* Visitor map widget – fixed bottom-right */ -}}
+    <div id="gc-widget">
+        <a href="/visitors/" id="gc-widget-link" title="Visitor Map">
+            <i class="fas fa-globe fa-fw" aria-hidden="true"></i>
+            <span id="gc-widget-text">Visitor map</span>
+        </a>
+    </div>
+
+    <script>
+    (function () {
+        var start = '2020-01-01';
+        var end = new Date().toISOString().slice(0, 10);
+        fetch('https://nuthasith.goatcounter.com/api/v0/stats/countries?start=' + start + '&end=' + end + '&limit=100')
+            .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+            .then(function (data) {
+                var stats = (data.stats || []).filter(function (s) { return s.id && s.id.length === 2; });
+                var total = stats.reduce(function (sum, s) { return sum + (s.count_unique || 0); }, 0);
+                document.getElementById('gc-widget-text').textContent =
+                    total + ' visitors · ' + stats.length + ' countries';
+            })
+            .catch(function () {});
+    })();
+    </script>
+
+    <style>
+    #gc-widget {
+        position: fixed;
+        bottom: 4.5rem;
+        right: 1.25rem;
+        z-index: 10;
+    }
+    #gc-widget-link {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.45rem 0.9rem;
+        border-radius: 2rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-decoration: none;
+        background: #f8f8f8;
+        color: #161209;
+        border: 1px solid #f0f0f0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+        transition: box-shadow 0.2s, color 0.2s;
+        white-space: nowrap;
+    }
+    #gc-widget-link:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        color: #2d96bd;
+    }
+    [theme=dark] #gc-widget-link {
+        background: #252627;
+        color: #a9a9b3;
+        border-color: #363636;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.30);
+    }
+    [theme=dark] #gc-widget-link:hover {
+        color: #55bde2;
+    }
+    </style>
+{{- end -}}

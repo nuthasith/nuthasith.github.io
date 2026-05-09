@@ -70,7 +70,66 @@
         data-sizes="auto"
         alt="images/drone.jpg"
         title="images/drone.jpg" /></a></div><h1 class="home-title">Nuthasith Gerdpratoom<br>ณัฐสิทธิ์ เกิดประทุม<br>ゲドプラトーム ナタシット</h1><div class="home-subtitle"><div id="id-1" class="typeit"></div></div><div class="links"><a href="https://github.com/nat9dai" title="GitHub" target="_blank" rel="noopener noreffer me"><i class="fab fa-github fa-fw" aria-hidden="true"></i></a><a href="https://linkedin.com/in/nuthasith-gerdpratoom/" title="LinkedIn" target="_blank" rel="noopener noreffer me"><i class="fab fa-linkedin fa-fw" aria-hidden="true"></i></a><a href="https://scholar.google.com/citations?user=dnLflKgAAAAJ" title="Google Scholar" target="_blank" rel="noopener noreffer me"><i data-svg-src="https://cdn.jsdelivr.net/npm/simple-icons@14.9.0/icons/googlescholar.svg" aria-hidden="true"></i></a><a href="https://www.researchgate.net/profile/Nuthasith-Gerdpratoom" title="ResearchGate" target="_blank" rel="noopener noreffer me"><i class="fab fa-researchgate fa-fw" aria-hidden="true"></i></a><a href="mailto:nuthasith.g@gmail.com" title="Email" rel="me"><i class="far fa-envelope fa-fw" aria-hidden="true"></i></a></div></div>
-</div></div>
+</div><div id="gc-widget">
+        <a href="/visitors/" id="gc-widget-link" title="Visitor Map">
+            <i class="fas fa-globe fa-fw" aria-hidden="true"></i>
+            <span id="gc-widget-text">Visitor map</span>
+        </a>
+    </div>
+
+    <script>
+    (function () {
+        var start = '2020-01-01';
+        var end = new Date().toISOString().slice(0, 10);
+        fetch('https://nuthasith.goatcounter.com/api/v0/stats/countries?start=' + start + '&end=' + end + '&limit=100')
+            .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+            .then(function (data) {
+                var stats = (data.stats || []).filter(function (s) { return s.id && s.id.length === 2; });
+                var total = stats.reduce(function (sum, s) { return sum + (s.count_unique || 0); }, 0);
+                document.getElementById('gc-widget-text').textContent =
+                    total + ' visitors · ' + stats.length + ' countries';
+            })
+            .catch(function () {});
+    })();
+    </script>
+
+    <style>
+    #gc-widget {
+        position: fixed;
+        bottom: 4.5rem;
+        right: 1.25rem;
+        z-index: 10;
+    }
+    #gc-widget-link {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.45rem 0.9rem;
+        border-radius: 2rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-decoration: none;
+        background: #f8f8f8;
+        color: #161209;
+        border: 1px solid #f0f0f0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+        transition: box-shadow 0.2s, color 0.2s;
+        white-space: nowrap;
+    }
+    #gc-widget-link:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        color: #2d96bd;
+    }
+    [theme=dark] #gc-widget-link {
+        background: #252627;
+        color: #a9a9b3;
+        border-color: #363636;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.30);
+    }
+    [theme=dark] #gc-widget-link:hover {
+        color: #55bde2;
+    }
+    </style></div>
             </main><footer class="footer">
         <div class="footer-container"><div class="footer-line">
                 </div><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork"></div>

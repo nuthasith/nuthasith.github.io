@@ -1,0 +1,153 @@
+{{- define "title" -}}Visitor Map | {{ .Site.Title }}{{- end -}}
+{{- define "content" -}}
+<div class="page single">
+    <div class="content" id="content">
+        <h1 class="single-title animated flipInX">Visitor Map</h1>
+        <p style="opacity: 0.65; margin-bottom: 1.5rem;">
+            Where in the world are visitors coming from?
+            Tracked by <a href="https://www.goatcounter.com" rel="noopener" target="_blank">GoatCounter</a> — cookie-free.
+        </p>
+
+        <div id="chartdiv" style="width: 100%; height: 480px;"></div>
+        <div id="visitor-table" style="margin-top: 2rem;"></div>
+    </div>
+</div>
+
+<script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/map.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/geodata/worldLow.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+
+<script>
+(async function () {
+    var start = '2020-01-01';
+    var end = new Date().toISOString().slice(0, 10);
+    var apiUrl = 'https://nuthasith.goatcounter.com/api/v0/stats/countries?start=' + start + '&end=' + end + '&limit=100';
+
+    var stats = [];
+    try {
+        var res = await fetch(apiUrl);
+        if (!res.ok) throw new Error('not public');
+        var data = await res.json();
+        stats = data.stats || [];
+    } catch (e) {
+        document.getElementById('chartdiv').style.display = 'none';
+        document.getElementById('visitor-table').innerHTML =
+            '<div class="gc-fallback">' +
+            '<p>Live country data requires an API token.</p>' +
+            '<a class="gc-btn" href="https://nuthasith.goatcounter.com" target="_blank" rel="noopener">' +
+            '<i class="fas fa-external-link-alt fa-fw" aria-hidden="true"></i> View full stats on GoatCounter' +
+            '</a></div>';
+        return;
+    }
+
+    var isDark = document.body.getAttribute('theme') === 'dark';
+    var validStats = stats.filter(function (s) { return s.id && s.id.length === 2; });
+    var mapData = validStats.map(function (s) {
+        return { id: s.id.toUpperCase(), name: s.name, value: s.count_unique || 0 };
+    });
+
+    var root = am5.Root.new('chartdiv');
+    root.setThemes([am5themes_Animated.new(root)]);
+
+    var chart = root.container.children.push(am5map.MapChart.new(root, {
+        panX: 'translateX',
+        panY: 'translateY',
+        projection: am5map.geoMercator(),
+        paddingTop: 10,
+        paddingBottom: 10,
+    }));
+
+    var polygonSeries = chart.series.push(am5map.MapPolygonSeries.new(root, {
+        geoJSON: am5geodata_worldLow,
+        valueField: 'value',
+        calculateAggregates: true,
+    }));
+
+    polygonSeries.mapPolygons.template.setAll({
+        tooltipText: '{name}: {value} visitors',
+        interactive: true,
+        fill: am5.color(isDark ? 0x363c47 : 0xe8eef4),
+        stroke: am5.color(isDark ? 0x292a2d : 0xf0f0f0),
+        strokeWidth: 0.5,
+    });
+
+    polygonSeries.mapPolygons.template.states.create('hover', {
+        fill: am5.color(isDark ? 0x55bde2 : 0x2d96bd),
+    });
+
+    polygonSeries.set('heatRules', [{
+        target: polygonSeries.mapPolygons.template,
+        dataField: 'value',
+        min: am5.color(isDark ? 0x1e4060 : 0xaad0ee),
+        max: am5.color(isDark ? 0x55bde2 : 0x1a6bbf),
+        key: 'fill',
+    }]);
+
+    polygonSeries.data.setAll(mapData);
+    chart.appear(1000, 100);
+
+    var total = validStats.reduce(function (sum, s) { return sum + (s.count_unique || 0); }, 0);
+    var tableEl = document.getElementById('visitor-table');
+    tableEl.innerHTML =
+        '<h3>' + total + ' unique visitors from ' + validStats.length + ' countries</h3>' +
+        '<table class="gc-table"><thead><tr><th>Country</th><th>Unique visitors</th></tr></thead><tbody>' +
+        validStats.map(function (s) {
+            return '<tr><td>' + (s.name || s.id) + '</td><td>' + (s.count_unique || 0) + '</td></tr>';
+        }).join('') +
+        '</tbody></table>';
+})();
+</script>
+
+<style>
+.gc-table {
+    width: 100%;
+    max-width: 480px;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    margin-top: 0.75rem;
+}
+.gc-table th,
+.gc-table td {
+    padding: 0.45rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+[theme=dark] .gc-table th,
+[theme=dark] .gc-table td {
+    border-bottom-color: #363636;
+}
+.gc-table th {
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.55;
+}
+.gc-table tr:last-child td {
+    border-bottom: none;
+}
+.gc-fallback {
+    padding: 2rem 0;
+}
+.gc-fallback p {
+    opacity: 0.6;
+    margin-bottom: 1rem;
+}
+.gc-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 0.4rem;
+    background: #2d96bd;
+    color: #fff !important;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+.gc-btn:hover {
+    background: #1a7a9e;
+}
+</style>
+{{- end -}}
