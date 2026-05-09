@@ -5,8 +5,10 @@ description = ""
 theme = 'hugo_theme_LoveIt'
 
 gitRepo = "https://github.com/nat9dai"
-visitorWorkerURL = "https://visitor-tracker.nuthasith-g.workers.dev"
 images = ["/logo.png"]
+
+[params]
+    visitorWorkerURL = "https://visitor-tracker.nuthasith-g.workers.dev"
 
 [params.header.title]
     name = "Nuthasith G."
