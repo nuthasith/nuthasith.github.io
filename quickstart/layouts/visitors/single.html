@@ -45,7 +45,11 @@
         if (f.id) codeToName[f.id] = f.properties.name;
     });
 
-    var mapData = Object.keys(counts).map(function (code) {
+    var validCodes = Object.keys(counts).filter(function (code) {
+        return /^[A-Za-z]{2}$/.test(code);
+    });
+
+    var mapData = validCodes.map(function (code) {
         var id = code.toUpperCase();
         return { id: id, value: counts[code], name: codeToName[id] || id };
     });
@@ -149,7 +153,7 @@
     chart.appear(1000, 100);
 
     // Country table — sorted by visit count
-    var sorted = Object.keys(counts)
+    var sorted = validCodes
         .map(function (code) {
             var id = code.toUpperCase();
             return { name: codeToName[id] || id, count: counts[code] };
