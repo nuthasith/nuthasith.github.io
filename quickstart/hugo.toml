@@ -5,6 +5,7 @@ description = ""
 theme = 'hugo_theme_LoveIt'
 
 gitRepo = "https://github.com/nat9dai"
+visitorWorkerURL = ""  # paste your Cloudflare Worker URL here after setup
 images = ["/logo.png"]
 
 [params.header.title]

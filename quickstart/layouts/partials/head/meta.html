@@ -18,3 +18,6 @@
 
 <meta name="google-site-verification" content="JYs5MnrP8-eEacmfmGbsH6-4LSKKoDpdSrkGH-I8wBQ" />
 <script data-goatcounter="https://nuthasith.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+{{- with .Site.Params.visitorWorkerURL -}}
+<script>new Image().src="{{ . }}/visit";</script>
+{{- end -}}

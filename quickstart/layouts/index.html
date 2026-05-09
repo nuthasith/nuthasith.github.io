@@ -45,15 +45,15 @@
 
     <script>
     (function () {
-        var start = '2020-01-01';
-        var end = new Date().toISOString().slice(0, 10);
-        fetch('https://nuthasith.goatcounter.com/api/v0/stats/countries?start=' + start + '&end=' + end + '&limit=100')
+        var workerURL = '{{ .Site.Params.visitorWorkerURL }}';
+        if (!workerURL) return;
+        fetch(workerURL + '/stats')
             .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
-            .then(function (data) {
-                var stats = (data.stats || []).filter(function (s) { return s.id && s.id.length === 2; });
-                var total = stats.reduce(function (sum, s) { return sum + (s.count_unique || 0); }, 0);
+            .then(function (counts) {
+                var codes = Object.keys(counts);
+                var total = codes.reduce(function (s, k) { return s + counts[k]; }, 0);
                 document.getElementById('gc-widget-text').textContent =
-                    total + ' visitors · ' + stats.length + ' countries';
+                    total + ' visitors · ' + codes.length + ' countries';
             })
             .catch(function () {});
     })();
