@@ -60,7 +60,7 @@ title = 'Profile'
 - The 8th International Symposium on Swarm Behavior and Bio-Inspired Robotics – Kyoto, Japan, Sep 2024
 - Cybersecurity Problems in Remote State Estimation by Professor Tongwen Chen – Kyushu University, Sep 2024
 - Automotive and Advanced Transportation Engineering – TokyoTech, KMITL, KMUTT, and NSTDA, 2022
-- Research Application for Autonomous Vehicles – NARLabs (Taiwan) & NSTDA (Thailand), 2022
+- Research Application for Autonomous Vehicles – NARLabs (Republic of China) & NSTDA (Thailand), 2022
 - Drone Maker Workshop – Drone Academy Thailand, 2019
 
 # Languages
