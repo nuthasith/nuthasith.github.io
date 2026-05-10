@@ -111,6 +111,7 @@
     am5geodata_worldLow.features.forEach(function (f) {
         if (f.id) codeToName[f.id] = f.properties.name;
     });
+    codeToName['TW'] = 'Republic of China';
 
     var validCodes = Object.keys(counts).filter(function (code) {
         return /^[A-Za-z]{2}$/.test(code);
