@@ -83,7 +83,7 @@
         fetch(workerURL + '/stats')
             .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
             .then(function (counts) {
-                var codes = Object.keys(counts);
+                var codes = Object.keys(counts).filter(function (k) { return /^[A-Za-z]{2}$/.test(k); });
                 var total = codes.reduce(function (s, k) { return s + counts[k]; }, 0);
                 document.getElementById('gc-widget-text').textContent =
                     total + ' visitors · ' + codes.length + ' countries';
