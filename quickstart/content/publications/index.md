@@ -9,6 +9,9 @@ title = 'Publications'
 - **Nuthasith Gerdpratoom**, Fumiya Matsuzaki, Yutaka Yamamoto, and Kaoru Yamamoto. "Enhanced Sampled-Data Model Predictive Control via Nonlinear Lifting." *International Journal of Robust and Nonlinear Control*, pp. 1–12, 2025. [[Link](https://onlinelibrary.wiley.com/doi/10.1002/rnc.70083)]
 - **Nuthasith Gerdpratoom** and Kaoru Yamamoto. "Decentralized Nonlinear Model Predictive Control-Based Flock Navigation with Real-Time Obstacle Avoidance in Unknown Obstructed Environments." *Frontiers in Robotics and AI*, vol. 12, p. 1540808, Frontiers, 2025. [[Link](https://www.frontiersin.org/journals/robotics-and-ai/articles/10.3389/frobt.2025.1540808/abstract)]
 
+# Preprints
+- **Nuthasith Gerdpratoom**, Tianchen Sun, Yichao Gao, and Lin Zhao. "Learning Vision-Based Agile Gap Traversal: Differentiable Simulation with a Warm-Started Critic." *arXiv preprint arXiv:2609.30696*, 2026. [[Link](https://arxiv.org/abs/2609.30696)]
+
 # Conference Papers
 - Tianchen Sun, Bingheng Wang, **Nuthasith Gerdpratoom**, Longbin Tang, Yichao Gao, and Lin Zhao, "Learning Agile Gate Traversal via Analytical Optimal Policy Gradient," *arXiv preprint arXiv:2508.21592*, 2026, accepted to the 2026 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS). [[Link](https://arxiv.org/abs/2508.21592)]
 - **Nuthasith Gerdpratoom** and Kaoru Yamamoto, "Decentralized Nonlinear MPC-Based Flock Navigation with Real-Time Obstacle Avoidance in Unknown Obstructed Environments," in *Proceedings of the 8th International Symposium on Swarm Behavior and Bio-inspired Robotics*, Kyoto, Japan, September 2024. [[Link](https://www.swarm-systems.org/swarm2024)]
