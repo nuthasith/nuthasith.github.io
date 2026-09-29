@@ -38,7 +38,12 @@ title = 'Profile'
 - Teaching Assistant (Part-time)
   - *NUS College of Design & Engineering, Singapore*
   - *January 2026 - Present*
-  - AY2025/2026: CG2023 Signals and Systems, EE4308 Autonomous Robot Systems
+  - AY2026/2027
+    - EE5112 Human-Robot Interaction
+    - CDE1302 Introduction to UAVs
+  - AY2025/2026
+    - CG2023 Signals and Systems
+    - EE4308 Autonomous Robot Systems
 - Research Student (Full-time)
   - *Kyushu University, Fukuoka, Japan*
   - *April 2023 - September 2025*
