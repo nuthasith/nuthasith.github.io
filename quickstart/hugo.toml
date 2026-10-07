@@ -9,6 +9,10 @@ images = ["/logo.png"]
 
 [params]
     visitorWorkerURL = "https://visitor-tracker.nuthasith-g.workers.dev"
+    description = "Nuthasith Gerdpratoom — PhD student in Electrical and Computer Engineering at NUS. Research, publications, and engineering projects."
+
+[params.app]
+    title = "Nuthasith Gerdpratoom"
 
 [params.header.title]
     name = "Nuthasith G."
@@ -19,10 +23,11 @@ images = ["/logo.png"]
     link = "https://www.linkedin.com/in/nuthasith-gerdpratoom/"
 
 [params.home.profile]
+    typeit = false
     # gravatarEmail = "nuthasith.g@gmail.com"
     avatarURL = "images/drone.jpg"
     title = "Nuthasith Gerdpratoom<br>ณัฐสิทธิ์ เกิดประทุม<br>ゲドプラトーム ナタシット"
-    subtitle = "Hello! I'm currently a PhD student at NUS!"
+    subtitle = "PhD student in Electrical and Computer Engineering<br>National University of Singapore"
 
 [params.social]
     GitHub = "nat9dai"

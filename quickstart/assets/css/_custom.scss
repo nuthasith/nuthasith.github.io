@@ -1,0 +1,413 @@
+// Shared portfolio polish. Projects owns its own layout and component styles.
+:root {
+  --global-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --global-line-height: 1.65rem;
+  --header-height: 4.25rem;
+  --header-title-font-size: 1.15rem;
+  --portfolio-bg: #fafbf9;
+  --portfolio-surface: #ffffff;
+  --portfolio-text: #25343b;
+  --portfolio-muted: #627077;
+  --portfolio-border: #dfe6e2;
+  --portfolio-accent: #176b64;
+  --portfolio-soft: #edf4f0;
+}
+
+body {
+  color: var(--portfolio-text);
+  background: var(--portfolio-bg);
+  -webkit-font-smoothing: antialiased;
+
+  &[theme=dark] {
+    --portfolio-bg: #151e23;
+    --portfolio-surface: #1b282e;
+    --portfolio-text: #e4ecec;
+    --portfolio-muted: #a6b6bc;
+    --portfolio-border: #35454b;
+    --portfolio-accent: #84c9be;
+    --portfolio-soft: #213b3a;
+    color: var(--portfolio-text);
+    background: var(--portfolio-bg);
+  }
+}
+
+::selection {
+  background: rgba(23, 107, 100, .18);
+}
+
+[theme=dark] ::selection {
+  background: rgba(132, 201, 190, .25);
+}
+
+body a {
+  color: inherit;
+  transition: color .18s ease;
+
+  &:hover {
+    color: var(--portfolio-accent);
+  }
+}
+
+body[theme=dark] a {
+  color: inherit;
+
+  &:hover {
+    color: var(--portfolio-accent);
+  }
+}
+
+a:focus-visible, button:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--portfolio-accent);
+  outline-offset: 5px;
+}
+
+#header-desktop, #header-mobile {
+  background: var(--portfolio-surface);
+  border-bottom: 1px solid var(--portfolio-border);
+  box-shadow: none;
+
+  &:hover {
+    box-shadow: none;
+  }
+}
+
+[theme=dark] #header-desktop, [theme=dark] #header-mobile {
+  background: var(--portfolio-surface);
+}
+
+#header-desktop .header-wrapper {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+
+  .header-title {
+    font-weight: 650;
+    letter-spacing: -.025em;
+
+    a {
+      color: var(--portfolio-text);
+    }
+  }
+
+  .menu {
+    font-size: .9rem;
+
+    .menu-item {
+      margin: 0 .7rem;
+      font-weight: 500;
+      color: var(--portfolio-muted);
+
+      &.delimiter {
+        border-left: 1px solid var(--portfolio-border);
+        margin: 0 .45rem;
+      }
+    }
+
+    a.active, a:hover {
+      color: var(--portfolio-accent);
+      font-weight: 500;
+    }
+
+    a.active::after {
+      content: "";
+      position: absolute;
+      height: 2px;
+      border-radius: 2px;
+      background: var(--portfolio-accent);
+      left: 0;
+      right: 0;
+      bottom: -.65rem;
+    }
+
+    .theme-switch {
+      color: var(--portfolio-muted);
+    }
+  }
+}
+
+[theme=dark] #header-desktop .header-wrapper .menu {
+  .menu-item {
+    color: var(--portfolio-muted);
+  }
+
+  a.active, a:hover {
+    color: var(--portfolio-accent);
+  }
+
+  .menu-item.delimiter {
+    border-left-color: var(--portfolio-border);
+  }
+}
+
+#header-mobile .header-container {
+  .header-wrapper {
+    padding: 0 1.25rem;
+
+    .header-title {
+      font-weight: 650;
+      letter-spacing: -.025em;
+
+      a {
+        color: var(--portfolio-text);
+      }
+    }
+
+    .menu-toggle span {
+      background: var(--portfolio-text);
+    }
+  }
+
+  .menu {
+    background: var(--portfolio-surface);
+    border-color: var(--portfolio-border);
+
+    .menu-item {
+      color: var(--portfolio-text);
+
+      &:hover {
+        color: var(--portfolio-accent);
+      }
+    }
+  }
+}
+
+[theme=dark] #header-mobile .header-container .menu {
+  background: var(--portfolio-surface);
+}
+
+.page.single:not(.projects-page) {
+  width: 100%;
+  max-width: 860px;
+  padding-bottom: 4rem;
+
+  .single-title {
+    margin: 3.5rem 0 2.5rem;
+    text-align: left;
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    font-weight: 650;
+    line-height: 1.2;
+    letter-spacing: -.045em;
+    animation: none;
+  }
+
+  .content {
+    font-size: 1rem;
+    line-height: 1.75;
+
+    > h1, > h2 {
+      padding-top: 1.75rem;
+      margin: 2rem 0 1.1rem;
+      border-top: 1px solid var(--portfolio-border);
+      font-size: 1.3rem;
+      line-height: 1.4;
+      font-weight: 650;
+      letter-spacing: -.02em;
+    }
+
+    > h1:first-child, > h2:first-child {
+      padding-top: 0;
+      margin-top: 0;
+      border-top: 0;
+    }
+
+    h3, h4 {
+      font-weight: 650;
+      line-height: 1.45;
+    }
+
+    h1 .header-mark::before, h2 .header-mark::before {
+      content: none;
+    }
+
+    a, a:hover, a strong, a:hover strong {
+      color: var(--portfolio-accent);
+    }
+
+    a {
+      text-decoration-thickness: 1px;
+      text-underline-offset: .2em;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    strong, b {
+      color: var(--portfolio-text);
+      font-weight: 650;
+    }
+
+    > ul {
+      margin: 0 0 1.5rem;
+      padding-left: 1.25rem;
+
+      > li {
+        padding-left: .3rem;
+        margin-bottom: 1rem;
+      }
+    }
+
+    li::marker {
+      color: var(--portfolio-accent);
+    }
+
+    ul ul {
+      padding-left: 1.25rem;
+      margin-top: .35rem;
+      color: var(--portfolio-muted);
+    }
+
+    em {
+      color: var(--portfolio-muted);
+    }
+  }
+}
+
+[theme=dark] .page.single:not(.projects-page) .content {
+  a, a:hover, a strong, a:hover strong {
+    color: var(--portfolio-accent);
+  }
+
+  b, strong {
+    color: var(--portfolio-text);
+  }
+}
+
+.page.home:not(.projects-page) {
+  width: 100%;
+  max-width: 960px;
+  padding-bottom: 4rem;
+
+  .home-profile {
+    transform: none;
+    margin: clamp(3.5rem, 10vh, 7rem) auto 3rem;
+    padding: 0 1rem;
+
+    .home-avatar {
+      padding: 0 0 1.5rem;
+
+      img {
+        width: 10.5rem;
+        height: 10.5rem;
+        object-fit: cover;
+        border: 5px solid var(--portfolio-surface);
+        box-shadow: 0 0 0 1px var(--portfolio-border), 0 8px 24px rgba(31, 53, 50, .06);
+
+        &:hover {
+          transform: none;
+        }
+      }
+    }
+
+    .home-title {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0;
+      font-size: clamp(1.4rem, 3.5vw, 2rem);
+      font-weight: 650;
+      letter-spacing: -.035em;
+      line-height: 1.65;
+    }
+
+    .home-subtitle {
+      margin-top: 1rem;
+      padding: 0;
+      color: var(--portfolio-muted);
+      font-size: 1.05rem;
+      line-height: 1.65;
+    }
+
+    .links {
+      margin-top: 1.5rem;
+      padding: 0;
+      font-size: 1.2rem;
+
+      a {
+        display: inline-flex;
+        width: 2.75rem;
+        height: 2.75rem;
+        justify-content: center;
+        align-items: center;
+        border: 1px solid var(--portfolio-border);
+        border-radius: 50%;
+        margin: 0 .2rem;
+        background: var(--portfolio-surface);
+        color: var(--portfolio-muted);
+
+        &:hover {
+          color: var(--portfolio-accent);
+          border-color: var(--portfolio-accent);
+        }
+      }
+
+      img {
+        height: 1.2rem;
+      }
+    }
+  }
+}
+
+footer.footer {
+  height: auto;
+  padding: 1.5rem 1rem;
+  box-sizing: border-box;
+  border-top: 1px solid var(--portfolio-border);
+  color: var(--portfolio-muted);
+
+  .footer-container {
+    font-size: .75rem;
+    line-height: 1.6;
+  }
+}
+
+@media (max-width: 680px) {
+  .page.single:not(.projects-page) {
+    .single-title {
+      margin-top: 2.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .content {
+      font-size: .95rem;
+
+      > h1, > h2 {
+        font-size: 1.2rem;
+      }
+    }
+  }
+
+  .page.home:not(.projects-page) .home-profile {
+    margin-top: 3rem;
+    padding: 0;
+
+    .home-avatar img {
+      width: 8.5rem;
+      height: 8.5rem;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #header-desktop, #header-mobile, .page.home:not(.projects-page) .home-avatar img {
+    transition: none;
+  }
+}
+
+// The existing education shortcode has inline flex styles and a fixed logo column.
+@media (max-width: 480px) {
+  .page.single:not(.projects-page) .content > div[style*="display:flex"] {
+    flex-direction: column;
+    gap: .85rem !important;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--portfolio-border);
+
+    > div:first-child {
+      width: auto !important;
+      justify-content: flex-start !important;
+    }
+
+    ul {
+      padding-left: 1.2rem;
+    }
+  }
+}

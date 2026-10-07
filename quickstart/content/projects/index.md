@@ -2,14 +2,28 @@
 date = '2025-04-02T18:50:32+09:00'
 draft = false
 title = 'Projects'
+layout = 'projects'
+description = 'Quadrotor builds and mechanical designs by Nuthasith Gerdpratoom, including the SAFMC 2026 Champion team quadcopter. Explore the CAD assemblies in 3D.'
+
+[featured]
+title = 'Four-fisheye quadcopter'
+context = 'SAFMC 2026 · NUS ECE Champion team'
+contribution = 'I designed and fabricated the 3D-printed camera frame, compute cage, and structural mounts.'
+image = '/images/charpi_vision_photo.png'
+imageAlt = 'The assembled quadcopter with white 3D-printed camera mounts and compute protection, and yellow propellers.'
+model = '/cad/charpi_vision.glb'
+poster = '/images/projects/charpi.jpg'
+story = 'https://cde.nus.edu.sg/ece/news/nus-ece-team-wins-champion-title-at-safmc-2026-high-speed-drone-flock-challenge/'
+
+[[designs]]
+title = 'Compact four-fisheye quadcopter'
+model = '/cad/ninja_turtle.glb'
+poster = '/images/projects/ninja.jpg'
+imageAlt = 'CAD assembly of the compact four-fisheye quadcopter.'
+
+[[designs]]
+title = 'Tiltable-frame quadrotor'
+model = '/cad/fuku.glb'
+poster = '/images/projects/fuku.jpg'
+imageAlt = 'CAD assembly of the tiltable-frame quadrotor.'
 +++
-
-{{< cad-viewer id="charpi" src="/cad/charpi_vision.glb" title="Four-Fisheye Quadcopter (SAFMC 2026)" >}}
-Custom high-speed quadcopter built for the 17th Singapore Amazing Flying Machine Competition (SAFMC) 2026, High-Speed Drone Flock category, by the NUS ECE team that <a href="https://cde.nus.edu.sg/ece/news/nus-ece-team-wins-champion-title-at-safmc-2026-high-speed-drone-flock-challenge/" target="_blank" rel="noopener" style="color:#2d96bd">won the Champion title</a>. <b>I designed and fabricated all of the 3D-printed parts</b>: the white camera-mounting frame, the protective cage around the compute module, and the structural mounts.
-{{< /cad-viewer >}}
-
-{{< figure src="/images/charpi_vision_photo.png" caption="The assembled quadcopter. White 3D-printed parts hold the four fisheye cameras and protect the onboard compute." >}}
-
-{{< cad-viewer id="ninja" src="/cad/ninja_turtle.glb" title="A Compact Four-Fisheye Quadcopter" >}}{{< /cad-viewer >}}
-
-{{< cad-viewer id="fuku" src="/cad/fuku.glb" title="A Tiltable-frame Quadrotor" >}}{{< /cad-viewer >}}

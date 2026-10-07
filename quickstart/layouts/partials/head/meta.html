@@ -17,6 +17,10 @@
 {{- end -}}
 
 <meta name="google-site-verification" content="JYs5MnrP8-eEacmfmGbsH6-4LSKKoDpdSrkGH-I8wBQ" />
+{{- if eq .Layout "projects" -}}
+<link rel="stylesheet" href="/css/projects.css">
+<script src="/js/projects.js" defer></script>
+{{- end -}}
 <script data-goatcounter="https://nuthasith.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 {{- with .Site.Params.visitorWorkerURL -}}
 <script>new Image().src="{{ . }}/visit";</script>
