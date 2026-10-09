@@ -4,10 +4,12 @@ draft = false
 title = 'Publications'
 +++
 
+{{< scholar-link href="https://scholar.google.com/citations?user=dnLflKgAAAAJ&hl=en" >}}
+
 # Journal Papers
 - **Nuthasith Gerdpratoom**, Anders Rantzer, and Kaoru Yamamoto. "Data-Driven Sampled-Data LQR: Certainty-Equivalence Control via Lifted Cost and Riccati Analysis." *Systems & Control Letters*, 213:106435, 2026. [[Link](https://www.sciencedirect.com/science/article/pii/S0167691126000952)]
-- **Nuthasith Gerdpratoom**, Fumiya Matsuzaki, Yutaka Yamamoto, and Kaoru Yamamoto. "Enhanced Sampled-Data Model Predictive Control via Nonlinear Lifting." *International Journal of Robust and Nonlinear Control*, pp. 1–12, 2025. [[Link](https://onlinelibrary.wiley.com/doi/10.1002/rnc.70083)]
-- **Nuthasith Gerdpratoom** and Kaoru Yamamoto. "Decentralized Nonlinear Model Predictive Control-Based Flock Navigation with Real-Time Obstacle Avoidance in Unknown Obstructed Environments." *Frontiers in Robotics and AI*, vol. 12, p. 1540808, Frontiers, 2025. [[Link](https://www.frontiersin.org/journals/robotics-and-ai/articles/10.3389/frobt.2025.1540808/abstract)]
+- **Nuthasith Gerdpratoom**, Fumiya Matsuzaki, Yutaka Yamamoto, and Kaoru Yamamoto. "Enhanced Sampled-Data Model Predictive Control via Nonlinear Lifting." *International Journal of Robust and Nonlinear Control*, vol. 35, no. 18, pp. 7621–7632, 2025. [[Link](https://onlinelibrary.wiley.com/doi/10.1002/rnc.70083)]
+- **Nuthasith Gerdpratoom** and Kaoru Yamamoto. "Decentralized Nonlinear Model Predictive Control-Based Flock Navigation with Real-Time Obstacle Avoidance in Unknown Obstructed Environments." *Frontiers in Robotics and AI*, vol. 12, Art. no. 1540808, 2025. [[Link](https://www.frontiersin.org/journals/robotics-and-ai/articles/10.3389/frobt.2025.1540808/abstract)]
 
 # Preprints
 - **Nuthasith Gerdpratoom**, Tianchen Sun, Yichao Gao, and Lin Zhao. "Learning Vision-Based Agile Gap Traversal: Differentiable Simulation with a Warm-Started Critic." *arXiv preprint arXiv:2609.30696*, 2026. [[Link](https://arxiv.org/abs/2609.30696)]

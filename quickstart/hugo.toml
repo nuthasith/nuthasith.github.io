@@ -19,14 +19,14 @@ images = ["/logo.png"]
 
 [params.author]
     name = "Nuthasith Gerdpratoom"
-    email = "nuthasith.g@gmail.com"
+    email = "nuthasith@u.nus.edu"
     link = "https://www.linkedin.com/in/nuthasith-gerdpratoom/"
 
 [params.home.profile]
     typeit = false
     # gravatarEmail = "nuthasith.g@gmail.com"
     avatarURL = "images/drone.jpg"
-    title = "Nuthasith Gerdpratoom<br>ณัฐสิทธิ์ เกิดประทุม<br>ゲドプラトーム ナタシット"
+    title = "Nuthasith Gerdpratoom<br>ゲドプラトーム ナタシット<br>ณัฐสิทธิ์ เกิดประทุม"
     subtitle = "PhD student in Electrical and Computer Engineering<br>National University of Singapore"
 
 [params.social]
@@ -34,7 +34,7 @@ images = ["/logo.png"]
     Linkedin = "nuthasith-gerdpratoom/"
     Googlescholar = "user=dnLflKgAAAAJ"
     Researchgate = "Nuthasith-Gerdpratoom"
-    Email = "nuthasith.g@gmail.com"
+    Email = "nuthasith@u.nus.edu"
 
 [params.footer]
     copyright = false

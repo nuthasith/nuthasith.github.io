@@ -318,6 +318,10 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
     }
 
     .links {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: .4rem;
       margin-top: 1.5rem;
       padding: 0;
       font-size: 1.2rem;
@@ -330,7 +334,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
         align-items: center;
         border: 1px solid var(--portfolio-border);
         border-radius: 50%;
-        margin: 0 .2rem;
+        margin: 0;
         background: var(--portfolio-surface);
         color: var(--portfolio-muted);
 
@@ -338,6 +342,11 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
           color: var(--portfolio-accent);
           border-color: var(--portfolio-accent);
         }
+      }
+
+      i, svg {
+        display: block;
+        line-height: 1;
       }
 
       img {
