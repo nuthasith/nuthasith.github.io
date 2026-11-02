@@ -12,6 +12,7 @@ title = 'Publications'
 - **Nuthasith Gerdpratoom** and Kaoru Yamamoto. "Decentralized Nonlinear Model Predictive Control-Based Flock Navigation with Real-Time Obstacle Avoidance in Unknown Obstructed Environments." *Frontiers in Robotics and AI*, vol. 12, Art. no. 1540808, 2025. [[Link](https://www.frontiersin.org/journals/robotics-and-ai/articles/10.3389/frobt.2025.1540808/abstract)]
 
 # Preprints
+- Zichen Yan, Rui Huang, Shenao Wang, Yucong Wang, **Nuthasith Gerdpratoom**, and Lin Zhao. "Omni-IGN: Onboard Image-Goal Navigation for Drones with Omnidirectional Vision." *arXiv preprint arXiv:2610.36968*, 2026. [[Link](https://arxiv.org/abs/2610.36968)]
 - **Nuthasith Gerdpratoom**, Tianchen Sun, Yichao Gao, and Lin Zhao. "Learning Vision-Based Agile Gap Traversal: Differentiable Simulation with a Warm-Started Critic." *arXiv preprint arXiv:2609.30696*, 2026. [[Link](https://arxiv.org/abs/2609.30696)]
 
 # Conference Papers
