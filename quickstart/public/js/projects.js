@@ -8,13 +8,15 @@
     var status = document.getElementById("project-model-status");
     var closeButton = document.getElementById("project-model-close");
     var retryButton = document.getElementById("project-model-retry");
-    if (!dialog || !stage || !title || !status || !closeButton || !retryButton) return;
+    var externalLink = document.getElementById("project-model-external");
+    if (!dialog || !stage || !title || !status || !closeButton || !retryButton || !externalLink) return;
 
     var moduleURL = "https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js";
     var modulePromise;
     var generation = 0;
     var origin;
     var currentModel;
+    var currentVideo;
     var releaseViewer;
     var supportsModal = typeof dialog.showModal === "function";
 
@@ -26,7 +28,7 @@
       if (releaseViewer) releaseViewer();
       releaseViewer = undefined;
       stage.replaceChildren();
-      stage.classList.remove("is-loading");
+      stage.classList.remove("is-loading", "is-video");
       stage.removeAttribute("aria-busy");
     }
 
@@ -34,7 +36,9 @@
       generation += 1;
       clearStage();
       currentModel = undefined;
+      currentVideo = undefined;
       retryButton.hidden = true;
+      externalLink.hidden = true;
       status.textContent = "";
       var returnTo = origin;
       origin = undefined;
@@ -130,23 +134,55 @@
       }).catch(unavailable);
     }
 
+    function loadVideo() {
+      generation += 1;
+      clearStage();
+      retryButton.hidden = true;
+      stage.classList.add("is-video");
+      var frame = document.createElement("iframe");
+      // The privacy-enhanced host sets no YouTube cookies until the video plays.
+      frame.src = "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(currentVideo.id) + "?autoplay=1&rel=0";
+      frame.title = currentVideo.title + " — video";
+      frame.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
+      frame.allowFullscreen = true;
+      frame.referrerPolicy = "strict-origin-when-cross-origin";
+      stage.appendChild(frame);
+      status.textContent = "";
+      externalLink.href = currentVideo.url;
+      externalLink.hidden = false;
+    }
+
     document.addEventListener("click", function (event) {
-      var button = event.target.closest("[data-model-open]");
-      if (!button || !button.dataset.modelSrc) return;
+      var button = event.target.closest("[data-model-open], [data-video-open]");
+      if (!button) return;
+      var videoId = button.dataset.videoId;
+      if (!videoId && !button.dataset.modelSrc) return;
+      // Let modified clicks on video links open YouTube in a new tab as usual.
+      if (videoId && (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)) return;
       event.preventDefault();
       origin = button;
-      currentModel = {
-        src: button.dataset.modelSrc,
-        title: button.dataset.modelTitle || "3D model",
-        poster: button.dataset.modelPoster || ""
-      };
-      title.textContent = currentModel.title;
+      if (videoId) {
+        currentVideo = {
+          id: videoId,
+          title: button.dataset.videoTitle || "Video",
+          url: button.href || "https://www.youtube.com/watch?v=" + encodeURIComponent(videoId)
+        };
+        title.textContent = currentVideo.title;
+      } else {
+        currentModel = {
+          src: button.dataset.modelSrc,
+          title: button.dataset.modelTitle || "3D model",
+          poster: button.dataset.modelPoster || ""
+        };
+        title.textContent = currentModel.title;
+      }
       if (!isOpen()) {
         if (supportsModal) dialog.showModal();
         else dialog.setAttribute("open", "");
       }
       closeButton.focus({ preventScroll: true });
-      loadModel();
+      if (videoId) loadVideo();
+      else loadModel();
     });
 
     closeButton.addEventListener("click", dismiss);

@@ -8,12 +8,17 @@ description = 'Quadrotor builds and mechanical designs by Nuthasith Gerdpratoom,
 [featured]
 title = 'Four-fisheye quadcopter'
 context = 'SAFMC 2026 · NUS ECE Champion team'
-contribution = 'I designed and fabricated the 3D-printed camera frame, compute cage, and structural mounts.'
 image = '/images/charpi_vision_photo.png'
 imageAlt = 'The assembled quadcopter with white 3D-printed camera mounts and compute protection, and yellow propellers.'
 model = '/cad/charpi_vision.glb'
 poster = '/images/projects/charpi.jpg'
 story = 'https://cde.nus.edu.sg/ece/news/nus-ece-team-wins-champion-title-at-safmc-2026-high-speed-drone-flock-challenge/'
+
+[[designs]]
+title = 'OmniPallet: warehouse stock-counting drone'
+video = 'eD5jl--Ne0E'
+poster = '/images/projects/omnipallet.jpg'
+imageAlt = 'Simulated quadrotor with four fisheye cameras flying beside a warehouse pallet rack.'
 
 [[designs]]
 title = 'Compact four-fisheye quadcopter'
