@@ -1,0 +1,2500 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visual Paper Explainer — arXiv:2509.08177 | Quadrotor Navigation using RL with Privileged Information</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --bg-alt: #111827;
+      --surface: #161f33;
+      --surface-elevated: #1e2942;
+      --border: #2a3958;
+      --border-subtle: #1f2b44;
+      --ink: #f1f5f9;
+      --ink-secondary: #cbd5e1;
+      --muted: #94a3b8;
+      --brand: #38bdf8;
+      --brand-glow: rgba(56, 189, 248, 0.16);
+      --accent: #f59e0b;
+      --accent-glow: rgba(245, 158, 11, 0.15);
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.15);
+      --rose: #f43f5e;
+      --purple: #a855f7;
+      --radius: 14px;
+      --radius-sm: 8px;
+      --shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.45), 0 4px 12px -2px rgba(0, 0, 0, 0.3);
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", Helvetica, Arial, sans-serif;
+      --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --font-math: "Cambria Math", "STIX Two Math", "Latin Modern Math", Georgia, serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-sans);
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Sticky Top Navigation */
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(11, 15, 25, 0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .top-nav-inner {
+      max-width: 1220px;
+      margin: 0 auto;
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .arxiv-pill {
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      letter-spacing: 0.03em;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .nav-link {
+      color: var(--ink-secondary);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 11px;
+      border-radius: 6px;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .nav-link:hover, .nav-link:focus-visible {
+      background: var(--surface-elevated);
+      color: var(--brand);
+      outline: none;
+    }
+
+    /* Container & Section Layout */
+    .container {
+      max-width: 1220px;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+    }
+
+    /* Hero Header */
+    .hero {
+      background: radial-gradient(circle at 85% 20%, rgba(56, 189, 248, 0.13), transparent 45%),
+                  radial-gradient(circle at 15% 80%, rgba(168, 85, 247, 0.10), transparent 45%),
+                  var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 36px 32px;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--ink-secondary);
+    }
+
+    .tag-novel {
+      background: var(--brand-glow);
+      border-color: rgba(56, 189, 248, 0.4);
+      color: var(--brand);
+    }
+
+    .tag-cmu {
+      background: var(--accent-glow);
+      border-color: rgba(245, 158, 11, 0.4);
+      color: var(--accent);
+    }
+
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: clamp(24px, 3.2vw, 36px);
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-authors {
+      font-size: 15px;
+      color: var(--ink-secondary);
+      margin-bottom: 18px;
+    }
+
+    .hero-authors span {
+      color: var(--muted);
+      font-size: 13.5px;
+    }
+
+    .hero-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .ext-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      background: var(--surface-elevated);
+      color: var(--ink);
+      border: 1px solid var(--border);
+      transition: transform 0.12s, border-color 0.15s, background 0.15s;
+    }
+
+    .ext-btn:hover {
+      border-color: var(--brand);
+      background: rgba(56, 189, 248, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .ext-btn-primary {
+      background: var(--brand);
+      color: #061320;
+      border-color: var(--brand);
+    }
+
+    .ext-btn-primary:hover {
+      background: #7dd3fc;
+      color: #061320;
+    }
+
+    /* Headline KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .kpi-card {
+      background: rgba(17, 24, 39, 0.75);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 18px;
+    }
+
+    .kpi-val {
+      font-size: 28px;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      line-height: 1.15;
+      margin-bottom: 4px;
+    }
+
+    .kpi-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 2px;
+    }
+
+    .kpi-sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* Section Headers */
+    .section-block {
+      margin-bottom: 44px;
+      scroll-margin-top: 72px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sec-num {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: var(--brand-glow);
+      color: var(--brand);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+
+    .section-header h2 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: -0.01em;
+    }
+
+    .section-caption {
+      margin: 0;
+      font-size: 13.5px;
+      color: var(--muted);
+    }
+
+    /* Cards & Grids */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 20px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 18px;
+    }
+
+    .fig-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 3px 9px;
+      border-radius: 6px;
+      background: var(--surface-elevated);
+      color: var(--brand);
+      border: 1px solid var(--border);
+      margin-bottom: 10px;
+    }
+
+    .fig-title {
+      margin: 0 0 6px;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .fig-desc {
+      margin: 0 0 16px;
+      font-size: 13.5px;
+      color: var(--ink-secondary);
+    }
+
+    /* Interactive Controls */
+    .btn-group {
+      display: inline-flex;
+      background: var(--bg);
+      padding: 4px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .btn-tab {
+      font: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .btn-tab:hover {
+      color: var(--ink);
+    }
+
+    .btn-tab.active {
+      background: var(--surface-elevated);
+      color: var(--brand);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+
+    /* SVG & Canvas Containers */
+    .diagram-box {
+      background: var(--bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 16px;
+      overflow-x: auto;
+    }
+
+    svg {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Equation Cards */
+    .eq-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 16px;
+    }
+
+    .eq-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      transition: border-color 0.15s;
+    }
+
+    .eq-card:hover {
+      border-color: var(--brand);
+    }
+
+    .eq-card.novel {
+      border-left: 4px solid var(--brand);
+    }
+
+    .eq-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .eq-name {
+      font-weight: 700;
+      font-size: 14.5px;
+      color: var(--ink);
+    }
+
+    .eq-num {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--muted);
+      background: var(--bg);
+      padding: 2px 8px;
+      border-radius: 5px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .math-block {
+      background: var(--bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      font-family: var(--font-math);
+      font-size: 16px;
+      color: #f8fafc;
+      overflow-x: auto;
+      text-align: center;
+      letter-spacing: 0.01em;
+    }
+
+    .math-block var {
+      font-style: italic;
+      font-family: var(--font-math);
+    }
+
+    .math-block b {
+      font-weight: 700;
+      font-family: var(--font-math);
+    }
+
+    .eq-explain {
+      font-size: 12.5px;
+      color: var(--ink-secondary);
+      margin: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .sym-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--surface-elevated);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 11.5px;
+      color: var(--ink-secondary);
+    }
+
+    .sym-pill code {
+      font-family: var(--font-math);
+      color: var(--brand);
+      font-weight: 700;
+    }
+
+    /* Tables */
+    .table-wrapper {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+    }
+
+    th, td {
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    th {
+      background: var(--surface-elevated);
+      color: var(--ink-secondary);
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    td.num, th.num {
+      text-align: right;
+      font-family: var(--font-mono);
+    }
+
+    tbody tr:hover {
+      background: rgba(56, 189, 248, 0.06);
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Sliders & Controls */
+    .control-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+      background: var(--surface-elevated);
+      padding: 10px 14px;
+      border-radius: 8px;
+    }
+
+    .control-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      color: var(--ink-secondary);
+    }
+
+    .control-item input[type="range"] {
+      accent-color: var(--brand);
+      cursor: pointer;
+    }
+
+    /* Legend Pills */
+    .legend-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      font-size: 12.5px;
+      color: var(--ink-secondary);
+      margin-top: 10px;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 5px;
+    }
+
+    /* Bar visual inside table */
+    .speed-bar-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .speed-bar {
+      width: 64px;
+      height: 6px;
+      background: var(--surface-elevated);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .speed-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--brand), var(--emerald));
+      border-radius: 999px;
+    }
+
+    @media (max-width: 768px) {
+      .hero {
+        padding: 24px 18px;
+      }
+      .grid-2, .grid-3, .eq-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+<style data-link-removed-style>a[data-link-removed],a[href*="zPythonSafez"]:not([onclick]){pointer-events:none!important;cursor:default!important;opacity:.6}</style></head>
+<body>
+
+  <!-- Sticky Navigation -->
+  <nav class="top-nav" aria-label="Paper sections">
+    <div class="top-nav-inner">
+      <a href="#top" class="brand-badge">
+        <span class="arxiv-pill">arXiv:2509.08177</span>
+        <span>Visual Paper Explainer</span>
+      </a>
+      <div class="nav-links">
+        <a href="#fig1-2" class="nav-link">Fig 1–2: Problem &amp; Diff Sim</a>
+        <a href="#fig3" class="nav-link">Fig 3: Network</a>
+        <a href="#fig4-5" class="nav-link">Fig 4–5: ToA Maps</a>
+        <a href="#equations" class="nav-link">Eq 1–15 &amp; Table I</a>
+        <a href="#fig6-8" class="nav-link">Fig 6–8: Sim Plots</a>
+        <a href="#fig9-11" class="nav-link">Fig 9–11 &amp; Tables II–III: Hardware</a>
+      </div>
+    </div>
+  </nav>
+
+  <main id="top" class="container">
+
+    <!-- HERO SECTION -->
+    <header class="hero">
+      <div class="hero-eyebrow">
+        <span class="tag tag-cmu">Carnegie Mellon University · Robotics Institute</span>
+        <span class="tag tag-novel">Reinforcement Learning + Privileged Information</span>
+        <span class="tag">Submitted Sep 9, 2025 · Revised Mar 5, 2026</span>
+      </div>
+      <h1>Quadrotor Navigation using Reinforcement Learning with Privileged Information</h1>
+      <div class="hero-authors">
+        Jonathan Lee, Abhishek Rathod, Kshitij Goel, John Stecklein, and Wennie Tabib<br>
+        <span>Visual breakdown of every figure, architecture diagram, equation (Eq. 1–15), plot, and benchmark table (Tables I–III).</span>
+      </div>
+
+      <div class="hero-links">
+        <a href="https://arxiv.org/pdf/2509.08177" target="_blank" rel="noopener" class="ext-btn ext-btn-primary">
+          &#128196; Read PDF (arXiv:2509.08177)
+        </a>
+        <a href="https://arxiv.org/html/2509.08177v2" target="_blank" rel="noopener" class="ext-btn">
+          &#127760; arXiv HTML (v2)
+        </a>
+        <a href="https://github.com/rislab/depthnav" target="_blank" rel="noopener" class="ext-btn">
+          &#128187; Code: github.com/rislab/depthnav
+        </a>
+        <a href="https://www.kshitijgoel.com/projects/quadrotor-navigation-rl-2026/" target="_blank" rel="noopener" class="ext-btn">
+          &#127919; Project Page
+        </a>
+        <a rel="noopener" class="ext-btn" data-link-removed aria-disabled="true" role="link" title="Link removed: its address didn't come from this conversation.">
+          &#9654; Experiment Video (YouTube)
+        </a>
+      </div>
+
+      <!-- Headline Metrics -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-val" style="color: var(--emerald);">86%</div>
+          <div class="kpi-label">Simulation Success Rate</div>
+          <div class="kpi-sub">Across 1,350 trials in 11 unseen 3D environments (Fig. 7)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val" style="color: var(--brand);">+34% to +36%</div>
+          <div class="kpi-label">Outperforms Baselines</div>
+          <div class="kpi-sub">Over BNL [2] (50% total) &amp; Yaw w/o ToA (52% total)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val" style="color: var(--accent);">589 m / 20</div>
+          <div class="kpi-label">Collision-Free Outdoor Flights</div>
+          <div class="kpi-sub">0 crashes across 20 day/night &amp; forest trials up to 4.0 m/s (Table III)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val" style="color: var(--purple);">~0 ms vs 200 ms</div>
+          <div class="kpi-label">Attitude Control Latency</div>
+          <div class="kpi-sub">Body-rate feedback &omega;<sub>d</sub> eliminates 200 ms lag (Fig. 6)</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- SECTION 1: FIGURES 1 & 2 -->
+    <section id="fig1-2" class="section-block">
+      <div class="section-header">
+        <div class="section-title-group">
+          <span class="sec-num">FIG. 1 &amp; FIG. 2</span>
+          <h2>Core Idea: Escaping Large Obstacles &amp; Differentiable Physics</h2>
+        </div>
+        <p class="section-caption">Why prior RL methods fail on large walls/corners, and how analytical gradients train the policy.</p>
+      </div>
+
+      <div class="grid-2">
+        <!-- Fig 1 Card -->
+        <div class="card">
+          <span class="fig-badge">Fig. 1 &amp; Fig. 8 Concept · Interactive Trajectory Comparison</span>
+          <h3 class="fig-title">Why Fixed-Heading &amp; Local Losses Fail vs. Proposed (Yaw + ToA)</h3>
+          <p class="fig-desc">
+            Select a policy below to see how it behaves when a large concave wall blocks the direct line-of-sight to the goal.
+          </p>
+
+          <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <div class="btn-group" role="tablist" aria-label="Policy trajectory selector">
+              <button type="button" class="btn-tab" data-traj="bnl" onclick="setTrajMode('bnl')">(a) BNL [2] (Fixed Yaw) &#10007;</button>
+              <button type="button" class="btn-tab" data-traj="notoa" onclick="setTrajMode('notoa')">(b) Yaw w/o ToA &#10007;</button>
+              <button type="button" class="btn-tab active" data-traj="ours" onclick="setTrajMode('ours')">(c) Ours (Yaw + ToA) &#10003;</button>
+            </div>
+          </div>
+
+          <div class="diagram-box">
+            <svg id="fig1-svg" viewBox="0 0 520 270" aria-label="Interactive trajectory comparison around a large obstacle">
+              <defs>
+                <radialGradient id="goalGlow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#f43f5e" stop-opacity="0.6"/>
+                  <stop offset="100%" stop-color="#f43f5e" stop-opacity="0"/>
+                </radialGradient>
+                <marker id="arrowCyan" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8"/>
+                </marker>
+                <marker id="arrowAmber" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b"/>
+                </marker>
+              </defs>
+
+              <!-- Background Grid -->
+              <g stroke="#1e293b" stroke-width="1">
+                <line x1="0" y1="45" x2="520" y2="45"/><line x1="0" y1="90" x2="520" y2="90"/>
+                <line x1="0" y1="135" x2="520" y2="135"/><line x1="0" y1="180" x2="520" y2="180"/>
+                <line x1="0" y1="225" x2="520" y2="225"/>
+                <line x1="80" y1="0" x2="80" y2="270"/><line x1="160" y1="0" x2="160" y2="270"/>
+                <line x1="240" y1="0" x2="240" y2="270"/><line x1="320" y1="0" x2="320" y2="270"/>
+                <line x1="400" y1="0" x2="400" y2="270"/><line x1="480" y1="0" x2="480" y2="270"/>
+              </g>
+
+              <!-- Subtle ToA Gradient Arrows (shown in 'ours' mode) -->
+              <g id="toa-field-layer" opacity="0.85">
+                <path d="M 100 110 L 145 72" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrowCyan)"/>
+                <path d="M 175 52 L 245 36" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrowCyan)"/>
+                <path d="M 285 36 L 355 55" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrowCyan)"/>
+                <path d="M 380 78 L 425 115" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrowCyan)"/>
+                <text x="260" y="22" fill="#38bdf8" font-size="11" font-family="monospace" text-anchor="middle">Privileged ToA Gradient -&nabla;T(x) (Training Only)</text>
+              </g>
+
+              <!-- Large Concave Wall Obstacle -->
+              <path d="M 210 70 L 295 70 L 295 205 L 210 205 L 210 175 L 265 175 L 265 100 L 210 100 Z"
+                    fill="#334155" stroke="#64748b" stroke-width="2"/>
+              <text x="280" y="142" fill="#cbd5e1" font-size="11" font-weight="600" text-anchor="middle" transform="rotate(-90 280 142)">LARGE CONCAVE WALL</text>
+
+              <!-- Start & Goal Markers -->
+              <circle cx="65" cy="138" r="9" fill="#3b82f6" stroke="#fff" stroke-width="2"/>
+              <text x="65" y="164" fill="#93c5fd" font-size="11.5" font-weight="700" text-anchor="middle">START</text>
+
+              <circle cx="455" cy="138" r="22" fill="url(#goalGlow)"/>
+              <circle cx="455" cy="138" r="9" fill="#f43f5e" stroke="#fff" stroke-width="2"/>
+              <text x="455" y="164" fill="#fda4af" font-size="11.5" font-weight="700" text-anchor="middle">GOAL</text>
+
+              <!-- Trajectory 1: BNL (Fixed Heading -> Crash/Stuck) -->
+              <g id="traj-bnl" style="display:none;">
+                <path d="M 65 138 Q 150 138 258 138" fill="none" stroke="#f43f5e" stroke-width="3.5" stroke-dasharray="6,4"/>
+                <!-- Camera FOV cones pointing strictly at Goal -->
+                <polygon points="140,138 175,123 175,153" fill="rgba(244,63,94,0.25)" stroke="#f43f5e" stroke-width="1"/>
+                <polygon points="215,138 250,123 250,153" fill="rgba(244,63,94,0.25)" stroke="#f43f5e" stroke-width="1"/>
+                <circle cx="258" cy="138" r="7" fill="#f43f5e"/>
+                <text x="250" y="125" fill="#fda4af" font-size="12" font-weight="700" text-anchor="end">&#10060; Collision / Local Minimum</text>
+              </g>
+
+              <!-- Trajectory 2: Yaw w/o ToA (Turns, but gets trapped in concave pocket) -->
+              <g id="traj-notoa" style="display:none;">
+                <path d="M 65 138 C 130 138, 180 115, 235 120 C 258 125, 255 158, 225 158 C 195 158, 205 132, 238 142"
+                      fill="none" stroke="#f59e0b" stroke-width="3.5"/>
+                <polygon points="235,120 262,108 262,130" fill="rgba(245,158,11,0.25)" stroke="#f59e0b" stroke-width="1"/>
+                <circle cx="238" cy="142" r="6" fill="#f59e0b"/>
+                <text x="195" y="232" fill="#fcd34d" font-size="12" font-weight="700" text-anchor="middle">&#9201; Timeout in Concave Trap (No Global ToA Cue)</text>
+              </g>
+
+              <!-- Trajectory 3: Ours (Yaw + ToA) -->
+              <g id="traj-ours">
+                <path d="M 65 138 C 110 120, 155 48, 260 46 C 365 44, 405 115, 446 136"
+                      fill="none" stroke="#10b981" stroke-width="4"/>
+                <!-- Camera FOV cones aligned with velocity (L_yaw) -->
+                <polygon points="135,88 155,62 172,78" fill="rgba(16,185,129,0.28)" stroke="#10b981" stroke-width="1.2"/>
+                <polygon points="260,46 292,34 292,56" fill="rgba(16,185,129,0.28)" stroke="#10b981" stroke-width="1.2"/>
+                <polygon points="375,85 406,96 392,114" fill="rgba(16,185,129,0.28)" stroke="#10b981" stroke-width="1.2"/>
+                <text x="260" y="250" fill="#6ee7b7" font-size="12" font-weight="700" text-anchor="middle">&#10003; Yaws along velocity (L_yaw) &amp; routes around wall (ToA)</text>
+              </g>
+            </svg>
+          </div>
+
+          <div id="traj-caption-box" style="margin-top: 12px; font-size: 13px; color: var(--ink-secondary); background: var(--surface-elevated); padding: 10px 14px; border-radius: 8px;">
+            <strong style="color: var(--emerald);">Ours (Yaw + ToA):</strong> During training, the ToA map gradient <code style="color:var(--brand)">-&nabla;T(x)</code> sets the target velocity direction around the wall, while <code style="color:var(--brand)">L<sub>yaw</sub></code> aligns the depth camera (<code style="color:var(--brand)">x<sup>B</sup></code>) with the flight path. At test time, no map is needed!
+          </div>
+        </div>
+
+        <!-- Fig 2 Card -->
+        <div class="card">
+          <span class="fig-badge">Fig. 2 · Differentiable Dynamics Rollout &amp; Backprop</span>
+          <h3 class="fig-title">Analytical Policy Gradients (APG) Through Physics</h3>
+          <p class="fig-desc">
+            Unlike sample-inefficient model-free RL (e.g., PPO) or expensive expert imitation, the system dynamics <var>s<sub>k+1</sub> = f(s<sub>k</sub>, u<sub>k</sub>)</var> are differentiable, allowing direct backpropagation of step losses <var>L<sub>k</sub></var> through time.
+          </p>
+
+          <div class="diagram-box">
+            <svg viewBox="0 0 540 270" aria-label="Figure 2 Differentiable dynamics rollout diagram">
+              <defs>
+                <marker id="fwdArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8"/>
+                </marker>
+                <marker id="gradArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#f43f5e"/>
+                </marker>
+              </defs>
+
+              <!-- Legend Top -->
+              <line x1="20" y1="20" x2="55" y2="20" stroke="#94a3b8" stroke-width="2" marker-end="url(#fwdArrow)"/>
+              <text x="62" y="24" fill="#cbd5e1" font-size="11.5">Forward Simulation Rollout</text>
+              <line x1="250" y1="20" x2="285" y2="20" stroke="#f43f5e" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#gradArrow)"/>
+              <text x="292" y="24" fill="#fda4af" font-size="11.5">Analytical Policy Gradient (BPTT)</text>
+
+              <!-- Recurrent Hidden State Row -->
+              <rect x="25" y="55" width="70" height="34" rx="6" fill="#1e2942" stroke="#38bdf8" stroke-width="1.5"/>
+              <text x="60" y="76" fill="#38bdf8" font-size="12" font-weight="700" text-anchor="middle">h<tspan baseline-shift="sub" font-size="9">k-1</tspan></text>
+
+              <line x1="95" y1="72" x2="165" y2="72" stroke="#94a3b8" stroke-width="2" marker-end="url(#fwdArrow)"/>
+
+              <!-- Policy Node -->
+              <rect x="170" y="48" width="115" height="48" rx="8" fill="#0284c7" stroke="#38bdf8" stroke-width="2"/>
+              <text x="227" y="70" fill="#fff" font-size="13" font-weight="700" text-anchor="middle">Policy &pi;<tspan baseline-shift="sub" font-size="9">&theta;</tspan></text>
+              <text x="227" y="86" fill="#e0f2fe" font-size="10.5" text-anchor="middle">(GRU + Extractors)</text>
+
+              <line x1="285" y1="72" x2="355" y2="72" stroke="#94a3b8" stroke-width="2" marker-end="url(#fwdArrow)"/>
+
+              <rect x="360" y="55" width="70" height="34" rx="6" fill="#1e2942" stroke="#38bdf8" stroke-width="1.5"/>
+              <text x="395" y="76" fill="#38bdf8" font-size="12" font-weight="700" text-anchor="middle">h<tspan baseline-shift="sub" font-size="9">k</tspan></text>
+
+              <!-- Observation o_k & Action u_k -->
+              <rect x="105" y="122" width="68" height="30" rx="6" fill="#161f33" stroke="#64748b"/>
+              <text x="139" y="141" fill="#e2e8f0" font-size="12" font-weight="600" text-anchor="middle">Obs o<tspan baseline-shift="sub" font-size="9">k</tspan></text>
+              <path d="M 139 122 L 190 96" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#fwdArrow)"/>
+
+              <rect x="275" y="122" width="110" height="32" rx="6" fill="#161f33" stroke="#10b981" stroke-width="1.5"/>
+              <text x="330" y="142" fill="#6ee7b7" font-size="12" font-weight="700" text-anchor="middle">Action u<tspan baseline-shift="sub" font-size="9">k</tspan> = [t<tspan baseline-shift="sub" font-size="9">k</tspan>, &psi;<tspan baseline-shift="sub" font-size="9">k</tspan>]</text>
+              <path d="M 265 96 L 310 122" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#fwdArrow)"/>
+
+              <!-- Dynamics Row -->
+              <rect x="25" y="185" width="80" height="38" rx="6" fill="#1e2942" stroke="#94a3b8"/>
+              <text x="65" y="208" fill="#f1f5f9" font-size="12.5" font-weight="700" text-anchor="middle">State s<tspan baseline-shift="sub" font-size="9">k</tspan></text>
+
+              <path d="M 65 185 L 125 152" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#fwdArrow)"/>
+              <line x1="105" y1="204" x2="175" y2="204" stroke="#94a3b8" stroke-width="2" marker-end="url(#fwdArrow)"/>
+
+              <rect x="180" y="180" width="145" height="48" rx="8" fill="#1e1b4b" stroke="#a855f7" stroke-width="2"/>
+              <text x="252" y="202" fill="#f3e8ff" font-size="12.5" font-weight="700" text-anchor="middle">Diff. Dynamics f(s<tspan baseline-shift="sub" font-size="9">k</tspan>, u<tspan baseline-shift="sub" font-size="9">k</tspan>)</text>
+              <text x="252" y="218" fill="#d8b4fe" font-size="10.5" text-anchor="middle">Point-Mass (Eq. 1–3)</text>
+
+              <path d="M 330 154 L 285 180" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#fwdArrow)"/>
+              <line x1="325" y1="204" x2="415" y2="204" stroke="#94a3b8" stroke-width="2" marker-end="url(#fwdArrow)"/>
+
+              <rect x="420" y="185" width="90" height="38" rx="6" fill="#1e2942" stroke="#94a3b8"/>
+              <text x="465" y="208" fill="#f1f5f9" font-size="12.5" font-weight="700" text-anchor="middle">State s<tspan baseline-shift="sub" font-size="9">k+1</tspan></text>
+
+              <!-- Loss Node -->
+              <rect x="425" y="110" width="90" height="42" rx="8" fill="#3f1d2e" stroke="#f43f5e" stroke-width="2"/>
+              <text x="470" y="130" fill="#fda4af" font-size="12.5" font-weight="700" text-anchor="middle">Loss L<tspan baseline-shift="sub" font-size="9">k</tspan></text>
+              <text x="470" y="144" fill="#fecdd3" font-size="10" text-anchor="middle">(Eq. 14)</text>
+
+              <line x1="385" y1="135" x2="420" y2="135" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#fwdArrow)"/>
+              <path d="M 465 185 L 465 156" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#fwdArrow)"/>
+
+              <!-- Backward Analytical Gradients -->
+              <path d="M 425 122 C 370 100, 330 105, 290 88" fill="none" stroke="#f43f5e" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#gradArrow)"/>
+              <path d="M 450 152 L 330 185" fill="none" stroke="#f43f5e" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#gradArrow)"/>
+              <path d="M 225 180 L 110 200" fill="none" stroke="#f43f5e" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#gradArrow)"/>
+              <text x="368" y="102" fill="#fda4af" font-size="10.5" font-family="monospace">&part;L<tspan baseline-shift="sub" font-size="8">k</tspan>/&part;u<tspan baseline-shift="sub" font-size="8">k</tspan></text>
+              <text x="395" y="176" fill="#fda4af" font-size="10.5" font-family="monospace">&part;L<tspan baseline-shift="sub" font-size="8">k</tspan>/&part;s<tspan baseline-shift="sub" font-size="8">k+1</tspan></text>
+            </svg>
+          </div>
+
+          <div style="margin-top: 12px; font-size: 13px; color: var(--ink-secondary); background: var(--surface-elevated); padding: 10px 14px; border-radius: 8px;">
+            <strong style="color: var(--brand);">Key Advantage:</strong> Even a single trajectory rollout provides an exact analytical gradient <code style="color:var(--ink)">&part;L/&part;&theta;</code> via Backpropagation Through Time (BPTT) with temporal gradient decay (batch size 16, 10K iterations).
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: FIGURE 3 (NETWORK ARCHITECTURE) -->
+    <section id="fig3" class="section-block">
+      <div class="section-header">
+        <div class="section-title-group">
+          <span class="sec-num">FIG. 3</span>
+          <h2>End-to-End Neural Network Architecture</h2>
+        </div>
+        <p class="section-caption">Three dedicated feature extractors project inputs into 192-D embeddings, LayerNorm + Sum into a GRUCell.</p>
+      </div>
+
+      <div class="card">
+        <span class="fig-badge">Fig. 3 · Complete Tensor Shapes &amp; Layer Pipeline</span>
+        <h3 class="fig-title">Single-Network Planning &amp; Control Policy</h3>
+        <p class="fig-desc">
+          Unlike Zhang et al. [2], this architecture uses a dedicated <strong>Target Extractor</strong> incorporating <em>goal importance</em> (<var>1 / d<sub>goal</sub></var> so the network knows whether the goal is in front of or behind an obstacle in the depth map), applies <strong>LayerNorm</strong> before summing, and predicts <strong>Yaw <var>&psi;<sub>k</sub></var></strong> alongside 3D mass-normalized thrust <var>t<sub>k</sub></var>.
+        </p>
+
+        <div class="diagram-box">
+          <svg viewBox="0 0 980 310" aria-label="Figure 3 Network Architecture Diagram">
+            <defs>
+              <marker id="netArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b"/>
+              </marker>
+              <marker id="netArrowCyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8"/>
+              </marker>
+            </defs>
+
+            <!-- BRANCH 1: Depth Image -->
+            <rect x="20" y="24" width="145" height="68" rx="8" fill="#161f33" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="92" y="48" fill="#38bdf8" font-size="13" font-weight="700" text-anchor="middle">Depth Image</text>
+            <text x="92" y="65" fill="#94a3b8" font-size="11" font-family="monospace" text-anchor="middle">Shape: (B, 64, 64)</text>
+            <text x="92" y="81" fill="#64748b" font-size="10" text-anchor="middle">Inverted + Max-Pooled</text>
+
+            <line x1="165" y1="58" x2="205" y2="58" stroke="#64748b" stroke-width="2" marker-end="url(#netArrow)"/>
+
+            <rect x="210" y="30" width="135" height="56" rx="8" fill="#1e2942" stroke="#475569"/>
+            <text x="277" y="55" fill="#f1f5f9" font-size="12.5" font-weight="700" text-anchor="middle">Depth Extractor</text>
+            <text x="277" y="72" fill="#94a3b8" font-size="11" text-anchor="middle">CNN + Flatten</text>
+
+            <line x1="345" y1="58" x2="385" y2="58" stroke="#64748b" stroke-width="2" marker-end="url(#netArrow)"/>
+
+            <rect x="390" y="32" width="135" height="52" rx="8" fill="#1e2942" stroke="#38bdf8"/>
+            <text x="457" y="54" fill="#e2e8f0" font-size="12" font-weight="600" text-anchor="middle">Linear &rarr; LayerNorm</text>
+            <text x="457" y="71" fill="#38bdf8" font-size="11" font-family="monospace" text-anchor="middle">Dim: (B, 192)</text>
+
+            <!-- BRANCH 2: Target Vector -->
+            <rect x="20" y="118" width="145" height="72" rx="8" fill="#161f33" stroke="#f59e0b" stroke-width="1.5"/>
+            <text x="92" y="140" fill="#f59e0b" font-size="13" font-weight="700" text-anchor="middle">Target Input</text>
+            <text x="92" y="157" fill="#cbd5e1" font-size="11" text-anchor="middle">Velocity + 1/d<tspan baseline-shift="sub" font-size="8">goal</tspan></text>
+            <text x="92" y="175" fill="#94a3b8" font-size="11" font-family="monospace" text-anchor="middle">Shape: (B, 4)</text>
+
+            <line x1="165" y1="154" x2="205" y2="154" stroke="#64748b" stroke-width="2" marker-end="url(#netArrow)"/>
+
+            <rect x="210" y="126" width="135" height="56" rx="8" fill="#1e2942" stroke="#475569"/>
+            <text x="277" y="151" fill="#f1f5f9" font-size="12.5" font-weight="700" text-anchor="middle">Target Extractor</text>
+            <text x="277" y="168" fill="#94a3b8" font-size="11" text-anchor="middle">MLP Projection</text>
+
+            <line x1="345" y1="154" x2="385" y2="154" stroke="#64748b" stroke-width="2" marker-end="url(#netArrow)"/>
+
+            <rect x="390" y="128" width="135" height="52" rx="8" fill="#1e2942" stroke="#f59e0b"/>
+            <text x="457" y="150" fill="#e2e8f0" font-size="12" font-weight="600" text-anchor="middle">Linear &rarr; LayerNorm</text>
+            <text x="457" y="167" fill="#f59e0b" font-size="11" font-family="monospace" text-anchor="middle">Dim: (B, 192)</text>
+
+            <!-- BRANCH 3: Robot State -->
+            <rect x="20" y="214" width="145" height="72" rx="8" fill="#161f33" stroke="#a855f7" stroke-width="1.5"/>
+            <text x="92" y="236" fill="#c084fc" font-size="13" font-weight="700" text-anchor="middle">Robot State</text>
+            <text x="92" y="253" fill="#cbd5e1" font-size="11" text-anchor="middle">Velocity + Orientation</text>
+            <text x="92" y="271" fill="#94a3b8" font-size="11" font-family="monospace" text-anchor="middle">Shape: (B, 7)</text>
+
+            <line x1="165" y1="250" x2="205" y2="250" stroke="#64748b" stroke-width="2" marker-end="url(#netArrow)"/>
+
+            <rect x="210" y="222" width="135" height="56" rx="8" fill="#1e2942" stroke="#475569"/>
+            <text x="277" y="247" fill="#f1f5f9" font-size="12.5" font-weight="700" text-anchor="middle">State Extractor</text>
+            <text x="277" y="264" fill="#94a3b8" font-size="11" text-anchor="middle">MLP Projection</text>
+
+            <line x1="345" y1="250" x2="385" y2="250" stroke="#64748b" stroke-width="2" marker-end="url(#netArrow)"/>
+
+            <rect x="390" y="224" width="135" height="52" rx="8" fill="#1e2942" stroke="#a855f7"/>
+            <text x="457" y="246" fill="#e2e8f0" font-size="12" font-weight="600" text-anchor="middle">Linear &rarr; LayerNorm</text>
+            <text x="457" y="263" fill="#c084fc" font-size="11" font-family="monospace" text-anchor="middle">Dim: (B, 192)</text>
+
+            <!-- Element-wise Sum Node -->
+            <path d="M 525 58 L 578 135" stroke="#64748b" stroke-width="2" marker-end="url(#netArrow)"/>
+            <line x1="525" y1="154" x2="565" y2="154" stroke="#64748b" stroke-width="2" marker-end="url(#netArrow)"/>
+            <path d="M 525 250 L 578 173" stroke="#64748b" stroke-width="2" marker-end="url(#netArrow)"/>
+
+            <circle cx="592" cy="154" r="22" fill="#0284c7" stroke="#38bdf8" stroke-width="2"/>
+            <text x="592" y="161" fill="#fff" font-size="22" font-weight="700" text-anchor="middle">&plus;</text>
+            <text x="592" y="195" fill="#94a3b8" font-size="10.5" font-family="monospace" text-anchor="middle">Sum (192)</text>
+
+            <line x1="614" y1="154" x2="655" y2="154" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#netArrowCyan)"/>
+
+            <!-- GRU Cell -->
+            <rect x="660" y="114" width="120" height="80" rx="10" fill="#1e1b4b" stroke="#38bdf8" stroke-width="2"/>
+            <text x="720" y="148" fill="#fff" font-size="14" font-weight="800" text-anchor="middle">GRUCell</text>
+            <text x="720" y="166" fill="#38bdf8" font-size="11" font-family="monospace" text-anchor="middle">Hidden: (192)</text>
+            <text x="720" y="182" fill="#94a3b8" font-size="10" text-anchor="middle">Temporal Memory</text>
+
+            <!-- Recurrent loop on GRU -->
+            <path d="M 700 114 C 690 72, 750 72, 740 114" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-dasharray="3,3" marker-end="url(#netArrowCyan)"/>
+            <text x="720" y="74" fill="#38bdf8" font-size="11" font-family="monospace" text-anchor="middle">h<tspan baseline-shift="sub" font-size="8">k-1</tspan> &rarr; h<tspan baseline-shift="sub" font-size="8">k</tspan></text>
+
+            <line x1="780" y1="154" x2="820" y2="154" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#netArrowCyan)"/>
+
+            <!-- Output Linear Head -->
+            <rect x="825" y="96" width="135" height="116" rx="10" fill="#064e3b" stroke="#10b981" stroke-width="2"/>
+            <text x="892" y="122" fill="#a7f3d0" font-size="12" font-weight="700" text-anchor="middle">Linear Output Head</text>
+            <rect x="840" y="132" width="105" height="32" rx="5" fill="#042f2e" stroke="#10b981"/>
+            <text x="892" y="152" fill="#fff" font-size="12" font-weight="700" font-family="monospace" text-anchor="middle">Thrust t<tspan baseline-shift="sub" font-size="8">k</tspan> (B,3)</text>
+            <rect x="840" y="170" width="105" height="32" rx="5" fill="#042f2e" stroke="#f59e0b"/>
+            <text x="892" y="190" fill="#fcd34d" font-size="12" font-weight="700" font-family="monospace" text-anchor="middle">Yaw &psi;<tspan baseline-shift="sub" font-size="8">k</tspan> (B,1)</text>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: FIGURES 4 & 5 (PRIVILEGED TOA MAP & CYLINDRICAL TRAINING ENV) -->
+    <section id="fig4-5" class="section-block">
+      <div class="section-header">
+        <div class="section-title-group">
+          <span class="sec-num">FIG. 4 &amp; FIG. 5</span>
+          <h2>Privileged Information: Time-of-Arrival (ToA) Maps &amp; Training Arena</h2>
+        </div>
+        <p class="section-caption">Solving the Eikonal equation |&nabla;T(x)|F(x) = 1 via Fast Marching Method (FMM) for shortest-path supervision.</p>
+      </div>
+
+      <div class="grid-2">
+        <!-- Fig 4 Card: Interactive ToA Heatmap & FMM Gradient Field -->
+        <div class="card">
+          <span class="fig-badge">Fig. 4(a) &amp; 4(b) · Interactive Fast Marching Method (FMM) Map</span>
+          <h3 class="fig-title">Time-of-Arrival Heatmap <var>T(x)</var> &amp; Shortest-Path Gradients</h3>
+          <p class="fig-desc">
+            Local ESDF maps only push the robot away from walls, trapping it in concave rooms. The ToA map propagates wavefront travel time from the red goal using speed <var>F(x)</var> (Eq. 12), so <var>-&nabla;T(x)</var> guides trajectories smoothly around corners.
+          </p>
+
+          <div class="control-row">
+            <label class="control-item">
+              <input type="checkbox" id="toggle-fmm-arrows" checked onchange="drawFig4Canvas()">
+              <span>Show Gradient Field <code style="color:var(--brand)">-&nabla;T(x)</code> (Fig. 4a)</span>
+            </label>
+            <label class="control-item">
+              <input type="checkbox" id="toggle-fmm-paths" checked onchange="drawFig4Canvas()">
+              <span>Show Shortest Paths from Starts (Fig. 4b)</span>
+            </label>
+          </div>
+
+          <div class="diagram-box" style="text-align:center;">
+            <canvas id="fig4-canvas" width="480" height="260" style="max-width:100%; border-radius:8px; cursor:crosshair;" title="Click anywhere in free space to spawn a new test trajectory along the ToA gradient!"></canvas>
+            <div class="legend-bar" style="justify-content:center;">
+              <span><span class="legend-dot" style="background:#ef4444;"></span>Goal (<var>T = 0</var>)</span>
+              <span><span class="legend-dot" style="background:#22c55e;"></span>Start Points</span>
+              <span><span class="legend-dot" style="background:linear-gradient(90deg, #fde047, #1d4ed8); width:28px; border-radius:4px;"></span>ToA Travel Time <var>T(x)</var> (Low &rarr; High)</span>
+              <span style="color:var(--brand); font-weight:600;">&#128070; Click canvas to trace a path!</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fig 5 Card: Cylindrical Training Environment -->
+        <div class="card">
+          <span class="fig-badge">Fig. 5 · Multi-Agent GPU Training Environment</span>
+          <h3 class="fig-title">Top-Down Cylindrical Training Arena (<var>r<sub>cyl</sub> = 12.5</var> m)</h3>
+          <p class="fig-desc">
+            Trained in a customized VisFly + Habitat-Sim simulator with pre-generated random primitives (spheres, cylinders, cuboids). Agents spawn on a <var>12.5</var> m circle (<var>&theta; &sim; U(0, 2&pi;)</var>) and converge to the center goal (<var>blue</var>).
+          </p>
+
+          <div class="control-row" style="justify-content:space-between;">
+            <span style="font-size:12.5px; color:var(--ink-secondary);">Curriculum: 500 iters empty warmup &rarr; 10K iters full obstacles (Batch 16)</span>
+            <button type="button" class="btn-tab active" onclick="regenerateFig5()" style="border:1px solid var(--brand);">
+              &#8635; Sample Random Rollouts
+            </button>
+          </div>
+
+          <div class="diagram-box" style="text-align:center;">
+            <canvas id="fig5-canvas" width="480" height="260" style="max-width:100%; border-radius:8px;"></canvas>
+            <div class="legend-bar" style="justify-content:center;">
+              <span><span class="legend-dot" style="background:#facc15;"></span>Outer Spawn Ring (<var>r<sub>cyl</sub> = 12.5</var> m)</span>
+              <span><span class="legend-dot" style="background:#38bdf8;"></span>Center Goal</span>
+              <span><span class="legend-dot" style="background:#64748b;"></span>Random Boxes / Cylinders / Spheres</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: ALL EQUATIONS (EQ. 1–15) & TABLE I -->
+    <section id="equations" class="section-block">
+      <div class="section-header">
+        <div class="section-title-group">
+          <span class="sec-num">EQ. 1–15 &amp; TABLE I</span>
+          <h2>Mathematical Formulation, Loss Functions &amp; Interactive Curve Explorer</h2>
+        </div>
+        <p class="section-caption">Every equation from Section III of the paper, plus interactive plots of Eq. 4 (Clearance Loss) and Eq. 12 (Eikonal Speed).</p>
+      </div>
+
+      <!-- Equations Grid -->
+      <div class="eq-grid" style="margin-bottom: 22px;">
+        <!-- Eq 1-3 -->
+        <div class="eq-card">
+          <div>
+            <div class="eq-header">
+              <span class="eq-name">Differentiable Point-Mass Dynamics</span>
+              <span class="eq-num">Eq. (1)–(3)</span>
+            </div>
+            <div class="math-block">
+              <b>a</b><sub>k</sub> = <b>t</b><sub>k</sub> &minus; <var>g</var><b>z</b><sup>W</sup>, &nbsp;&nbsp;
+              <b>v</b><sub>k+1</sub> = <b>v</b><sub>k</sub> + <b>a</b><sub>k</sub>&Delta;<var>t</var>, &nbsp;&nbsp;
+              <b>p</b><sub>k+1</sub> = <b>p</b><sub>k</sub> + <b>v</b><sub>k</sub>&Delta;<var>t</var> + &frac12;<b>a</b><sub>k</sub>&Delta;<var>t</var><sup>2</sup>
+            </div>
+          </div>
+          <p class="eq-explain">
+            <span class="sym-pill"><code>t<sub>k</sub> &isin; &Ropf;<sup>3</sup></code> Mass-normalized thrust</span>
+            <span class="sym-pill"><code>&psi;<sub>k</sub> &isin; &Ropf;</code> Predicted yaw</span>
+            <span class="sym-pill"><code>z<sup>B</sup> &parallel; t<sub>k</sub></code> Body z-axis</span>
+          </p>
+        </div>
+
+        <!-- Eq 4-5 -->
+        <div class="eq-card">
+          <div>
+            <div class="eq-header">
+              <span class="eq-name">Obstacle Avoidance Losses</span>
+              <span class="eq-num">Eq. (4)–(5)</span>
+            </div>
+            <div class="math-block">
+              <var>L</var><sub>clearance</sub> = <var>T</var><sup>&minus;1</sup> &Sigma;<sub>k</sub> &beta;<sub>1</sub> ln(1 + <var>e</var><sup>&beta;<sub>2</sub>(<var>d<sub>k</sub> &minus; r</var>)</sup>)<br>
+              <var>L</var><sub>collision</sub> = <var>T</var><sup>&minus;1</sup> &Sigma;<sub>k</sub> &Vert;<b>v</b><sub>k</sub><sup>c</sup>&Vert; max(1 &minus; (<var>d<sub>k</sub> &minus; r</var>), 0)<sup>2</sup>
+            </div>
+          </div>
+          <p class="eq-explain">
+            <span class="sym-pill"><code>d<sub>k</sub></code> Nearest obstacle dist</span>
+            <span class="sym-pill"><code>r</code> Robot radius</span>
+            <span class="sym-pill"><code>v<sub>k</sub><sup>c</sup></code> Velocity toward obstacle</span>
+          </p>
+        </div>
+
+        <!-- Eq 6-8 -->
+        <div class="eq-card novel">
+          <div>
+            <div class="eq-header">
+              <span class="eq-name">Smoothness &amp; Angular Velocity Loss</span>
+              <span class="eq-num">Eq. (6)–(8) · Eq. 8 Novel</span>
+            </div>
+            <div class="math-block">
+              <var>L</var><sub>acc</sub> = <var>T</var><sup>&minus;1</sup>&Sigma;&Vert;<b>a</b><sub>k</sub>&Vert;<sup>2</sup>, &nbsp;
+              <var>L</var><sub>jerk</sub> = <var>(T&minus;1)</var><sup>&minus;1</sup>&Sigma;&Vert;(<b>a</b><sub>k+1</sub>&minus;<b>a</b><sub>k</sub>)/&Delta;<var>t</var>&Vert;<sup>2</sup>, &nbsp;
+              <var>L</var><sub>&omega;</sub> = <var>T</var><sup>&minus;1</sup>&Sigma;&Vert;<b>&omega;</b><sub>k</sub>&Vert;<sup>2</sup>
+            </div>
+          </div>
+          <p class="eq-explain">
+            <span class="sym-pill"><code>L<sub>acc</sub></code> Hover stability</span>
+            <span class="sym-pill"><code>L<sub>&omega;</sub></code> New body-rate penalty reducing abrupt yaw oscillation</span>
+          </p>
+        </div>
+
+        <!-- Eq 9-10 -->
+        <div class="eq-card novel">
+          <div>
+            <div class="eq-header">
+              <span class="eq-name">Target Velocity &amp; Max Speed Loss</span>
+              <span class="eq-num">Eq. (9)–(10) · Eq. 10 Novel</span>
+            </div>
+            <div class="math-block">
+              <var>L<sub>v</sub></var> = <var>T</var><sup>&minus;1</sup> &Sigma;<sub>k</sub> SmoothL1(&Vert;<b>v</b><sub>k</sub><sup>set</sup> &minus; <b>v&#772;</b><sub>k</sub>&Vert;, 0)<br>
+              <var>L<sub>vmax</sub></var> = <var>T</var><sup>&minus;1</sup> &Sigma;<sub>k</sub> max(&Vert;<b>v</b><sub>k</sub>&Vert; &minus; <var>v</var><sub>max</sub>, 0)<sup>2</sup>
+            </div>
+          </div>
+          <p class="eq-explain">
+            <span class="sym-pill"><code>v&#772;<sub>k</sub></code> 2s moving avg velocity</span>
+            <span class="sym-pill"><code>v<sub>k</sub><sup>set</sup></code> Directed along ToA gradient &minus;&nabla;<var>T</var>(<b>x</b>)</span>
+          </p>
+        </div>
+
+        <!-- Eq 11 -->
+        <div class="eq-card novel">
+          <div>
+            <div class="eq-header">
+              <span class="eq-name">Yaw Alignment Loss (Core Contribution 1)</span>
+              <span class="eq-num">Eq. (11) · Novel</span>
+            </div>
+            <div class="math-block">
+              <var>L</var><sub>yaw</sub> = &minus;<var>T</var><sup>&minus;1</sup> &Sigma;<sub>k=1</sub><sup>T</sup> ( <b>x</b><sub>k</sub><sup>B</sup> &middot; <b>v&#771;</b><sub>k</sub> )
+            </div>
+          </div>
+          <p class="eq-explain">
+            <span class="sym-pill"><code>x<sub>k</sub><sup>B</sup></code> Body x-axis (camera forward)</span>
+            <span class="sym-pill"><code>v&#771;<sub>k</sub></code> EMA of velocity</span>
+            <span class="sym-pill">Aligns camera heading with motion</span>
+          </p>
+        </div>
+
+        <!-- Eq 12-13 -->
+        <div class="eq-card novel">
+          <div>
+            <div class="eq-header">
+              <span class="eq-name">Privileged ToA Eikonal Speed Cost (Core Contribution 2)</span>
+              <span class="eq-num">Eq. (12)–(13) · Novel</span>
+            </div>
+            <div class="math-block">
+              |&nabla;<var>T</var>(<b>x</b>)| <var>F</var>(<b>x</b>) = 1, &nbsp;&nbsp;
+              <var>F</var>(<b>x</b>) = <var>m d</var>(<b>x</b>) + (<var>v</var><sub>slow</sub> &minus; <var>mr</var>) &nbsp;if <var>d</var>(<b>x</b>) &le; <var>d</var><sub>safe</sub> else 1<br>
+              <span style="font-size:13.5px; color:var(--ink-secondary);">where <var>m</var> = (1 &minus; <var>v</var><sub>slow</sub>) / (<var>d</var><sub>safe</sub> &minus; <var>r</var>)</span>
+            </div>
+          </div>
+          <p class="eq-explain">
+            <span class="sym-pill"><code>T(x)</code> Minimum travel time</span>
+            <span class="sym-pill"><code>F(x)</code> Slows wavefront near walls to bias paths toward safe clearance</span>
+          </p>
+        </div>
+
+        <!-- Eq 14 -->
+        <div class="eq-card">
+          <div>
+            <div class="eq-header">
+              <span class="eq-name">Total Weighted Training Loss</span>
+              <span class="eq-num">Eq. (14)</span>
+            </div>
+            <div class="math-block" style="font-size:14.5px;">
+              <var>L</var> = &lambda;<sub>acc</sub><var>L</var><sub>acc</sub> + &lambda;<sub>jerk</sub><var>L</var><sub>jerk</sub> + &lambda;<sub>&omega;</sub><var>L</var><sub>&omega;</sub> + &lambda;<sub>v</sub><var>L</var><sub>v</sub> + &lambda;<sub>vmax</sub><var>L</var><sub>vmax</sub> + &lambda;<sub>clearance</sub><var>L</var><sub>clearance</sub> + &lambda;<sub>collision</sub><var>L</var><sub>collision</sub> + &lambda;<sub>yaw</sub><var>L</var><sub>yaw</sub>
+            </div>
+          </div>
+          <p class="eq-explain">
+            <span class="sym-pill">Linear combination weighted by Table I coefficients below</span>
+          </p>
+        </div>
+
+        <!-- Eq 15 -->
+        <div class="eq-card novel">
+          <div>
+            <div class="eq-header">
+              <span class="eq-name">Body-Rate Attitude Control via Euler Jacobian (Contribution 3)</span>
+              <span class="eq-num">Eq. (15) · Novel</span>
+            </div>
+            <div class="math-block" style="font-size:14.5px;">
+              <b>&omega;</b><sub>d</sub> =
+              [ 1, 0, &minus;sin(&theta;) ; &nbsp;0, cos(&phi;), sin(&phi;)cos(&theta;) ; &nbsp;0, &minus;sin(&phi;), cos(&phi;)cos(&theta;) ]
+              [ &phi;&#775;, &theta;&#775;, &psi;&#775; ]<sup>T</sup>
+            </div>
+          </div>
+          <p class="eq-explain">
+            <span class="sym-pill"><code>&omega;<sub>d</sub></code> Desired angular rate setpoint</span>
+            <span class="sym-pill">Eliminates 200 ms attitude control response lag</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Table I + Interactive Loss & Speed Function Plotter -->
+      <div class="grid-2">
+        <div class="card">
+          <span class="fig-badge">TABLE I · Loss Function Parameters (Exact Paper Values)</span>
+          <h3 class="fig-title">Hyperparameters in Total Loss <var>L</var> (Eq. 4, 14)</h3>
+          <p class="fig-desc">
+            Notice that obstacle avoidance (<var>&lambda;<sub>clearance</sub> = 6.0, &lambda;<sub>collision</sub> = 6.0</var>) and velocity tracking (<var>&lambda;<sub>v</sub> = 4.0</var>) carry the largest weights.
+          </p>
+
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Parameter</th>
+                  <th>Symbol</th>
+                  <th>Role in Training</th>
+                  <th class="num">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Acceleration weight</td>
+                  <td><code>&lambda;<sub>acc</sub></code></td>
+                  <td>Hover stability &amp; smooth thrust (Eq. 6)</td>
+                  <td class="num">0.01</td>
+                </tr>
+                <tr>
+                  <td>Jerk weight</td>
+                  <td><code>&lambda;<sub>jerk</sub></code></td>
+                  <td>Penalizes sudden thrust changes (Eq. 7)</td>
+                  <td class="num">0.001</td>
+                </tr>
+                <tr>
+                  <td>Angular rate weight</td>
+                  <td><code>&lambda;<sub>&omega;</sub></code></td>
+                  <td>Damps abrupt yaw accelerations (Eq. 8)</td>
+                  <td class="num">0.3</td>
+                </tr>
+                <tr>
+                  <td>Target velocity weight</td>
+                  <td><code>&lambda;<sub>v</sub></code></td>
+                  <td>Tracks ToA-guided 2s avg velocity (Eq. 9)</td>
+                  <td class="num" style="color:var(--brand); font-weight:700;">4.0</td>
+                </tr>
+                <tr>
+                  <td>Max speed weight</td>
+                  <td><code>&lambda;<sub>vmax</sub></code></td>
+                  <td>Bounds speed above <var>v<sub>max</sub></var> (Eq. 10)</td>
+                  <td class="num">1.0</td>
+                </tr>
+                <tr>
+                  <td>Clearance weight</td>
+                  <td><code>&lambda;<sub>clearance</sub></code></td>
+                  <td>Softplus obstacle buffer penalty (Eq. 4)</td>
+                  <td class="num" style="color:var(--emerald); font-weight:700;">6.0</td>
+                </tr>
+                <tr>
+                  <td>Collision weight</td>
+                  <td><code>&lambda;<sub>collision</sub></code></td>
+                  <td>Approach speed toward obstacle (Eq. 5)</td>
+                  <td class="num" style="color:var(--emerald); font-weight:700;">6.0</td>
+                </tr>
+                <tr>
+                  <td>Yaw alignment weight</td>
+                  <td><code>&lambda;<sub>yaw</sub></code></td>
+                  <td>Aligns camera x-axis with velocity (Eq. 11)</td>
+                  <td class="num" style="color:var(--accent); font-weight:700;">1.0</td>
+                </tr>
+                <tr>
+                  <td>Softplus scale &amp; decay</td>
+                  <td><code>&beta;<sub>1</sub>, &beta;<sub>2</sub></code></td>
+                  <td>Clearance curve shape parameters (Eq. 4)</td>
+                  <td class="num">2.5, &minus;6.0</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Interactive Plot of Eq 4 & Eq 12 -->
+        <div class="card">
+          <span class="fig-badge">Interactive Math Visualizer · Eq. (4) &amp; Eq. (12)</span>
+          <h3 class="fig-title">How Obstacle Distance <var>d(x)</var> Shapes Loss &amp; ToA Wavefront Speed</h3>
+          <p class="fig-desc">
+            Adjust the safe distance <var>d<sub>safe</sub></var> and minimum wavefront speed <var>v<sub>slow</sub></var> to inspect the softplus clearance penalty <var>L<sub>clearance</sub></var> (<var>&beta;<sub>1</sub>=2.5, &beta;<sub>2</sub>=&minus;6.0</var>) and Eikonal speed <var>F(x)</var>.
+          </p>
+
+          <div class="control-row">
+            <label class="control-item">
+              <span><var>d<sub>safe</sub></var>: <strong id="dsafe-val">1.2 m</strong></span>
+              <input type="range" id="dsafe-slider" min="0.6" max="2.0" step="0.1" value="1.2" oninput="drawLossCurves()">
+            </label>
+            <label class="control-item">
+              <span><var>v<sub>slow</sub></var>: <strong id="vslow-val">0.2 m/s</strong></span>
+              <input type="range" id="vslow-slider" min="0.05" max="0.6" step="0.05" value="0.2" oninput="drawLossCurves()">
+            </label>
+          </div>
+
+          <div class="diagram-box">
+            <canvas id="loss-curve-canvas" width="480" height="250" style="max-width:100%;"></canvas>
+            <div class="legend-bar" style="justify-content:center;">
+              <span><span class="legend-dot" style="background:#f43f5e;"></span>Clearance Penalty <var>&beta;<sub>1</sub> ln(1 + e<sup>&beta;<sub>2</sub>(d-r)</sup>)</var> (Eq. 4)</span>
+              <span><span class="legend-dot" style="background:#38bdf8;"></span>Eikonal Wavefront Speed <var>F(x)</var> (Eq. 12)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: SIMULATION PLOTS (FIGURES 6, 7, 8) -->
+    <section id="fig6-8" class="section-block">
+      <div class="section-header">
+        <div class="section-title-group">
+          <span class="sec-num">FIG. 6, FIG. 7 &amp; FIG. 8</span>
+          <h2>Simulation Experiments &amp; Benchmark Plots (1,350 Trials)</h2>
+        </div>
+        <p class="section-caption">Evaluated under full rigid-body quadrotor dynamics in Flightmare across 11 unseen environments without ToA maps at test time.</p>
+      </div>
+
+      <!-- Fig 7 Full-Width Interactive Benchmark Chart -->
+      <div class="card" style="margin-bottom: 20px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
+          <div>
+            <span class="fig-badge">Fig. 7 · Planner Success Rate &amp; Failure Modes Across 11 Environments</span>
+            <h3 class="fig-title">Out-of-Distribution Generalization Benchmark (1,350 Total Trials)</h3>
+            <p class="fig-desc" style="margin-bottom:0;">
+              Comparison of <strong>BNL [2]</strong> (fixed heading), <strong>Yaw w/o ToA</strong> (ablated model without privileged ToA supervision), and <strong>Ours (Yaw w/ ToA)</strong> across Caves, Industrial facilities, Mine corridors, and Sewers.
+            </p>
+          </div>
+          <div class="btn-group" role="tablist" aria-label="Environment filter">
+            <button type="button" class="btn-tab active" data-envfilter="all" onclick="filterFig7('all')">All 11 Envs + Total</button>
+            <button type="button" class="btn-tab" data-envfilter="complex" onclick="filterFig7('complex')">Large Obstacles (Cave / Industry)</button>
+            <button type="button" class="btn-tab" data-envfilter="sewer" onclick="filterFig7('sewer')">Sewer 1–6</button>
+          </div>
+        </div>
+
+        <div class="diagram-box">
+          <canvas id="fig7-canvas" width="1100" height="330" style="max-width:100%;"></canvas>
+          <div class="legend-bar" style="justify-content:center; margin-top:12px;">
+            <span><span class="legend-dot" style="background:#64748b;"></span><strong>BNL [2]</strong> (Total Success: 50%)</span>
+            <span><span class="legend-dot" style="background:#f59e0b;"></span><strong>Yaw w/o ToA</strong> (Total Success: 52%)</span>
+            <span><span class="legend-dot" style="background:#10b981;"></span><strong>Ours: Yaw w/ ToA</strong> (Total Success: 86% · +34% to +36% over baselines)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Fig 6 Attitude Control Latency Plot -->
+        <div class="card">
+          <span class="fig-badge">Fig. 6(a) &amp; 6(b) · Attitude Control Ablation Plot</span>
+          <h3 class="fig-title">Eliminating the 200 ms Attitude Tracking Latency</h3>
+          <p class="fig-desc">
+            Controllers tracking only desired orientation <var>R<sub>d</sub></var> (as in [2]) suffer a <strong>~200 ms response lag</strong> (Fig. 6a). Adding the Euler-Jacobian body-rate derivative term <var>&omega;<sub>d</sub></var> (Eq. 15) achieves near-zero latency (Fig. 6b).
+          </p>
+
+          <div class="diagram-box">
+            <canvas id="fig6-canvas" width="480" height="230" style="max-width:100%;"></canvas>
+            <div class="legend-bar" style="justify-content:center;">
+              <span><span class="legend-dot" style="background:#f8fafc;"></span>Desired Angle Setpoint</span>
+              <span><span class="legend-dot" style="background:#10b981;"></span>Actual w/ <var>&omega;<sub>d</sub></var> (Fig. 6b, ~0 ms lag)</span>
+              <span><span class="legend-dot" style="background:#f43f5e;"></span>Actual w/o <var>&omega;<sub>d</sub></var> (Fig. 6a, ~200 ms lag)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fig 8 Point-Cloud Trajectory Profiles -->
+        <div class="card">
+          <span class="fig-badge">Fig. 8(a)–(f) · Point-Cloud Cross-Section Trajectories</span>
+          <h3 class="fig-title">Why Baselines Fail in Industry 2 &amp; Cave 2</h3>
+          <p class="fig-desc">
+            Summary of the 6 trajectory cross-sections shown in Fig. 8 (<var>v<sub>max</sub> = 3</var> m/s, body frames plotted every 2 s from blue start to magenta goal).
+          </p>
+
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Sub-Figure</th>
+                  <th>Environment</th>
+                  <th>Policy</th>
+                  <th>Outcome</th>
+                  <th>Observed Flight Behavior</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>Fig. 8(a)</code></td>
+                  <td>Industry 2</td>
+                  <td>BNL [2]</td>
+                  <td style="color:var(--rose); font-weight:700;">&#10007; Crash</td>
+                  <td>Fixed heading toward goal; collides into wide flat wall.</td>
+                </tr>
+                <tr>
+                  <td><code>Fig. 8(b)</code></td>
+                  <td>Industry 2</td>
+                  <td>Yaw w/o ToA</td>
+                  <td style="color:var(--amber, #f59e0b); font-weight:700;">&#10007; Timeout</td>
+                  <td>Turns away from wall but gets trapped in concave corner.</td>
+                </tr>
+                <tr>
+                  <td><code>Fig. 8(c)</code></td>
+                  <td>Industry 2</td>
+                  <td><strong style="color:var(--emerald);">Yaw w/ ToA</strong></td>
+                  <td style="color:var(--emerald); font-weight:700;">&#10003; Success</td>
+                  <td>Yaws 90&deg; around large industrial wall and reaches goal at 3 m/s.</td>
+                </tr>
+                <tr>
+                  <td><code>Fig. 8(d)</code></td>
+                  <td>Cave 2</td>
+                  <td>BNL [2]</td>
+                  <td style="color:var(--rose); font-weight:700;">&#10007; Crash</td>
+                  <td>Cannot align depth camera FOV with twisting cave tunnel.</td>
+                </tr>
+                <tr>
+                  <td><code>Fig. 8(e)</code></td>
+                  <td>Cave 2</td>
+                  <td>Yaw w/o ToA</td>
+                  <td style="color:var(--emerald); font-weight:700;">&#10003; Success</td>
+                  <td>Yaw alignment turns camera along smooth curving cavern.</td>
+                </tr>
+                <tr>
+                  <td><code>Fig. 8(f)</code></td>
+                  <td>Cave 2</td>
+                  <td><strong style="color:var(--emerald);">Yaw w/ ToA</strong></td>
+                  <td style="color:var(--emerald); font-weight:700;">&#10003; Success</td>
+                  <td>Takes shortest global path through cavern with smooth speed profile.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 6: HARDWARE EXPERIMENTS (FIGURES 9, 10, 11 & TABLES II, III) -->
+    <section id="fig9-11" class="section-block">
+      <div class="section-header">
+        <div class="section-title-group">
+          <span class="sec-num">FIG. 9–11 &amp; TABLES II–III</span>
+          <h2>Sim-to-Real Hardware Deployment, Domain Randomization &amp; 20 Outdoor Flights</h2>
+        </div>
+        <p class="section-caption">Zero-shot transfer from point-mass simulation to a 1.7 kg custom quadrotor in outdoor arenas, dense forest canopy, and night flights.</p>
+      </div>
+
+      <!-- Fig 9 + Table II -->
+      <div class="grid-2" style="margin-bottom: 20px;">
+        <!-- Fig 9 Gravity Randomization Ablation -->
+        <div class="card">
+          <span class="fig-badge">Fig. 9(a) &amp; 9(b) · Hardware Gravity Randomization Ablation</span>
+          <h3 class="fig-title">Compensating for 15% Real-World Thrust Mismatch</h3>
+          <p class="fig-desc">
+            Due to battery voltage drop and airflow, the real drone needs <strong>~1.15<var>g</var></strong> commanded thrust just to hover. Without gravity randomization (Fig. 9a), the policy outputs <var>1.0g</var> and drops to the ground. With <var>g &sim; N(9.81, 1.5<sup>2</sup>)</var> (Fig. 9b), it adapts thrust up to <var>1.3g</var> via velocity feedback and holds the red setpoint!
+          </p>
+
+          <div class="diagram-box">
+            <canvas id="fig9-canvas" width="480" height="250" style="max-width:100%;"></canvas>
+            <div class="legend-bar" style="justify-content:center;">
+              <span><span class="legend-dot" style="background:#ef4444;"></span>Goal Altitude Setpoint</span>
+              <span><span class="legend-dot" style="background:#10b981;"></span>(b) With Gravity Rand (<var>1.3g</var> peak &rarr; Hover)</span>
+              <span><span class="legend-dot" style="background:#f59e0b;"></span>(a) Without Gravity Rand (<var>1.0g</var> &rarr; Drops)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table II + Hardware Specs -->
+        <div class="card">
+          <span class="fig-badge">TABLE II · Domain Randomization &amp; Custom Quadrotor Specs</span>
+          <h3 class="fig-title">Training Randomization Distributions (Table II)</h3>
+          <p class="fig-desc">
+            Applied during point-mass training so the GRU recurrent state learns closed-loop velocity and thrust adaptation.
+          </p>
+
+          <div class="table-wrapper" style="margin-bottom: 16px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Randomized Quantity</th>
+                  <th>Distribution</th>
+                  <th>Parameters (Table II)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Gravity <var>g</var></strong></td>
+                  <td><code>g &sim; N(&mu;, &sigma;<sup>2</sup>)</code></td>
+                  <td><code>&mu; = 9.81, &sigma; = 1.5</code> m/s<sup>2</sup></td>
+                </tr>
+                <tr>
+                  <td><strong>Initial Height <var>z</var></strong></td>
+                  <td><code>z &sim; U(z<sub>min</sub>, z<sub>max</sub>)</code></td>
+                  <td><code>z<sub>min</sub> = 0.5, z<sub>max</sub> = 2.5</code> m</td>
+                </tr>
+                <tr>
+                  <td><strong>Initial <var>x, y</var></strong></td>
+                  <td><code>r<sub>cyl</sub> cos&theta;, r<sub>cyl</sub> sin&theta;</code></td>
+                  <td><code>r<sub>cyl</sub> = 12.5</code> m, <code>&theta; &sim; U(0, 2&pi;)</code></td>
+                </tr>
+                <tr>
+                  <td><strong>Target Speed <var>v<sub>target</sub></var></strong></td>
+                  <td><code>v<sub>target</sub> &sim; U(v<sub>min</sub>, v<sub>max</sub>)</code></td>
+                  <td><code>v<sub>min</sub> = 1, v<sub>max</sub> = 5</code> m/s</td>
+                </tr>
+                <tr>
+                  <td><strong>Velocity Noise <var>v<sub>noise</sub></var></strong></td>
+                  <td><code>N(&mu;, &sigma;<sup>2</sup>) &isin; &Ropf;<sup>3</sup></code></td>
+                  <td><code>&mu; = 0, &sigma; = 0.05</code> m/s</td>
+                </tr>
+                <tr>
+                  <td><strong>Rotation Noise <var>r<sub>noise</sub></var></strong></td>
+                  <td><code>N(&mu;, &sigma;<sup>2</sup>) &isin; &Ropf;<sup>3</sup></code></td>
+                  <td><code>&mu; = 0, &sigma; = 0.02</code> rad</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div style="background:var(--surface-elevated); border:1px solid var(--border); border-radius:10px; padding:12px 14px; font-size:12.5px; color:var(--ink-secondary);">
+            <strong style="color:var(--brand); display:block; margin-bottom:4px;">Custom Hardware Platform (Section V):</strong>
+            &bull; <strong>Frame &amp; Mass:</strong> 15 cm rotor-to-rotor span, <strong>1.7 kg</strong> total mass<br>
+            &bull; <strong>Compute &amp; FC:</strong> NVIDIA <strong>Orin NX (16 GB RAM)</strong> + TBS Lucid H7 (Betaflight @ <strong>1000 Hz IMU</strong>)<br>
+            &bull; <strong>Sensors:</strong> Forward Intel <strong>RealSense D456</strong> depth camera, downward Lightware SF20/C rangefinder, Matrix Vision BlueFox2 global-shutter greyscale camera
+          </div>
+        </div>
+      </div>
+
+      <!-- Fig 10 & Fig 11 Visual Summary Card -->
+      <div class="card" style="margin-bottom: 20px;">
+        <span class="fig-badge">Fig. 10 &amp; Fig. 11 · Forest Canopy Flight 4 Profile &amp; Night LED Flight Trials</span>
+        <h3 class="fig-title">Real-World Forest Underbrush Navigation (Fig. 10) &amp; Night Flights (Fig. 11)</h3>
+        <p class="fig-desc">
+          In <strong>Table III Forest Flight 4 (Fig. 10)</strong>, the quadrotor traverses <strong>70.1 m in 23.7 s</strong> under dense tree canopy, predicting up to <strong>30&deg; yaw changes</strong> to weave through branches at speeds up to <strong>3.8 m/s</strong> (<var>v<sub>max</sub> = 5.0</var> m/s). Notice how <em>inverted + max-pooled depth</em> thickens thin twigs so the 64&times;64 CNN never misses narrow branches.
+        </p>
+
+        <div class="diagram-box">
+          <svg viewBox="0 0 1050 220" aria-label="Figure 10 Forest Flight 4 Velocity and Yaw Profile">
+            <!-- Left Panel: VINS Top-Down Trajectory in Forest Flight 4 -->
+            <rect x="15" y="15" width="460" height="190" rx="8" fill="#0f172a" stroke="#334155"/>
+            <text x="30" y="36" fill="#38bdf8" font-size="12" font-weight="700">Fig. 10 (Top): Forest Flight 4 VINS Trajectory (70.1 m, Max 3.8 m/s)</text>
+
+            <!-- Foliage / Tree Clusters -->
+            <circle cx="115" cy="95" r="18" fill="#14532d" stroke="#22c55e" stroke-width="1.5"/>
+            <circle cx="175" cy="145" r="22" fill="#14532d" stroke="#22c55e" stroke-width="1.5"/>
+            <circle cx="245" cy="85" r="24" fill="#14532d" stroke="#22c55e" stroke-width="1.5"/>
+            <circle cx="320" cy="150" r="20" fill="#14532d" stroke="#22c55e" stroke-width="1.5"/>
+            <circle cx="385" cy="92" r="19" fill="#14532d" stroke="#22c55e" stroke-width="1.5"/>
+
+            <!-- Trajectory weaving through trees -->
+            <path d="M 45 145 C 85 145, 110 135, 140 112 C 175 85, 200 125, 250 132 C 295 138, 325 95, 365 122 C 395 140, 420 125, 445 115"
+                  fill="none" stroke="#f59e0b" stroke-width="4"/>
+
+            <!-- Yaw Heading Ticks along Forest Path (up to 30 deg) -->
+            <line x1="140" y1="112" x2="156" y2="98" stroke="#38bdf8" stroke-width="2"/>
+            <line x1="250" y1="132" x2="270" y2="135" stroke="#38bdf8" stroke-width="2"/>
+            <line x1="365" y1="122" x2="383" y2="132" stroke="#38bdf8" stroke-width="2"/>
+
+            <circle cx="45" cy="145" r="6" fill="#3b82f6"/>
+            <circle cx="445" cy="115" r="6" fill="#ef4444"/>
+            <text x="45" y="165" fill="#93c5fd" font-size="10.5" text-anchor="middle">0 m</text>
+            <text x="440" y="102" fill="#fda4af" font-size="10.5" text-anchor="middle">70.1 m</text>
+            <text x="245" y="192" fill="#94a3b8" font-size="11" text-anchor="middle">Up to &plusmn;30&deg; active yaw alignment around tree trunks &amp; underbrush</text>
+
+            <!-- Right Panel: Inverted & Max-Pooled Depth + Speed Profile -->
+            <rect x="495" y="15" width="540" height="190" rx="8" fill="#0f172a" stroke="#334155"/>
+            <text x="512" y="36" fill="#10b981" font-size="12" font-weight="700">Fig. 10 (Bottom) &amp; Fig. 11: Depth Max-Pooling &amp; Night LED Flight</text>
+
+            <!-- Mini Diagram of Raw Depth vs Inverted Max-Pooled Depth -->
+            <rect x="515" y="52" width="145" height="95" rx="6" fill="#1e293b" stroke="#475569"/>
+            <text x="587" y="70" fill="#cbd5e1" font-size="11" font-weight="600" text-anchor="middle">1. Inverted + Max-Pooled</text>
+            <!-- Dilated tree trunk & branch blocks -->
+            <rect x="542" y="80" width="24" height="58" fill="#f59e0b" opacity="0.85"/>
+            <rect x="566" y="92" width="38" height="14" fill="#fbbf24" opacity="0.85"/>
+            <rect x="612" y="78" width="18" height="60" fill="#38bdf8" opacity="0.75"/>
+            <text x="587" y="164" fill="#94a3b8" font-size="10.5" text-anchor="middle">Dilates thin twigs for safety</text>
+
+            <!-- Speed Profile Box -->
+            <rect x="680" y="52" width="165" height="95" rx="6" fill="#1e293b" stroke="#475569"/>
+            <text x="762" y="70" fill="#cbd5e1" font-size="11" font-weight="600" text-anchor="middle">2. Forest Flight 4 Speed</text>
+            <polyline points="695,132 715,105 735,92 755,102 775,82 795,90 815,86 832,128"
+                      fill="none" stroke="#10b981" stroke-width="3"/>
+            <line x1="695" y1="82" x2="832" y2="82" stroke="#f59e0b" stroke-width="1" stroke-dasharray="3,3"/>
+            <text x="762" y="79" fill="#fcd34d" font-size="9.5" text-anchor="middle">Peak: 3.8 m/s (Avg: 2.7 m/s)</text>
+            <text x="762" y="164" fill="#94a3b8" font-size="10.5" text-anchor="middle">Time: 23.7 s (<var>v<sub>max</sub></var> = 5.0 m/s)</text>
+
+            <!-- Night Flight LED Box -->
+            <rect x="862" y="52" width="155" height="95" rx="6" fill="#1e293b" stroke="#a855f7"/>
+            <text x="940" y="70" fill="#e9d5ff" font-size="11" font-weight="600" text-anchor="middle">3. Night Flights (Fig. 11)</text>
+            <path d="M 880 128 Q 915 80 945 108 T 1002 86" fill="none" stroke="#c084fc" stroke-width="3.5"/>
+            <circle cx="912" cy="98" r="10" fill="#475569"/>
+            <circle cx="965" cy="105" r="12" fill="#475569"/>
+            <text x="940" y="164" fill="#94a3b8" font-size="10.5" text-anchor="middle">Onboard LED + Stereo Depth</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- TABLE III: All 20 Hardware Flights -->
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
+          <div>
+            <span class="fig-badge">TABLE III · Complete Hardware Flight Trials (20 Flights, 589 m Total, 0 Collisions)</span>
+            <h3 class="fig-title">All 20 Outdoor Hardware Flights (Arena Flights 1–15 &amp; Forest Flights 1–5)</h3>
+            <p class="fig-desc" style="margin-bottom:0;">
+              Every single flight from Table III in the paper. Filter by environment or sort by metric to inspect flight times, path lengths, target speed limits (<var>v<sub>max</sub></var>), max speeds, and average speeds.
+            </p>
+          </div>
+          <div class="btn-group" role="tablist" aria-label="Table III environment filter">
+            <button type="button" class="btn-tab active" data-hwfilter="all" onclick="filterTable3('all')">All 20 Flights (589.1 m)</button>
+            <button type="button" class="btn-tab" data-hwfilter="Outdoor Flight Arena" onclick="filterTable3('Outdoor Flight Arena')">Outdoor Flight Arena (15 Flights · 307.7 m)</button>
+            <button type="button" class="btn-tab" data-hwfilter="Forest" onclick="filterTable3('Forest')">Forest Canopy (5 Flights · 281.4 m)</button>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table id="table3-el">
+            <thead>
+              <tr>
+                <th>Environment</th>
+                <th class="num">Flight #</th>
+                <th class="num">Flight Time (s)</th>
+                <th class="num">Path Length (m)</th>
+                <th class="num"><var>v<sub>max</sub></var> (m/s)</th>
+                <th class="num">Max Speed (m/s)</th>
+                <th class="num">Avg Speed (m/s)</th>
+              </tr>
+            </thead>
+            <tbody id="table3-body">
+              <!-- Populated by JS from exact Table III data -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // =========================================================================
+    // 1. FIG. 1 INTERACTIVE TRAJECTORY SELECTOR
+    // =========================================================================
+    function setTrajMode(mode) {
+      document.querySelectorAll('[data-traj]').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-traj') === mode);
+      });
+      document.getElementById('traj-bnl').style.display = (mode === 'bnl') ? 'block' : 'none';
+      document.getElementById('traj-notoa').style.display = (mode === 'notoa') ? 'block' : 'none';
+      document.getElementById('traj-ours').style.display = (mode === 'ours') ? 'block' : 'none';
+      document.getElementById('toa-field-layer').style.opacity = (mode === 'ours') ? '0.85' : '0.18';
+
+      const cap = document.getElementById('traj-caption-box');
+      if (mode === 'bnl') {
+        cap.innerHTML = '<strong style="color: var(--rose);">(a) BNL [2] (Fixed Heading):</strong> Keeps yaw pointed directly toward the goal without a yaw prediction objective. When a wide wall blocks the goal, local collision penalties slow it down or cause a collision (50% overall success rate).';
+      } else if (mode === 'notoa') {
+        cap.innerHTML = '<strong style="color: var(--accent);">(b) Yaw w/o ToA (Ablated):</strong> Uses <code style="color:var(--brand)">L<sub>yaw</sub></code> to turn the camera toward velocity, helping in simple turns (e.g., Cave 2), but without global Time-of-Arrival guidance it gets stuck in concave pockets and times out (52% overall success rate).';
+      } else {
+        cap.innerHTML = '<strong style="color: var(--emerald);">(c) Ours (Yaw + ToA):</strong> During training, the ToA map gradient <code style="color:var(--brand)">-&nabla;T(x)</code> sets the target velocity direction around the wall, while <code style="color:var(--brand)">L<sub>yaw</sub></code> aligns the depth camera (<code style="color:var(--brand)">x<sup>B</sup></code>) with the flight path. Achieves <strong>86% success rate</strong> at test time without needing a map!';
+      }
+    }
+
+    // =========================================================================
+    // 2. FIG. 4 INTERACTIVE FAST MARCHING METHOD (ToA HEATMAP & SHORTEST PATHS)
+    // =========================================================================
+    const fig4Canvas = document.getElementById('fig4-canvas');
+    const fig4Ctx = fig4Canvas.getContext('2d');
+    const GW = 48, GH = 26; // Grid resolution for live Eikonal FMM solver
+    let toaGrid = [];
+    let obsGrid = [];
+    let customStarts = [
+      { x: 6, y: 5 },
+      { x: 6, y: 13 },
+      { x: 6, y: 21 },
+      { x: 20, y: 13 }
+    ];
+    const goalCell = { x: 41, y: 13 };
+
+    function initFig4FMM() {
+      obsGrid = Array.from({ length: GH }, () => Array(GW).fill(false));
+      // Create concave U-shaped obstacle + secondary pillar matching Fig. 4
+      for (let y = 5; y <= 20; y++) {
+        for (let x = 24; x <= 28; x++) obsGrid[y][x] = true;
+      }
+      for (let x = 16; x <= 24; x++) {
+        for (let y = 5; y <= 7; y++) obsGrid[y][x] = true;
+        for (let y = 18; y <= 20; y++) obsGrid[y][x] = true;
+      }
+      for (let y = 2; y <= 7; y++) {
+        for (let x = 34; x <= 36; x++) obsGrid[y][x] = true;
+      }
+
+      // Compute obstacle distance d(x) for speed cost F(x) (Eq. 12)
+      const distObs = Array.from({ length: GH }, () => Array(GW).fill(999));
+      for (let y = 0; y < GH; y++) {
+        for (let x = 0; x < GW; x++) {
+          if (obsGrid[y][x]) { distObs[y][x] = 0; continue; }
+          let best = 999;
+          for (let oy = 0; oy < GH; oy++) {
+            for (let ox = 0; ox < GW; ox++) {
+              if (obsGrid[oy][ox]) {
+                const d = Math.hypot(x - ox, y - oy);
+                if (d < best) best = d;
+              }
+            }
+          }
+          distObs[y][x] = best;
+        }
+      }
+
+      // Solve Eikonal |grad T(x)| F(x) = 1 via Dijkstra/FMM wavefront propagation
+      toaGrid = Array.from({ length: GH }, () => Array(GW).fill(Infinity));
+      toaGrid[goalCell.y][goalCell.x] = 0;
+      const pq = [{ x: goalCell.x, y: goalCell.y, t: 0 }];
+      const dirs = [
+        { dx: 1, dy: 0, c: 1 }, { dx: -1, dy: 0, c: 1 },
+        { dx: 0, dy: 1, c: 1 }, { dx: 0, dy: -1, c: 1 },
+        { dx: 1, dy: 1, c: Math.SQRT2 }, { dx: -1, dy: 1, c: Math.SQRT2 },
+        { dx: 1, dy: -1, c: Math.SQRT2 }, { dx: -1, dy: -1, c: Math.SQRT2 }
+      ];
+
+      while (pq.length > 0) {
+        pq.sort((a, b) => a.t - b.t);
+        const cur = pq.shift();
+        if (cur.t > toaGrid[cur.y][cur.x]) continue;
+        for (const d of dirs) {
+          const nx = cur.x + d.dx, ny = cur.y + d.dy;
+          if (nx < 0 || nx >= GW || ny < 0 || ny >= GH || obsGrid[ny][nx]) continue;
+          // Eq. 12 piecewise speed F(x) reduced near obstacles
+          const clearance = distObs[ny][nx];
+          const F = clearance <= 3.2 ? Math.max(0.22, 0.22 + 0.78 * (clearance / 3.2)) : 1.0;
+          const nt = cur.t + d.c / F;
+          if (nt < toaGrid[ny][nx]) {
+            toaGrid[ny][nx] = nt;
+            pq.push({ x: nx, y: ny, t: nt });
+          }
+        }
+      }
+    }
+
+    function toaColor(val, maxVal) {
+      const t = Math.min(1, Math.max(0, val / maxVal));
+      // Viridis/Plasma-inspired yellow (0) -> green/teal -> deep blue (1) matching paper caption
+      const r = Math.round(250 * (1 - t) + 25 * t);
+      const g = Math.round(224 * Math.pow(1 - t, 0.7) + 65 * t);
+      const b = Math.round(60 * (1 - t) + 215 * Math.sin(t * Math.PI * 0.65 + 0.3));
+      return `rgb(${r},${g},${b})`;
+    }
+
+    function drawFig4Canvas() {
+      const cw = fig4Canvas.width, ch = fig4Canvas.height;
+      const cellW = cw / GW, cellH = ch / GH;
+      fig4Ctx.clearRect(0, 0, cw, ch);
+
+      let maxT = 0;
+      for (let y = 0; y < GH; y++) {
+        for (let x = 0; x < GW; x++) {
+          if (isFinite(toaGrid[y][x]) && toaGrid[y][x] > maxT) maxT = toaGrid[y][x];
+        }
+      }
+
+      // 1. Draw Heatmap
+      for (let y = 0; y < GH; y++) {
+        for (let x = 0; x < GW; x++) {
+          if (obsGrid[y][x]) {
+            fig4Ctx.fillStyle = '#1e293b';
+          } else {
+            fig4Ctx.fillStyle = toaColor(toaGrid[y][x], maxT);
+          }
+          fig4Ctx.fillRect(x * cellW, y * cellH, cellW + 0.6, cellH + 0.6);
+        }
+      }
+
+      // 2. Draw Gradient Field -grad T(x)
+      if (document.getElementById('toggle-fmm-arrows').checked) {
+        fig4Ctx.strokeStyle = 'rgba(15, 23, 42, 0.65)';
+        fig4Ctx.lineWidth = 1.2;
+        for (let y = 1; y < GH - 1; y += 2) {
+          for (let x = 1; x < GW - 1; x += 2) {
+            if (obsGrid[y][x] || !isFinite(toaGrid[y][x])) continue;
+            const gx = (isFinite(toaGrid[y][x + 1]) ? toaGrid[y][x + 1] : toaGrid[y][x]) -
+                       (isFinite(toaGrid[y][x - 1]) ? toaGrid[y][x - 1] : toaGrid[y][x]);
+            const gy = (isFinite(toaGrid[y + 1][x]) ? toaGrid[y + 1][x] : toaGrid[y][x]) -
+                       (isFinite(toaGrid[y - 1][x]) ? toaGrid[y - 1][x] : toaGrid[y][x]);
+            const mag = Math.hypot(gx, gy);
+            if (mag < 1e-3) continue;
+            const vx = -gx / mag, vy = -gy / mag;
+            const cx = (x + 0.5) * cellW, cy = (y + 0.5) * cellH;
+            const len = 7.5;
+            fig4Ctx.beginPath();
+            fig4Ctx.moveTo(cx - vx * len * 0.4, cy - vy * len * 0.4);
+            fig4Ctx.lineTo(cx + vx * len * 0.6, cy + vy * len * 0.6);
+            fig4Ctx.stroke();
+          }
+        }
+      }
+
+      // 3. Trace Shortest Paths from Green Start Points to Red Goal
+      if (document.getElementById('toggle-fmm-paths').checked) {
+        for (const st of customStarts) {
+          let px = st.x + 0.5, py = st.y + 0.5;
+          fig4Ctx.beginPath();
+          fig4Ctx.moveTo(px * cellW, py * cellH);
+          for (let step = 0; step < 180; step++) {
+            const ix = Math.min(GW - 2, Math.max(1, Math.floor(px)));
+            const iy = Math.min(GH - 2, Math.max(1, Math.floor(py)));
+            if (Math.hypot(px - (goalCell.x + 0.5), py - (goalCell.y + 0.5)) < 1.2) break;
+
+            // Find neighbor with minimum T
+            let bestDx = 0, bestDy = 0, bestVal = toaGrid[iy][ix];
+            for (let dy = -1; dy <= 1; dy++) {
+              for (let dx = -1; dx <= 1; dx++) {
+                const nx = ix + dx, ny = iy + dy;
+                if (!obsGrid[ny][nx] && toaGrid[ny][nx] < bestVal) {
+                  bestVal = toaGrid[ny][nx];
+                  bestDx = dx;
+                  bestDy = dy;
+                }
+              }
+            }
+            if (bestDx === 0 && bestDy === 0) break;
+            const norm = Math.hypot(bestDx, bestDy);
+            px += (bestDx / norm) * 0.45;
+            py += (bestDy / norm) * 0.45;
+            fig4Ctx.lineTo(px * cellW, py * cellH);
+          }
+          fig4Ctx.strokeStyle = '#ffffff';
+          fig4Ctx.lineWidth = 3.2;
+          fig4Ctx.stroke();
+          fig4Ctx.strokeStyle = '#0f172a';
+          fig4Ctx.lineWidth = 1.6;
+          fig4Ctx.stroke();
+
+          // Start green dot
+          fig4Ctx.beginPath();
+          fig4Ctx.arc((st.x + 0.5) * cellW, (st.y + 0.5) * cellH, 5.5, 0, Math.PI * 2);
+          fig4Ctx.fillStyle = '#22c55e';
+          fig4Ctx.fill();
+          fig4Ctx.strokeStyle = '#ffffff';
+          fig4Ctx.lineWidth = 1.5;
+          fig4Ctx.stroke();
+        }
+      }
+
+      // Goal red dot
+      fig4Ctx.beginPath();
+      fig4Ctx.arc((goalCell.x + 0.5) * cellW, (goalCell.y + 0.5) * cellH, 7.5, 0, Math.PI * 2);
+      fig4Ctx.fillStyle = '#ef4444';
+      fig4Ctx.fill();
+      fig4Ctx.strokeStyle = '#ffffff';
+      fig4Ctx.lineWidth = 2;
+      fig4Ctx.stroke();
+    }
+
+    fig4Canvas.addEventListener('click', (e) => {
+      const rect = fig4Canvas.getBoundingClientRect();
+      const scaleX = fig4Canvas.width / rect.width;
+      const scaleY = fig4Canvas.height / rect.height;
+      const gx = Math.floor(((e.clientX - rect.left) * scaleX) / (fig4Canvas.width / GW));
+      const gy = Math.floor(((e.clientY - rect.top) * scaleY) / (fig4Canvas.height / GH));
+      if (gx >= 1 && gx < GW - 1 && gy >= 1 && gy < GH - 1 && !obsGrid[gy][gx]) {
+        customStarts.push({ x: gx, y: gy });
+        if (customStarts.length > 7) customStarts.shift();
+        drawFig4Canvas();
+      }
+    });
+
+    // =========================================================================
+    // 3. FIG. 5 CYLINDRICAL MULTI-AGENT TRAINING ARENA
+    // =========================================================================
+    let seedOffset = 1;
+    function regenerateFig5() {
+      seedOffset += 1;
+      drawFig5Canvas();
+    }
+
+    function drawFig5Canvas() {
+      const c = document.getElementById('fig5-canvas');
+      const ctx = c.getContext('2d');
+      ctx.clearRect(0, 0, c.width, c.height);
+
+      // Draw two side-by-side cylinder arenas matching Fig. 5
+      const centers = [
+        { cx: 125, cy: 130, label: 'Cylinder Arena A (r_cyl = 12.5 m)' },
+        { cx: 355, cy: 130, label: 'Cylinder Arena B (r_cyl = 12.5 m)' }
+      ];
+      const R = 96;
+
+      centers.forEach((arena, idx) => {
+        // Outer boundary
+        ctx.beginPath();
+        ctx.arc(arena.cx, arena.cy, R, 0, Math.PI * 2);
+        ctx.fillStyle = '#0f172a';
+        ctx.fill();
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Radial ToA rings
+        for (let r = R * 0.75; r > 15; r -= R * 0.25) {
+          ctx.beginPath();
+          ctx.arc(arena.cx, arena.cy, r, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(56, 189, 248, 0.12)';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+
+        // Random primitive obstacles (cuboids, cylinders, spheres)
+        const obsCount = 14;
+        const obsList = [];
+        for (let i = 0; i < obsCount; i++) {
+          const ang = ((i * 2.39996) + (idx + seedOffset) * 1.1) % (Math.PI * 2);
+          const rad = 24 + ((i * 19 + seedOffset * 7) % 54);
+          const ox = arena.cx + Math.cos(ang) * rad;
+          const oy = arena.cy + Math.sin(ang) * rad;
+          const sz = 7 + (i % 5) * 2;
+          obsList.push({ ox, oy, sz, type: i % 3 });
+
+          ctx.fillStyle = '#475569';
+          ctx.strokeStyle = '#94a3b8';
+          ctx.lineWidth = 1;
+          if (i % 3 === 0) {
+            ctx.beginPath();
+            ctx.arc(ox, oy, sz, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+          } else {
+            ctx.fillRect(ox - sz, oy - sz * 0.8, sz * 2, sz * 1.6);
+            ctx.strokeRect(ox - sz, oy - sz * 0.8, sz * 2, sz * 1.6);
+          }
+        }
+
+        // Multi-agent trajectories from outer radius (theta ~ U(0, 2pi)) to center goal
+        const numAgents = 8;
+        for (let a = 0; a < numAgents; a++) {
+          const startAng = (a / numAgents) * Math.PI * 2 + seedOffset * 0.35;
+          let px = arena.cx + Math.cos(startAng) * (R - 6);
+          let py = arena.cy + Math.sin(startAng) * (R - 6);
+
+          // Spawn marker
+          ctx.beginPath();
+          ctx.arc(px, py, 3.5, 0, Math.PI * 2);
+          ctx.fillStyle = '#facc15';
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.moveTo(px, py);
+          for (let step = 0; step < 45; step++) {
+            const dx = arena.cx - px, dy = arena.cy - py;
+            const dist = Math.hypot(dx, dy);
+            if (dist < 8) break;
+            let vx = dx / dist, vy = dy / dist;
+            // Repel from primitive obstacles
+            for (const ob of obsList) {
+              const odx = px - ob.ox, ody = py - ob.oy;
+              const od = Math.hypot(odx, ody);
+              if (od < ob.sz + 12) {
+                vx += (odx / od) * 1.3;
+                vy += (ody / od) * 1.3;
+              }
+            }
+            const vnorm = Math.hypot(vx, vy);
+            px += (vx / vnorm) * 2.5;
+            py += (vy / vnorm) * 2.5;
+            ctx.lineTo(px, py);
+          }
+          const grad = ctx.createLinearGradient(
+            arena.cx + Math.cos(startAng) * R,
+            arena.cy + Math.sin(startAng) * R,
+            arena.cx, arena.cy
+          );
+          grad.addColorStop(0, '#facc15');
+          grad.addColorStop(1, '#38bdf8');
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+
+        // Center Goal (Blue)
+        ctx.beginPath();
+        ctx.arc(arena.cx, arena.cy, 7, 0, Math.PI * 2);
+        ctx.fillStyle = '#38bdf8';
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = '600 11.5px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(arena.label, arena.cx, 248);
+      });
+    }
+
+    // =========================================================================
+    // 4. INTERACTIVE LOSS & EIKONAL SPEED CURVES (EQ. 4 & EQ. 12)
+    // =========================================================================
+    function drawLossCurves() {
+      const dSafe = parseFloat(document.getElementById('dsafe-slider').value);
+      const vSlow = parseFloat(document.getElementById('vslow-slider').value);
+      document.getElementById('dsafe-val').textContent = dSafe.toFixed(1) + ' m';
+      document.getElementById('vslow-val').textContent = vSlow.toFixed(2) + ' m/s';
+
+      const c = document.getElementById('loss-curve-canvas');
+      const ctx = c.getContext('2d');
+      const W = c.width, H = c.height;
+      ctx.clearRect(0, 0, W, H);
+
+      const padL = 48, padR = 24, padT = 22, padB = 36;
+      const plotW = W - padL - padR, plotH = H - padT - padB;
+
+      // Axes
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT);
+      ctx.lineTo(padL, padT + plotH);
+      ctx.lineTo(padL + plotW, padT + plotH);
+      ctx.stroke();
+
+      const rRobot = 0.15; // 15 cm span
+      const maxD = 2.2;
+      const maxY = 2.6;
+
+      // Grid lines & labels
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px monospace';
+      ctx.textAlign = 'right';
+      for (let yv = 0; yv <= 2.5; yv += 0.5) {
+        const py = padT + plotH - (yv / maxY) * plotH;
+        ctx.fillText(yv.toFixed(1), padL - 6, py + 4);
+        ctx.strokeStyle = 'rgba(51,65,85,0.4)';
+        ctx.beginPath();
+        ctx.moveTo(padL, py);
+        ctx.lineTo(padL + plotW, py);
+        ctx.stroke();
+      }
+
+      ctx.textAlign = 'center';
+      for (let xv = 0; xv <= 2.0; xv += 0.5) {
+        const px = padL + (xv / maxD) * plotW;
+        ctx.fillText(xv.toFixed(1) + 'm', px, padT + plotH + 18);
+      }
+      ctx.fillText('Obstacle Distance d(x)', padL + plotW / 2, H - 4);
+
+      // Vertical marker for d_safe
+      const dSafeX = padL + (dSafe / maxD) * plotW;
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(dSafeX, padT);
+      ctx.lineTo(dSafeX, padT + plotH);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillText('d_safe', dSafeX, padT - 6);
+
+      // Curve 1: Eq. 4 Softplus Clearance Penalty: beta1 * ln(1 + exp(beta2 * (d - r)))
+      // Table I: beta1 = 2.5, beta2 = -6.0
+      const beta1 = 2.5, beta2 = -6.0;
+      ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const d = (i / 200) * maxD;
+        const val = beta1 * Math.log(1 + Math.exp(beta2 * (d - rRobot)));
+        const px = padL + (d / maxD) * plotW;
+        const py = padT + plotH - (Math.min(maxY, val) / maxY) * plotH;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.strokeStyle = '#f43f5e';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Curve 2: Eq. 12-13 Piecewise Eikonal Speed Cost F(x)
+      const m = (1.0 - vSlow) / (dSafe - rRobot);
+      ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const d = (i / 200) * maxD;
+        let F = 1.0;
+        if (d <= rRobot) F = vSlow;
+        else if (d <= dSafe) F = m * d + (vSlow - m * rRobot);
+        const px = padL + (d / maxD) * plotW;
+        const py = padT + plotH - (F / maxY) * plotH;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+
+    // =========================================================================
+    // 5. FIG. 7 SIMULATION BENCHMARK BAR CHART (11 ENVIRONMENTS + TOTAL)
+    // =========================================================================
+    // Exact percentages extracted from Figure 7 of arXiv:2509.08177
+    const fig7Data = [
+      { env: 'Cave 1',     cat: 'complex', bnl: 50, notoa: 50, ours: 100 },
+      { env: 'Cave 2',     cat: 'complex', bnl: 0,  notoa: 20, ours: 80  },
+      { env: 'Industry 1', cat: 'complex', bnl: 33, notoa: 50, ours: 100 },
+      { env: 'Industry 2', cat: 'complex', bnl: 45, notoa: 55, ours: 85  },
+      { env: 'Mine',       cat: 'complex', bnl: 0,  notoa: 0,  ours: 0   },
+      { env: 'Sewer 1',    cat: 'sewer',   bnl: 33, notoa: 50, ours: 100 },
+      { env: 'Sewer 2',    cat: 'sewer',   bnl: 50, notoa: 62, ours: 75  },
+      { env: 'Sewer 3',    cat: 'sewer',   bnl: 67, notoa: 33, ours: 67  },
+      { env: 'Sewer 4',    cat: 'sewer',   bnl: 33, notoa: 67, ours: 100 },
+      { env: 'Sewer 5',    cat: 'sewer',   bnl: 60, notoa: 60, ours: 90  },
+      { env: 'Sewer 6',    cat: 'sewer',   bnl: 67, notoa: 67, ours: 100 },
+      { env: 'Total (All)',cat: 'all',     bnl: 50, notoa: 52, ours: 86  }
+    ];
+    let currentFig7Filter = 'all';
+
+    function filterFig7(cat) {
+      currentFig7Filter = cat;
+      document.querySelectorAll('[data-envfilter]').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-envfilter') === cat);
+      });
+      drawFig7Chart();
+    }
+
+    function drawFig7Chart() {
+      const c = document.getElementById('fig7-canvas');
+      const ctx = c.getContext('2d');
+      const W = c.width, H = c.height;
+      ctx.clearRect(0, 0, W, H);
+
+      const items = fig7Data.filter(d => currentFig7Filter === 'all' || d.cat === currentFig7Filter || d.env === 'Total (All)');
+      const padL = 52, padR = 24, padT = 28, padB = 54;
+      const plotW = W - padL - padR, plotH = H - padT - padB;
+
+      // Horizontal grid lines
+      ctx.font = '11.5px monospace';
+      ctx.textAlign = 'right';
+      for (let pct = 0; pct <= 100; pct += 20) {
+        const y = padT + plotH - (pct / 100) * plotH;
+        ctx.strokeStyle = pct === 0 ? '#475569' : 'rgba(51,65,85,0.45)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(padL, y);
+        ctx.lineTo(padL + plotW, y);
+        ctx.stroke();
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText(pct + '%', padL - 8, y + 4);
+      }
+
+      const groupW = plotW / items.length;
+      const barW = Math.min(24, (groupW - 22) / 3);
+
+      items.forEach((d, i) => {
+        const gx = padL + i * groupW + groupW / 2;
+        const bars = [
+          { val: d.bnl,   color: '#64748b', offset: -barW * 1.5 - 2 },
+          { val: d.notoa, color: '#f59e0b', offset: -barW * 0.5 },
+          { val: d.ours,  color: '#10b981', offset: barW * 0.5 + 2 }
+        ];
+
+        // Highlight Total column
+        if (d.env === 'Total (All)') {
+          ctx.fillStyle = 'rgba(56, 189, 248, 0.07)';
+          ctx.fillRect(padL + i * groupW + 4, padT, groupW - 8, plotH);
+        }
+
+        bars.forEach(b => {
+          const bh = Math.max(3, (b.val / 100) * plotH);
+          const bx = gx + b.offset;
+          const by = padT + plotH - bh;
+          ctx.fillStyle = b.color;
+          ctx.beginPath();
+          ctx.roundRect(bx, by, barW, bh, [4, 4, 0, 0]);
+          ctx.fill();
+
+          ctx.fillStyle = '#e2e8f0';
+          ctx.font = '600 10px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(b.val + '%', bx + barW / 2, by - 5);
+        });
+
+        ctx.fillStyle = d.env === 'Total (All)' ? '#38bdf8' : '#cbd5e1';
+        ctx.font = d.env === 'Total (All)' ? '700 12px sans-serif' : '600 11.5px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(d.env, gx, padT + plotH + 22);
+        if (d.env === 'Mine') {
+          ctx.fillStyle = '#f43f5e';
+          ctx.font = '10px sans-serif';
+          ctx.fillText('(Maze dead-end)', gx, padT + plotH + 36);
+        }
+      });
+    }
+
+    // =========================================================================
+    // 6. FIG. 6 ATTITUDE CONTROL LATENCY PLOT (200 ms vs ~0 ms)
+    // =========================================================================
+    function drawFig6Plot() {
+      const c = document.getElementById('fig6-canvas');
+      const ctx = c.getContext('2d');
+      const W = c.width, H = c.height;
+      ctx.clearRect(0, 0, W, H);
+
+      const padL = 46, padR = 20, padT = 22, padB = 34;
+      const plotW = W - padL - padR, plotH = H - padT - padB;
+
+      ctx.strokeStyle = '#334155';
+      ctx.beginPath();
+      ctx.moveTo(padL, padT);
+      ctx.lineTo(padL, padT + plotH);
+      ctx.lineTo(padL + plotW, padT + plotH);
+      ctx.stroke();
+
+      // Horizontal center zero line
+      const midY = padT + plotH / 2;
+      ctx.strokeStyle = 'rgba(51,65,85,0.5)';
+      ctx.beginPath();
+      ctx.moveTo(padL, midY);
+      ctx.lineTo(padL + plotW, midY);
+      ctx.stroke();
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '10.5px monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText('+25°', padL - 6, padT + 10);
+      ctx.fillText('0°', padL - 6, midY + 4);
+      ctx.fillText('-25°', padL - 6, padT + plotH);
+
+      ctx.textAlign = 'center';
+      ctx.fillText('Time t (0.0 s → 2.0 s) · 200 ms Lag Annotation', padL + plotW / 2, H - 6);
+
+      const drawSignal = (phaseShiftSec, ampScale, color, dashed) => {
+        ctx.beginPath();
+        ctx.setLineDash(dashed ? [5, 4] : []);
+        for (let i = 0; i <= 200; i++) {
+          const t = (i / 200) * 2.0;
+          const tau = Math.max(0, t - phaseShiftSec);
+          const angle = ampScale * (Math.sin(tau * Math.PI * 1.6) * 0.75 + 0.25 * Math.sin(tau * Math.PI * 3.2));
+          const px = padL + (t / 2.0) * plotW;
+          const py = midY - angle * (plotH * 0.44);
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2.6;
+        ctx.stroke();
+        ctx.setLineDash([]);
+      };
+
+      // Desired orientation setpoint
+      drawSignal(0.0, 1.0, '#f8fafc', true);
+      // Fig 6b: With body rate control omega_d (~0.015s negligible lag)
+      drawSignal(0.018, 0.98, '#10b981', false);
+      // Fig 6a: Without body rate control (~0.20s = 200 ms lag)
+      drawSignal(0.20, 0.90, '#f43f5e', false);
+
+      // Callout arrow showing 200 ms lag between peaks
+      const peak1X = padL + (0.31 / 2.0) * plotW;
+      const peak2X = padL + (0.51 / 2.0) * plotW;
+      const peakY = midY - plotH * 0.36;
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(peak1X, peakY);
+      ctx.lineTo(peak2X, peakY);
+      ctx.stroke();
+      ctx.fillStyle = '#fcd34d';
+      ctx.font = '700 11px monospace';
+      ctx.fillText('~200 ms lag (Fig. 6a)', (peak1X + peak2X) / 2 + 28, peakY - 6);
+    }
+
+    // =========================================================================
+    // 7. FIG. 9 GRAVITY RANDOMIZATION HARDWARE ABLATION PLOT
+    // =========================================================================
+    function drawFig9Plot() {
+      const c = document.getElementById('fig9-canvas');
+      const ctx = c.getContext('2d');
+      const W = c.width, H = c.height;
+      ctx.clearRect(0, 0, W, H);
+
+      const padL = 52, padR = 20, padT = 18, padB = 28;
+      const plotW = W - padL - padR;
+      const topH = 95, botH = 85, gap = 26;
+
+      // Top subplot: z-Height (m)
+      ctx.strokeStyle = '#334155';
+      ctx.strokeRect(padL, padT, plotW, topH);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = '700 11px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('Middle Row (Fig. 9): Motion-Capture Altitude z (m)', padL + 8, padT + 15);
+
+      // Goal setpoint z = 1.2m (red dashed)
+      const zGoalY = padT + 28;
+      ctx.strokeStyle = '#ef4444';
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(padL, zGoalY);
+      ctx.lineTo(padL + plotW, zGoalY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // (a) Without gravity rand -> drops rapidly
+      ctx.beginPath();
+      for (let i = 0; i <= 100; i++) {
+        const s = i / 100;
+        const px = padL + s * plotW;
+        const py = zGoalY + Math.pow(s, 1.5) * (topH - 34);
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 2.6;
+      ctx.stroke();
+
+      // (b) With gravity rand -> holds setpoint
+      ctx.beginPath();
+      for (let i = 0; i <= 100; i++) {
+        const s = i / 100;
+        const px = padL + s * plotW;
+        const py = zGoalY + Math.exp(-s * 4) * 14 * Math.sin(s * 6);
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 2.6;
+      ctx.stroke();
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '10px monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText('1.2m', padL - 5, zGoalY + 4);
+      ctx.fillText('0.0m', padL - 5, padT + topH);
+
+      // Bottom subplot: Normalized Commanded Thrust (g)
+      const botTop = padT + topH + gap;
+      ctx.strokeStyle = '#334155';
+      ctx.strokeRect(padL, botTop, plotW, botH);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = '700 11px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('Bottom Row (Fig. 9): Policy Predicted Thrust (g)', padL + 8, botTop + 15);
+
+      // (b) With gravity rand: starts at 1.3g and settles at ~1.15g hover
+      ctx.beginPath();
+      for (let i = 0; i <= 100; i++) {
+        const s = i / 100;
+        const gVal = 1.15 + 0.15 * Math.exp(-s * 5); // 1.3g -> 1.15g
+        const px = padL + s * plotW;
+        const py = botTop + botH - ((gVal - 0.85) / 0.6) * botH;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 2.6;
+      ctx.stroke();
+
+      // (a) Without gravity rand: outputs ~1.0g (< 1.15g needed to hover)
+      ctx.beginPath();
+      for (let i = 0; i <= 100; i++) {
+        const s = i / 100;
+        const gVal = 1.0 + 0.03 * Math.min(1, s * 2);
+        const px = padL + s * plotW;
+        const py = botTop + botH - ((gVal - 0.85) / 0.6) * botH;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 2.6;
+      ctx.stroke();
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '10px monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText('1.30g', padL - 5, botTop + botH - ((1.30 - 0.85) / 0.6) * botH + 3);
+      ctx.fillText('1.15g', padL - 5, botTop + botH - ((1.15 - 0.85) / 0.6) * botH + 3);
+      ctx.fillText('1.00g', padL - 5, botTop + botH - ((1.00 - 0.85) / 0.6) * botH + 3);
+    }
+
+    // =========================================================================
+    // 8. TABLE III: ALL 20 HARDWARE FLIGHT TRIALS (EXACT VERIFIED DATA)
+    // =========================================================================
+    const table3Flights = [
+      { env: 'Outdoor Flight Arena', num: 1,  time: 14.4, len: 12.1, vmax: 2.0, maxS: 1.5, avgS: 0.7 },
+      { env: 'Outdoor Flight Arena', num: 2,  time: 13.2, len: 17.9, vmax: 2.0, maxS: 2.0, avgS: 1.2 },
+      { env: 'Outdoor Flight Arena', num: 3,  time: 11.0, len: 16.6, vmax: 3.0, maxS: 3.0, avgS: 1.4 },
+      { env: 'Outdoor Flight Arena', num: 4,  time: 17.3, len: 26.9, vmax: 3.0, maxS: 2.8, avgS: 1.4 },
+      { env: 'Outdoor Flight Arena', num: 5,  time: 13.0, len: 24.1, vmax: 4.0, maxS: 3.5, avgS: 1.7 },
+      { env: 'Outdoor Flight Arena', num: 6,  time: 12.0, len: 24.5, vmax: 5.0, maxS: 3.7, avgS: 1.9 },
+      { env: 'Outdoor Flight Arena', num: 7,  time: 9.3,  len: 17.2, vmax: 3.0, maxS: 2.9, avgS: 1.7 },
+      { env: 'Outdoor Flight Arena', num: 8,  time: 11.7, len: 22.3, vmax: 3.0, maxS: 2.9, avgS: 1.8 },
+      { env: 'Outdoor Flight Arena', num: 9,  time: 11.8, len: 24.9, vmax: 3.0, maxS: 4.0, avgS: 2.0 },
+      { env: 'Outdoor Flight Arena', num: 10, time: 11.1, len: 22.5, vmax: 3.0, maxS: 2.8, avgS: 1.8 },
+      { env: 'Outdoor Flight Arena', num: 11, time: 11.7, len: 19.6, vmax: 3.0, maxS: 2.7, avgS: 1.5 },
+      { env: 'Outdoor Flight Arena', num: 12, time: 11.3, len: 20.4, vmax: 3.0, maxS: 2.7, avgS: 1.6 },
+      { env: 'Outdoor Flight Arena', num: 13, time: 10.0, len: 19.8, vmax: 3.0, maxS: 2.9, avgS: 1.9 },
+      { env: 'Outdoor Flight Arena', num: 14, time: 9.5,  len: 17.9, vmax: 3.0, maxS: 2.4, avgS: 1.9 },
+      { env: 'Outdoor Flight Arena', num: 15, time: 14.2, len: 21.0, vmax: 3.0, maxS: 2.5, avgS: 1.3 },
+      { env: 'Forest',               num: 1,  time: 12.7, len: 22.5, vmax: 3.0, maxS: 2.8, avgS: 1.6 },
+      { env: 'Forest',               num: 2,  time: 31.1, len: 52.9, vmax: 3.0, maxS: 2.8, avgS: 2.2 },
+      { env: 'Forest',               num: 3,  time: 26.0, len: 74.6, vmax: 4.0, maxS: 3.1, avgS: 2.5 },
+      { env: 'Forest',               num: 4,  time: 23.7, len: 70.1, vmax: 5.0, maxS: 3.8, avgS: 2.7, highlight: 'Fig. 10' },
+      { env: 'Forest',               num: 5,  time: 20.0, len: 61.3, vmax: 3.0, maxS: 3.0, avgS: 2.4 }
+    ];
+
+    function filterTable3(envFilter) {
+      document.querySelectorAll('[data-hwfilter]').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-hwfilter') === envFilter);
+      });
+      const tbody = document.getElementById('table3-body');
+      const rows = table3Flights.filter(r => envFilter === 'all' || r.env === envFilter);
+
+      let totalTime = 0, totalLen = 0, peakSpeed = 0;
+      tbody.innerHTML = rows.map(r => {
+        totalTime += r.time;
+        totalLen += r.len;
+        if (r.maxS > peakSpeed) peakSpeed = r.maxS;
+        const pct = Math.round((r.maxS / 4.0) * 100);
+        const badge = r.highlight ? ` <span class="tag tag-novel" style="font-size:10.5px; padding:1px 6px;">${r.highlight}</span>` : '';
+        return `
+          <tr>
+            <td><strong>${r.env}</strong>${badge}</td>
+            <td class="num">${r.num}</td>
+            <td class="num">${r.time.toFixed(1)}</td>
+            <td class="num">${r.len.toFixed(1)}</td>
+            <td class="num">${r.vmax.toFixed(1)}</td>
+            <td class="num">
+              <div class="speed-bar-wrap">
+                <span>${r.maxS.toFixed(1)}</span>
+                <div class="speed-bar"><div class="speed-bar-fill" style="width:${pct}%"></div></div>
+              </div>
+            </td>
+            <td class="num">${r.avgS.toFixed(1)}</td>
+          </tr>
+        `;
+      }).join('') + `
+        <tr style="background: rgba(56, 189, 248, 0.1); font-weight: 700;">
+          <td>Summary (${rows.length} Flights · 0 Collisions)</td>
+          <td class="num">—</td>
+          <td class="num">${totalTime.toFixed(1)} s</td>
+          <td class="num" style="color:var(--emerald);">${totalLen.toFixed(1)} m</td>
+          <td class="num">Up to 5.0</td>
+          <td class="num" style="color:var(--brand);">Peak: ${peakSpeed.toFixed(1)} m/s</td>
+          <td class="num">${(rows.reduce((a,b)=>a+b.avgS,0)/rows.length).toFixed(2)} m/s</td>
+        </tr>
+      `;
+    }
+
+    // Initialize all figures, canvases, and tables on load
+    window.addEventListener('DOMContentLoaded', () => {
+      initFig4FMM();
+      drawFig4Canvas();
+      drawFig5Canvas();
+      drawLossCurves();
+      drawFig7Chart();
+      drawFig6Plot();
+      drawFig9Plot();
+      filterTable3('all');
+    });
+  </script>
+</body>
+</html>

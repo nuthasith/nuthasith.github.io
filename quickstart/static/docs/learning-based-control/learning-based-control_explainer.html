@@ -1,0 +1,2513 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visual Paper Guide — A Decade of Learning-Based Control (arXiv:2610.29187)</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-alt: #f1f5f9;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --ink: #0f172a;
+      --ink-secondary: #334155;
+      --muted: #64748b;
+
+      /* Paper Fig. 1 Semantic Palette */
+      --green-bg: #ecfdf5;
+      --green-border: #6ee7b7;
+      --green-ink: #065f46;
+      --green-accent: #059669;
+
+      --orange-bg: #fffbeb;
+      --orange-border: #fcd34d;
+      --orange-ink: #92400e;
+      --orange-accent: #d97706;
+
+      --blue-bg: #eff6ff;
+      --blue-border: #93c5fd;
+      --blue-ink: #1e40af;
+      --blue-accent: #2563eb;
+
+      --purple-bg: #f5f3ff;
+      --purple-border: #c4b5fd;
+      --purple-ink: #5b21b6;
+      --purple-accent: #7c3aed;
+
+      --grey-bg: #f1f5f9;
+      --grey-border: #cbd5e1;
+      --grey-ink: #334155;
+
+      --danger-bg: #fef2f2;
+      --danger-border: #fca5a5;
+      --danger-ink: #991b1b;
+      --danger-accent: #dc2626;
+
+      --radius-sm: 8px;
+      --radius: 12px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+      --shadow: 0 4px 12px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      --font-math: "Cambria Math", "STIX Two Math", "Latin Modern Math", Georgia, serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-sans);
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Sticky Top Navigation */
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .top-nav-inner {
+      max-width: 1260px;
+      margin: 0 auto;
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--ink);
+    }
+
+    .arxiv-pill {
+      background: var(--ink);
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.02em;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .nav-link {
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink-secondary);
+      padding: 6px 12px;
+      border-radius: 999px;
+      transition: all 0.15s ease;
+      border: 1px solid transparent;
+    }
+
+    .nav-link:hover,
+    .nav-link:focus-visible {
+      background: var(--surface-alt);
+      color: var(--blue-accent);
+      border-color: var(--border);
+      outline: none;
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1260px;
+      margin: 0 auto;
+      padding: 28px 24px 64px;
+    }
+
+    /* Hero Banner */
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #ffffff;
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .hero-tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .hero-tag {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .hero-links {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .hero-ext-link {
+      font-size: 12px;
+      font-weight: 600;
+      color: #ffffff;
+      background: rgba(37, 99, 235, 0.85);
+      border: 1px solid rgba(147, 197, 253, 0.4);
+      padding: 6px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s ease;
+    }
+
+    .hero-ext-link.secondary {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .hero-ext-link:hover {
+      background: rgba(37, 99, 235, 1);
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: clamp(22px, 3vw, 32px);
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-authors {
+      font-size: 13.5px;
+      color: #cbd5e1;
+      margin: 0 0 18px;
+    }
+
+    .hero-authors span {
+      color: #94a3b8;
+      font-size: 12.5px;
+    }
+
+    .hero-kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .hero-kpi {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+
+    .hero-kpi-val {
+      font-size: 24px;
+      font-weight: 800;
+      color: #38bdf8;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+
+    .hero-kpi-label {
+      font-size: 12.5px;
+      color: #cbd5e1;
+    }
+
+    /* Section Headers */
+    .section-block {
+      margin-bottom: 40px;
+      scroll-margin-top: 72px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .section-eyebrow {
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--blue-accent);
+      margin-bottom: 2px;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.015em;
+    }
+
+    .section-subtitle {
+      margin: 0;
+      font-size: 13.5px;
+      color: var(--muted);
+    }
+
+    /* Cards & Grids */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      padding: 20px;
+    }
+
+    .fig-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 6px;
+      background: var(--blue-bg);
+      color: var(--blue-ink);
+      border: 1px solid var(--blue-border);
+      margin-bottom: 8px;
+    }
+
+    .fig-badge.green {
+      background: var(--green-bg);
+      color: var(--green-ink);
+      border-color: var(--green-border);
+    }
+
+    .fig-badge.orange {
+      background: var(--orange-bg);
+      color: var(--orange-ink);
+      border-color: var(--orange-border);
+    }
+
+    .fig-badge.purple {
+      background: var(--purple-bg);
+      color: var(--purple-ink);
+      border-color: var(--purple-border);
+    }
+
+    .fig-title {
+      margin: 0 0 6px;
+      font-size: 16.5px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .fig-caption {
+      margin: 0 0 14px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* Fig 1: Scope Diagram */
+    .fig1-diagram {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    @media (min-width: 960px) {
+      .fig1-diagram {
+        grid-template-columns: 280px 1fr 250px;
+        align-items: stretch;
+      }
+    }
+
+    .fig1-col {
+      border-radius: var(--radius);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .fig1-col.green {
+      background: var(--green-bg);
+      border: 2px solid var(--green-border);
+    }
+
+    .fig1-col.orange {
+      background: var(--orange-bg);
+      border: 2px solid var(--orange-border);
+    }
+
+    .fig1-col.grey {
+      background: var(--grey-bg);
+      border: 2px solid var(--grey-border);
+    }
+
+    .fig1-col-header {
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .fig1-col.green .fig1-col-header { color: var(--green-ink); }
+    .fig1-col.orange .fig1-col-header { color: var(--orange-ink); }
+    .fig1-col.grey .fig1-col-header { color: var(--grey-ink); }
+
+    .fig1-node {
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(15, 23, 42, 0.1);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+      text-align: left;
+    }
+
+    .fig1-node:hover,
+    .fig1-node.active {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+      border-color: var(--blue-accent);
+    }
+
+    .fig1-node-title {
+      font-weight: 700;
+      font-size: 13.5px;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .fig1-node-sub {
+      font-size: 12px;
+      color: var(--ink-secondary);
+      margin-top: 3px;
+    }
+
+    .spectrum-bar {
+      background: linear-gradient(90deg, #059669 0%, #d97706 50%, #7c3aed 100%);
+      height: 8px;
+      border-radius: 999px;
+      margin: 4px 0 2px;
+    }
+
+    .spectrum-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--orange-ink);
+    }
+
+    .fig1-orange-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }
+
+    .fig1-inspector {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      background: var(--surface-alt);
+      border-left: 4px solid var(--blue-accent);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    /* Bibliometric Grid (Figs 2, 3, 4, 13) */
+    .bib-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    @media (min-width: 980px) {
+      .bib-grid {
+        grid-template-columns: 1.15fr 0.85fr;
+      }
+    }
+
+    .heatmap-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .heatmap-table th,
+    .heatmap-table td {
+      padding: 6px 6px;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+
+    .heatmap-table th.topic-col {
+      text-align: left;
+      padding-left: 10px;
+      font-weight: 600;
+      color: var(--ink-secondary);
+      background: var(--surface-alt);
+      min-width: 170px;
+    }
+
+    .heatmap-cell {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 4px;
+      transition: transform 0.1s ease;
+    }
+
+    /* Equations Explorer */
+    .eq-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 16px;
+    }
+
+    .eq-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .eq-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .eq-num {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      background: var(--surface-alt);
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    .eq-box {
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: var(--font-math);
+      font-size: 16.5px;
+      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      overflow-x: auto;
+      line-height: 1.65;
+      letter-spacing: 0.01em;
+    }
+
+    .m-state { color: #38bdf8; font-weight: 700; }
+    .m-ctrl { color: #fbbf24; font-weight: 700; }
+    .m-unc { color: #f87171; font-weight: 700; }
+    .m-safe { color: #34d399; font-weight: 700; }
+    .m-learn { color: #c084fc; font-weight: 700; }
+
+    .legend-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .legend-pill {
+      font-size: 11.5px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: var(--surface-alt);
+      color: var(--ink-secondary);
+      border: 1px solid var(--border);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    /* Interactive Controls */
+    .controls-bar {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      background: var(--surface-alt);
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 14px;
+      border: 1px solid var(--border);
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--ink-secondary);
+    }
+
+    .btn-toggle {
+      font: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      color: var(--ink);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-toggle.active {
+      background: var(--blue-accent);
+      color: #ffffff;
+      border-color: var(--blue-accent);
+    }
+
+    .btn-toggle:hover:not(.active) {
+      background: var(--surface-alt);
+    }
+
+    input[type="range"] {
+      accent-color: var(--blue-accent);
+      cursor: pointer;
+    }
+
+    .two-col-figs {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    @media (min-width: 960px) {
+      .two-col-figs {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .svg-frame {
+      width: 100%;
+      height: auto;
+      display: block;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+
+    .stat-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .mini-stat {
+      background: var(--surface-alt);
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    .mini-stat-label {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .mini-stat-val {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink);
+      font-family: var(--font-mono);
+    }
+
+    /* Table I Styling */
+    .table-filter-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .filter-pills {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      font: inherit;
+      font-size: 13px;
+      padding: 7px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border-strong);
+      min-width: 240px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .paper-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+      min-width: 980px;
+    }
+
+    .paper-table th {
+      background: #0f172a;
+      color: #ffffff;
+      font-weight: 700;
+      text-align: left;
+      padding: 12px 14px;
+      font-size: 12px;
+      letter-spacing: 0.02em;
+    }
+
+    .paper-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      color: var(--ink-secondary);
+    }
+
+    .paper-table tr:hover td {
+      background: #f8fafc;
+    }
+
+    .method-cell-title {
+      font-weight: 700;
+      color: var(--ink);
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .sec-tag {
+      display: inline-block;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+    }
+
+    .sec-iv { background: var(--orange-bg); color: var(--orange-ink); border: 1px solid var(--orange-border); }
+    .sec-v { background: var(--blue-bg); color: var(--blue-ink); border: 1px solid var(--blue-border); }
+    .sec-vi { background: var(--purple-bg); color: var(--purple-ink); border: 1px solid var(--purple-border); }
+
+    .guarantee-chip {
+      display: inline-block;
+      background: var(--green-bg);
+      color: var(--green-ink);
+      border: 1px solid var(--green-border);
+      font-weight: 600;
+      font-size: 11.5px;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .guarantee-chip.warn {
+      background: var(--orange-bg);
+      color: var(--orange-ink);
+      border-color: var(--orange-border);
+    }
+
+    .footer-note {
+      margin-top: 40px;
+      padding: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 12.5px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+  </style>
+<style data-link-removed-style>a[data-link-removed],a[href*="zPythonSafez"]:not([onclick]){pointer-events:none!important;cursor:default!important;opacity:.6}</style></head>
+<body>
+
+  <!-- Sticky Navigation -->
+  <header class="top-nav">
+    <div class="top-nav-inner">
+      <div class="brand-badge">
+        <span class="arxiv-pill">arXiv:2610.29187</span>
+        <span>Visual Guide: Learning-Based Control</span>
+      </div>
+      <nav class="nav-links" aria-label="Section navigation">
+        <a class="nav-link" href="#sec-overview">Fig. 1–4 &amp; 13: Scope &amp; Trends</a>
+        <a class="nav-link" href="#sec-equations">Core Equations</a>
+        <a class="nav-link" href="#sec-stability">Fig. 5: Stability &amp; Safety</a>
+        <a class="nav-link" href="#sec-dynamics">Fig. 6–7: GP-MPC</a>
+        <a class="nav-link" href="#sec-deepc">Fig. 8–9: DeePC</a>
+        <a class="nav-link" href="#sec-rl-bo">Fig. 10–12: Safe RL &amp; BO</a>
+        <a class="nav-link" href="#sec-table1">Table I: Master Comparison</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- HERO BANNER -->
+    <section class="hero" aria-label="Paper Overview">
+      <div class="hero-top-row">
+        <div class="hero-tags">
+          <span class="hero-tag">Tutorial Paper • IEEE CDC 10-Year Milestone (2016–2025)</span>
+          <span class="hero-tag">Systems &amp; Control (eess.SY) • Machine Learning (cs.LG)</span>
+        </div>
+        <div class="hero-links">
+          <a class="hero-ext-link" href="https://arxiv.org/pdf/2610.29187" target="_blank" rel="noopener">View PDF (arXiv)</a>
+          <a class="hero-ext-link secondary" href="https://arxiv.org/html/2610.29187v1" target="_blank" rel="noopener">arXiv HTML</a>
+          <a class="hero-ext-link secondary" rel="noopener" data-link-removed aria-disabled="true" role="link" title="Link removed: its address didn't come from this conversation.">Companion Code &amp; Website</a>
+        </div>
+      </div>
+
+      <h1>A Decade of Learning-Based Control: From Theoretic Foundations to Practical Deployment</h1>
+      <p class="hero-authors">
+        Angela P. Schoellig, Matthias A. Müller, Sebastian Trimpe, Melanie N. Zeilinger, Mahathi Anand, Andrea Carron, Oliver Hausdörfer, Victor G. Lopez, Friedrich Solowjow, Haocheng Zhao, Siqi Zhou
+        <br>
+        <span>Affiliations: Technical University of Munich (TUM) • Leibniz University Hannover • RWTH Aachen University • ETH Zurich</span>
+      </p>
+
+      <div class="hero-kpis">
+        <div class="hero-kpi">
+          <div class="hero-kpi-val">13 Figures &amp; 6 Examples</div>
+          <div class="hero-kpi-label">Interactive plots reconstructing Figs. 1–13 &amp; Examples 1–6</div>
+        </div>
+        <div class="hero-kpi">
+          <div class="hero-kpi-val">182 Papers Surveyed</div>
+          <div class="hero-kpi-label">CDC Learning-Based Control Invited Sessions dataset (2016–2025)</div>
+        </div>
+        <div class="hero-kpi">
+          <div class="hero-kpi-val">3 Core Paradigms</div>
+          <div class="hero-kpi-label">Dynamics Learning (Sec. IV) • Direct Data-Driven (Sec. V) • Policy/BO (Sec. VI)</div>
+        </div>
+        <div class="hero-kpi">
+          <div class="hero-kpi-val">20.9% (38 / 182)</div>
+          <div class="hero-kpi-label">Invited-session papers releasing open-source code (Fig. 13)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 1: FIG 1, FIG 2, FIG 3, FIG 4, FIG 13 -->
+    <section id="sec-overview" class="section-block">
+      <div class="section-header">
+        <div>
+          <div class="section-eyebrow">Section I • Big Picture &amp; 10-Year Bibliometrics</div>
+          <h2 class="section-title">Paper Scope (Fig. 1) &amp; Evolution of the Field (Figs. 2, 3, 4, 13)</h2>
+        </div>
+        <p class="section-subtitle">Click any block in Fig. 1 to inspect its mathematical role and jump to its figures</p>
+      </div>
+
+      <!-- Figure 1 Interactive Reconstruction -->
+      <div class="card">
+        <span class="fig-badge">Fig. 1 • Architecture &amp; Scope of the Tutorial Paper</span>
+        <h3 class="fig-title">Bridging Machine Learning Flexibility with Control-Theoretic Guarantees</h3>
+        <p class="fig-caption">
+          Color-coded exactly as in the paper: <strong>Green</strong> = Stability &amp; Safety Foundations (Section III); <strong>Orange</strong> = Methodological Paradigms from structured model-based learning to data-driven policy optimization (Sections IV–VI); <strong>Grey</strong> = Representative Application Domains (Section VII).
+        </p>
+
+        <div class="fig1-diagram">
+          <!-- GREEN: FOUNDATIONS -->
+          <div class="fig1-col green">
+            <div class="fig1-col-header">
+              <span>1. Foundations (Sec. III)</span>
+              <span>Guarantees</span>
+            </div>
+            <button type="button" class="fig1-node active" data-node="lyapunov">
+              <div class="fig1-node-title">
+                <span>Stability Certificates</span>
+                <span>Sec. III-A–C</span>
+              </div>
+              <div class="fig1-node-sub">Nominal Lyapunov V(x), Robust ISS, Stochastic Lyapunov</div>
+            </button>
+            <button type="button" class="fig1-node" data-node="invariance">
+              <div class="fig1-node-title">
+                <span>Forward &amp; Control Invariance</span>
+                <span>Sec. III-D</span>
+              </div>
+              <div class="fig1-node-sub">Safe set S = {x : b(x) ≥ 0} kept invariant for all k ≥ 0</div>
+            </button>
+            <button type="button" class="fig1-node" data-node="filters">
+              <div class="fig1-node-title">
+                <span>Safety Filters (HJ / CBF / PSF)</span>
+                <span>Sec. III-D–F</span>
+              </div>
+              <div class="fig1-node-sub">Certify or minimally modify any learned policy u_k^L online</div>
+            </button>
+          </div>
+
+          <!-- ORANGE: METHODOLOGICAL PARADIGMS -->
+          <div class="fig1-col orange">
+            <div class="fig1-col-header">
+              <span>2. Methodological Paradigms (Secs. IV–VI)</span>
+              <span>Table I &amp; Examples 1–6</span>
+            </div>
+            <div>
+              <div class="spectrum-bar"></div>
+              <div class="spectrum-labels">
+                <span>← Structured Model-Based Learning</span>
+                <span>Direct Data-Driven</span>
+                <span>Policy Learning &amp; Tuning →</span>
+              </div>
+            </div>
+            <div class="fig1-orange-grid">
+              <button type="button" class="fig1-node" data-node="sec4">
+                <div class="fig1-node-title">
+                  <span>Sec. IV: Dynamics Learning</span>
+                </div>
+                <div class="fig1-node-sub">
+                  Nominal prior f̂_n + learned f̂_l(z)<br>
+                  • Linear ID &amp; Deep Nets<br>
+                  • Gaussian Processes (GP-MPC)<br>
+                  <em>(Examples 1–3, Figs. 6–7)</em>
+                </div>
+              </button>
+              <button type="button" class="fig1-node" data-node="sec5">
+                <div class="fig1-node-title">
+                  <span>Sec. V: Direct Data-Driven</span>
+                </div>
+                <div class="fig1-node-sub">
+                  Bypasses explicit system ID<br>
+                  • Willems' Fundamental Lemma<br>
+                  • Hankel Matrix &amp; DeePC<br>
+                  <em>(Example 4, Figs. 8–9)</em>
+                </div>
+              </button>
+              <button type="button" class="fig1-node" data-node="sec6">
+                <div class="fig1-node-title">
+                  <span>Sec. VI: Policy &amp; Tuning</span>
+                </div>
+                <div class="fig1-node-sub">
+                  Direct policy/parameter learning<br>
+                  • Model-Free / Model-Based RL<br>
+                  • Imitation Learning &amp; BO<br>
+                  <em>(Examples 5–6, Figs. 10–12)</em>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- GREY: APPLICATIONS -->
+          <div class="fig1-col grey">
+            <div class="fig1-col-header">
+              <span>3. Applications (Sec. VII)</span>
+              <span>Real-World</span>
+            </div>
+            <button type="button" class="fig1-node" data-node="app-robotics">
+              <div class="fig1-node-title"><span>Robotics &amp; Autonomy</span></div>
+              <div class="fig1-node-sub">Quadrotors, racing cars, legged &amp; mobile manipulators</div>
+            </button>
+            <button type="button" class="fig1-node" data-node="app-health">
+              <div class="fig1-node-title"><span>Healthcare Systems</span></div>
+              <div class="fig1-node-sub">Automated insulin delivery, rehabilitation exoskeletons</div>
+            </button>
+            <button type="button" class="fig1-node" data-node="app-energy">
+              <div class="fig1-node-title"><span>Energy, Power &amp; Process</span></div>
+              <div class="fig1-node-sub">Smart grids, wind turbines, chemical batch reactors</div>
+            </button>
+          </div>
+        </div>
+
+        <div id="fig1-detail" class="fig1-inspector">
+          <div>
+            <strong id="fig1-detail-title">Stability Certificates (Section III-A to III-C)</strong>
+            <div id="fig1-detail-desc" style="font-size:13px; color:var(--ink-secondary); margin-top:2px;">
+              Certifies convergence to equilibrium x̄ (nominal ΔV ≤ -α₃) or to a bounded tube around x̄ whose radius scales with disturbance bound w ∈ W (ISS) or noise variance c (Stochastic Lyapunov).
+            </div>
+          </div>
+          <a id="fig1-detail-link" href="#sec-stability" class="btn-toggle active" style="text-decoration:none;">Jump to Visual Plot →</a>
+        </div>
+      </div>
+
+      <!-- Bibliometric Plots: Fig. 2 (Heatmap) + Fig. 3, 4, 13 -->
+      <div class="bib-grid">
+        <!-- Fig. 2 Heatmap -->
+        <div class="card">
+          <span class="fig-badge orange">Fig. 2 • Research Thread Evolution Heatmap (2016–2025)</span>
+          <h3 class="fig-title">Recurring Concept Phrases in CDC Invited Sessions (182 Papers)</h3>
+          <p class="fig-caption">
+            Annual frequency of representative concept phrases extracted from titles &amp; abstracts of the 182 papers in the IEEE CDC Learning-Based Control Invited Sessions (Appendix dataset).
+          </p>
+          <div style="overflow-x:auto;">
+            <table class="heatmap-table" id="fig2-heatmap" aria-label="Figure 2 Concept Frequency Heatmap"></table>
+          </div>
+        </div>
+
+        <!-- Figs 3, 4, 13 Multi-Tab Chart Card -->
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+            <span class="fig-badge" id="bib-chart-badge">Fig. 4 • DBLP Conference Trend (2010–2025)</span>
+            <div style="display:flex; gap:4px;">
+              <button type="button" class="btn-toggle active" data-bibtab="fig4">Fig. 4 (Conferences)</button>
+              <button type="button" class="btn-toggle" data-bibtab="fig3">Fig. 3 (Citations)</button>
+              <button type="button" class="btn-toggle" data-bibtab="fig13">Fig. 13 (Open Code)</button>
+            </div>
+          </div>
+          <h3 class="fig-title" id="bib-chart-title">% of Papers with "Learning" in Title (CDC, ACC, ECC)</h3>
+          <p class="fig-caption" id="bib-chart-caption">
+            Percentage of papers containing "learning" in their title across major control conferences (CDC, ACC, ECC) from 2010 to 2025 (DBLP data, May 2026).
+          </p>
+          <svg id="bib-svg" class="svg-frame" viewBox="0 0 520 265" aria-label="Bibliometric trend chart"></svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: VISUAL EQUATIONS GUIDE -->
+    <section id="sec-equations" class="section-block">
+      <div class="section-header">
+        <div>
+          <div class="section-eyebrow">Sections II–VI • Visual Math Cheat-Sheet</div>
+          <h2 class="section-title">Core Equations of the Paper — Color-Coded by Role</h2>
+        </div>
+        <div class="legend-pills">
+          <span class="legend-pill"><span class="dot" style="background:#38bdf8;"></span>State / Trajectory x, y</span>
+          <span class="legend-pill"><span class="dot" style="background:#fbbf24;"></span>Control / Policy u, π</span>
+          <span class="legend-pill"><span class="dot" style="background:#f87171;"></span>Uncertainty / Disturbance w, σ</span>
+          <span class="legend-pill"><span class="dot" style="background:#34d399;"></span>Safety / Lyapunov Certificate V, b, S</span>
+          <span class="legend-pill"><span class="dot" style="background:#c084fc;"></span>Learned Model / Data f̂_l, H_L, θ</span>
+        </div>
+      </div>
+
+      <div class="eq-grid">
+        <!-- Eq 1-4 -->
+        <div class="eq-card">
+          <div class="eq-header">
+            <strong>General Nonlinear Control Problem</strong>
+            <span class="eq-num">Sec. II • Eqs. (1a)–(4)</span>
+          </div>
+          <div class="eq-box">
+            <span class="m-state">x<sub>k+1</sub></span> = f(<span class="m-state">x<sub>k</sub></span>, <span class="m-ctrl">u<sub>k</sub></span>, <span class="m-unc">w<sub>k</sub></span>), &nbsp;&nbsp;
+            <span class="m-state">y<sub>k</sub></span> = h(<span class="m-state">x<sub>k</sub></span>, <span class="m-unc">v<sub>k</sub></span>)<br>
+            <span class="m-ctrl">u<sub>k</sub></span> = <span class="m-ctrl">π<sub>k</sub></span>(<span class="m-state">x<sub>k</sub></span>, r<sub>k</sub>) &nbsp; s.t. &nbsp; <span class="m-safe">g(x<sub>k</sub>, u<sub>k</sub>) ≤ 0</span>
+          </div>
+          <div class="legend-pills">
+            <span class="legend-pill"><strong>x<sub>k</sub> ∈ ℝ<sup>n<sub>x</sub></sup></strong>: State</span>
+            <span class="legend-pill"><strong>u<sub>k</sub> ∈ ℝ<sup>n<sub>u</sub></sup></strong>: Input</span>
+            <span class="legend-pill"><strong>w<sub>k</sub>, v<sub>k</sub></strong>: Process &amp; sensor noise</span>
+            <span class="legend-pill"><strong>g(x,u) ≤ 0</strong>: State/input safety constraints</span>
+          </div>
+        </div>
+
+        <!-- Eq 5-7 -->
+        <div class="eq-card">
+          <div class="eq-header">
+            <strong>Nominal, Robust (ISS) &amp; Stochastic Lyapunov</strong>
+            <span class="eq-num">Sec. III-A–C • Thms. 1–3</span>
+          </div>
+          <div class="eq-box">
+            Nominal: <span class="m-safe">ΔV(x<sub>k</sub>)</span> ≤ −α<sub>3</sub>(‖<span class="m-state">x<sub>k</sub> − x̄</span>‖)<br>
+            ISS: <span class="m-safe">ΔV(x<sub>k</sub>)</span> ≤ −α<sub>3</sub>(‖<span class="m-state">x<sub>k</sub> − x̄</span>‖) + <span class="m-unc">σ(‖w<sub>k</sub>‖)</span><br>
+            Stochastic: 𝔼[<span class="m-safe">V(x<sub>k+1</sub>)</span> | <span class="m-state">x<sub>k</sub></span>] − <span class="m-safe">V(x<sub>k</sub>)</span> ≤ −ℓ(<span class="m-state">x<sub>k</sub></span>) + <span class="m-unc">c</span>
+          </div>
+          <div class="legend-pills">
+            <span class="legend-pill"><strong>V(x)</strong>: Energy-like certificate</span>
+            <span class="legend-pill"><strong>σ(‖w<sub>k</sub>‖), c</strong>: Residual error from model mismatch / noise</span>
+          </div>
+        </div>
+
+        <!-- Safety Filters: CBF & PSF -->
+        <div class="eq-card">
+          <div class="eq-header">
+            <strong>Control Barrier Functions (CBF) &amp; Safety Filters</strong>
+            <span class="eq-num">Sec. III-D • Forward Invariance</span>
+          </div>
+          <div class="eq-box">
+            Safe Set: <span class="m-safe">𝒮 = { x ∈ ℝ<sup>n<sub>x</sub></sup> : b(x) ≥ 0 }</span><br>
+            CBF Condition: <span class="m-safe">b</span>(f(<span class="m-state">x<sub>k</sub></span>, <span class="m-ctrl">u<sub>k</sub></span>)) − <span class="m-safe">b(x<sub>k</sub>)</span> ≥ −α(<span class="m-safe">b(x<sub>k</sub>)</span>)<br>
+            Filter: min<sub><span class="m-ctrl">u<sub>k</sub></span></sub> ‖<span class="m-ctrl">u<sub>k</sub> − u<sub>k</sub><sup>L</sup></span>‖² &nbsp; s.t. <span class="m-state">x<sub>k+1</sub></span> ∈ <span class="m-safe">𝒮</span> (or <span class="m-state">x<sub>T|k</sub></span> ∈ <span class="m-safe">𝒮<sub>f</sub></span>)
+          </div>
+          <div class="legend-pills">
+            <span class="legend-pill"><strong>u<sub>k</sub><sup>L</sup></strong>: Arbitrary learned policy</span>
+            <span class="legend-pill"><strong>b(x) ≥ 0</strong>: Barrier certificate</span>
+            <span class="legend-pill"><strong>𝒮<sub>f</sub></strong>: Terminal invariant set (PSF)</span>
+          </div>
+        </div>
+
+        <!-- Eq 8: Dynamics Learning -->
+        <div class="eq-card">
+          <div class="eq-header">
+            <strong>Structured Dynamics Learning &amp; GP Posterior</strong>
+            <span class="eq-num">Sec. IV-A &amp; IV-D • Eq. (8)</span>
+          </div>
+          <div class="eq-box">
+            f̂(<span class="m-state">x</span>, <span class="m-ctrl">u</span>) = <span class="m-safe">f̂<sub>n</sub>(x, u)</span> + <span class="m-learn">f̂<sub>l</sub>(z)</span>, &nbsp;&nbsp; z = [<span class="m-state">x</span><sup>⊤</sup>, <span class="m-ctrl">u</span><sup>⊤</sup>]<sup>⊤</sup><br>
+            GP: <span class="m-learn">f̂<sub>l</sub>(z)</span> ∼ 𝒢𝒫(<span class="m-learn">μ̂(z)</span>, <span class="m-unc">Σ̂(z)</span>), &nbsp; Tightening: ±<span class="m-unc">β · σ̂(z)</span>
+          </div>
+          <div class="legend-pills">
+            <span class="legend-pill"><strong>f̂<sub>n</sub></strong>: Known physics / nominal model</span>
+            <span class="legend-pill"><strong>f̂<sub>l</sub>(z)</strong>: Data-learned residual</span>
+            <span class="legend-pill"><strong>β</strong>: Confidence scaling factor</span>
+          </div>
+        </div>
+
+        <!-- Sec V: Willems & DeePC -->
+        <div class="eq-card">
+          <div class="eq-header">
+            <strong>Willems' Fundamental Lemma &amp; Regularized DeePC</strong>
+            <span class="eq-num">Sec. V-A &amp; V-D • Direct Data-Driven</span>
+          </div>
+          <div class="eq-box">
+            <span class="m-learn">[ U<sub>p</sub><sup>⊤</sup> &nbsp; Y<sub>p</sub><sup>⊤</sup> &nbsp; U<sub>f</sub><sup>⊤</sup> &nbsp; Y<sub>f</sub><sup>⊤</sup> ]<sup>⊤</sup> α</span> =
+            [ <span class="m-ctrl">u<sub>ini</sub></span><sup>⊤</sup> &nbsp; (<span class="m-state">y<sub>ini</sub></span>+<span class="m-unc">σ<sub>y</sub></span>)<sup>⊤</sup> &nbsp; <span class="m-ctrl">u</span><sup>⊤</sup> &nbsp; <span class="m-state">y</span><sup>⊤</sup> ]<sup>⊤</sup><br>
+            min<sub><span class="m-learn">α</span>, <span class="m-ctrl">u</span>, <span class="m-state">y</span>, <span class="m-unc">σ<sub>y</sub></span></sub> ∑ ℓ(<span class="m-ctrl">u<sub>k</sub></span>, <span class="m-state">y<sub>k</sub></span>) + <span class="m-learn">λ<sub>α</sub>‖α‖<sub>2</sub><sup>2</sup></span> + <span class="m-unc">λ<sub>σ</sub>‖σ<sub>y</sub>‖<sub>2</sub><sup>2</sup></span>
+          </div>
+          <div class="legend-pills">
+            <span class="legend-pill"><strong>U<sub>p</sub>, Y<sub>p</sub>, U<sub>f</sub>, Y<sub>f</sub></strong>: Hankel data matrices</span>
+            <span class="legend-pill"><strong>α ∈ ℝ<sup>N−L+1</sup></strong>: Trajectory weights</span>
+            <span class="legend-pill"><strong>λ<sub>α</sub>, λ<sub>σ</sub></strong>: Noise/nonlinear regularizers</span>
+          </div>
+        </div>
+
+        <!-- Sec VI: RL & BO -->
+        <div class="eq-card">
+          <div class="eq-header">
+            <strong>Reinforcement Learning (RL) &amp; Bayesian Optimization (BO)</strong>
+            <span class="eq-num">Sec. VI-A–D • Policy &amp; Tuning</span>
+          </div>
+          <div class="eq-box">
+            RL: min<sub><span class="m-learn">θ</span></sub> J(<span class="m-learn">θ</span>) = −𝔼<sub><span class="m-ctrl">π<sub>θ</sub></span></sub> [ ∑<sub>k=0</sub><sup>∞</sup> γ<sup>k</sup> r(<span class="m-state">x<sub>k</sub></span>, <span class="m-ctrl">u<sub>k</sub></span>) ]<br>
+            BO: <span class="m-learn">θ<sub>n+1</sub></span> = arg max<sub><span class="m-learn">θ∈Θ</span></sub> α<sub>EI</sub>(<span class="m-learn">θ</span> | 𝒟<sub>n</sub>), &nbsp; J(<span class="m-learn">θ</span>) ∼ 𝒢𝒫(<span class="m-learn">μ<sub>J</sub></span>, <span class="m-unc">σ<sub>J</sub><sup>2</sup></span>)
+          </div>
+          <div class="legend-pills">
+            <span class="legend-pill"><strong>π<sub>θ</sub></strong>: Parameterized policy</span>
+            <span class="legend-pill"><strong>α<sub>EI</sub>(θ)</strong>: Expected Improvement acquisition function</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: INTERACTIVE FIGURES 5 TO 12 -->
+
+    <!-- FIG 5: STABILITY & SAFETY -->
+    <section id="sec-stability" class="section-block">
+      <div class="section-header">
+        <div>
+          <div class="section-eyebrow">Section III • Theoretical Foundations</div>
+          <h2 class="section-title">Fig. 5: Visual Guide to Stability &amp; Safety Notions</h2>
+        </div>
+        <p class="section-subtitle">Interactive phase-space comparison of Nominal Stability, Robust/Stochastic ISS, and Safety Filters</p>
+      </div>
+
+      <div class="card">
+        <div class="controls-bar">
+          <div class="control-group">
+            <span>Select Concept Panel:</span>
+            <button type="button" class="btn-toggle active" data-fig5="all">Show All 3 Panels</button>
+            <button type="button" class="btn-toggle" data-fig5="nominal">(a) Nominal Stability</button>
+            <button type="button" class="btn-toggle" data-fig5="robust">(b) Robust / Stochastic (ISS)</button>
+            <button type="button" class="btn-toggle" data-fig5="safety">(c) Invariance &amp; Safety Filters (HJ / CBF / PSF)</button>
+          </div>
+          <div class="control-group" style="margin-left:auto;">
+            <label for="fig5-dist-slider">Disturbance / Uncertainty Bound ‖w‖:</label>
+            <input type="range" id="fig5-dist-slider" min="0.05" max="0.45" step="0.05" value="0.20">
+            <span id="fig5-dist-val" style="font-family:var(--font-mono); font-weight:700;">0.20</span>
+          </div>
+        </div>
+
+        <svg id="fig5-svg" class="svg-frame" viewBox="0 0 1140 350" aria-label="Figure 5 Stability and safety phase portraits"></svg>
+
+        <div class="stat-strip">
+          <div class="mini-stat">
+            <div class="mini-stat-label"> Panel (a): Nominal Lyapunov</div>
+            <div class="mini-stat-val">ΔV(x_k) ≤ 0 → x_k → x̄</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-stat-label">Panel (b): Robust ISS / Stochastic</div>
+            <div class="mini-stat-val" id="fig5-tube-stat">Residual Tube Radius ≈ 0.20</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-stat-label">HJ Reachability</div>
+            <div class="mini-stat-val">Maximal Safe Set (Grid PDE)</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-stat-label">CBF vs. PSF Safety Filter</div>
+            <div class="mini-stat-val">1-Step Barrier vs. T-Step Backup</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FIGS 6 & 7: DYNAMICS LEARNING & GP-MPC (EXAMPLES 1-3) -->
+    <section id="sec-dynamics" class="section-block">
+      <div class="section-header">
+        <div>
+          <div class="section-eyebrow">Section IV • Dynamics Learning for Control (Examples 1–3)</div>
+          <h2 class="section-title">Fig. 6 &amp; Fig. 7: Prior Structure in GP Learning &amp; Safe GP-MPC under Uncertainty</h2>
+        </div>
+        <p class="section-subtitle">Explore how physics priors f̂_n and uncertainty scaling β govern closed-loop safety vs. performance</p>
+      </div>
+
+      <div class="two-col-figs">
+        <!-- Fig. 6 Card -->
+        <div class="card">
+          <span class="fig-badge orange">Fig. 6 • Section IV-A / IV-D (Example 1)</span>
+          <h3 class="fig-title">Effect of Prior Structure on Learning from Incomplete Data</h3>
+          <p class="fig-caption">
+            Grey region contains <strong>no measurements</strong>. Dashed blue = true function f; solid red = posterior mean μ̂; shaded red band = predictive uncertainty ±2σ̂. Toggle the nominal physics prior f̂_n!
+          </p>
+          <div class="controls-bar">
+            <div class="control-group">
+              <span>Model Structure:</span>
+              <button type="button" class="btn-toggle active" id="fig6-prior-on">With Structured Prior f̂_n + f̂_l</button>
+              <button type="button" class="btn-toggle" id="fig6-prior-off">Pure Black-Box GP (f̂_n = 0)</button>
+            </div>
+          </div>
+          <svg id="fig6-svg" class="svg-frame" viewBox="0 0 540 290" aria-label="Figure 6 Effect of prior structure on GP learning"></svg>
+          <div class="stat-strip">
+            <div class="mini-stat">
+              <div class="mini-stat-label">RMSE in Unmeasured Grey Gap</div>
+              <div class="mini-stat-val" id="fig6-rmse-gap">0.14 (Prior Guides Extrapolation)</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-label">Uncertainty Band in Gap</div>
+              <div class="mini-stat-val">Expands where data is missing</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fig. 7 Card -->
+        <div class="card">
+          <span class="fig-badge orange">Fig. 7 • Section IV-D (Examples 2 &amp; 3)</span>
+          <h3 class="fig-title">Acting Under Model Uncertainty with Learning-Based GP-MPC</h3>
+          <p class="fig-caption">
+            Car terrain traversal with GP-MPC constraint tightening. Multi-step reachable ellipsoids tighten constraints by β·σ̂_k. Adjust <strong>β</strong> to see the cost vs. constraint violation trade-off!
+          </p>
+          <div class="controls-bar">
+            <div class="control-group" style="width:100%; justify-content:space-between;">
+              <label for="fig7-beta">Confidence Tightening Parameter β:</label>
+              <input type="range" id="fig7-beta" min="0.0" max="3.0" step="0.25" value="2.0" style="flex:1; max-width:200px;">
+              <span id="fig7-beta-label" style="font-family:var(--font-mono); font-weight:700; color:var(--orange-ink);">β = 2.00 (Paper Fig. 7)</span>
+            </div>
+          </div>
+          <svg id="fig7-svg" class="svg-frame" viewBox="0 0 540 290" aria-label="Figure 7 GP-MPC constraint tightening and trade-off"></svg>
+          <div class="stat-strip">
+            <div class="mini-stat">
+              <div class="mini-stat-label">Closed-Loop Cost J</div>
+              <div class="mini-stat-val" id="fig7-cost-val">14.8 (Conservative Safe Path)</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-label">Constraint Violation Prob.</div>
+              <div class="mini-stat-val" id="fig7-viol-val">1.2% (Tightened by 2.0σ̂)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FIGS 8 & 9: DIRECT DATA-DRIVEN CONTROL / DEEPC (EXAMPLE 4) -->
+    <section id="sec-deepc" class="section-block">
+      <div class="section-header">
+        <div>
+          <div class="section-eyebrow">Section V • Direct Data-Driven Control (Example 4)</div>
+          <h2 class="section-title">Fig. 8 &amp; Fig. 9: Data-Enabled Predictive Control (DeePC) — Flat vs. Bumpy Terrain</h2>
+        </div>
+        <p class="section-subtitle">Position-only output feedback (y = p) with stage cost ℓ(u,y) = (y − p_s)² + 0.02u², horizon L = 20, T_ini = 4</p>
+      </div>
+
+      <div class="card">
+        <div class="controls-bar">
+          <div class="control-group">
+            <span>Terrain &amp; Noise Regime:</span>
+            <button type="button" class="btn-toggle active" data-deepc-mode="fig8">Fig. 8: Flat Terrain (LTI Assumption Holds)</button>
+            <button type="button" class="btn-toggle" data-deepc-mode="fig9">Fig. 9: Bumpy Terrain + Noise (Nonlinear / Regularized DeePC)</button>
+          </div>
+          <div class="control-group" style="margin-left:auto;">
+            <label for="deepc-n-slider">Offline Trajectory Length N:</label>
+            <input type="range" id="deepc-n-slider" min="25" max="150" step="25" value="75">
+            <span id="deepc-n-val" style="font-family:var(--font-mono); font-weight:700;">N = 75</span>
+          </div>
+        </div>
+
+        <svg id="deepc-svg" class="svg-frame" viewBox="0 0 1140 340" aria-label="Figures 8 and 9 DeePC deviation and closed-loop trajectories"></svg>
+
+        <div class="stat-strip">
+          <div class="mini-stat">
+            <div class="mini-stat-label">Persistency of Excitation (PE)</div>
+            <div class="mini-stat-val">Guaranteed for N ≥ 52 (Shaded)</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-stat-label">Selected Data Length N</div>
+            <div class="mini-stat-val" id="deepc-stat-n">N = 75 samples</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-stat-label">Deviation from Full-State MPC</div>
+            <div class="mini-stat-val" id="deepc-stat-dev">1.8 × 10⁻⁴ (Exact LTI Match)</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-stat-label">Key Takeaway (Sec. V-D)</div>
+            <div class="mini-stat-val" id="deepc-stat-note">Willems' Lemma recovers exact MPC when PE holds</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FIGS 10, 11, 12: RL WITH SAFETY FILTER & BAYESIAN OPTIMIZATION (EXAMPLES 5 & 6) -->
+    <section id="sec-rl-bo" class="section-block">
+      <div class="section-header">
+        <div>
+          <div class="section-eyebrow">Section VI • Policy Learning &amp; Controller Tuning (Examples 5 &amp; 6)</div>
+          <h2 class="section-title">Figs. 10–11 (Safe RL on Cart-Pole) &amp; Fig. 12 (Controller Tuning with BO)</h2>
+        </div>
+        <p class="section-subtitle">Combining model-free exploration with safety filtering (Example 5) and sample-efficient closed-loop tuning (Example 6)</p>
+      </div>
+
+      <div class="two-col-figs">
+        <!-- Fig. 10 & 11 Card -->
+        <div class="card">
+          <span class="fig-badge green">Fig. 10 &amp; Fig. 11 • Section VI-A / III-D (Example 5)</span>
+          <h3 class="fig-title">Cart-Pole Swing-Up: Vanilla DQN vs. DQN with Safety Filter</h3>
+          <p class="fig-caption">
+            Left: Pole-tip trajectories with <strong>red shaded forbidden cart positions</strong>. Right: Episode return learning curves (mean ± std). The safety filter prevents constraint violations AND accelerates learning!
+          </p>
+          <div class="controls-bar">
+            <div class="control-group">
+              <span>View Mode:</span>
+              <button type="button" class="btn-toggle active" data-rlmode="fig11">Fig. 11: DQN + Safety Filter (Green) vs. Vanilla DQN (Grey)</button>
+              <button type="button" class="btn-toggle" data-rlmode="fig10">Fig. 10: Early vs. Converged DQN Swing-Up</button>
+            </div>
+          </div>
+          <svg id="rl-svg" class="svg-frame" viewBox="0 0 540 295" aria-label="Figures 10 and 11 Cart-pole DQN trajectories and learning curves"></svg>
+          <div class="stat-strip">
+            <div class="mini-stat">
+              <div class="mini-stat-label">Vanilla DQN (Grey)</div>
+              <div class="mini-stat-val" style="color:var(--danger-accent);">Enters Forbidden Red Zone</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-label">DQN + Safety Filter (Green)</div>
+              <div class="mini-stat-val" style="color:var(--green-accent);">0 Violations • 2.2× Faster Convergence</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fig. 12 Card -->
+        <div class="card">
+          <span class="fig-badge purple">Fig. 12 • Section VI-D (Example 6)</span>
+          <h3 class="fig-title">Controller Tuning with Bayesian Optimization (BO)</h3>
+          <p class="fig-caption">
+            Top: GP surrogate model of closed-loop cost J(θ) evaluated at candidate controller parameters θ. Bottom: Acquisition function (Expected Improvement) selecting the next parameter θ* to test.
+          </p>
+          <div class="controls-bar">
+            <div class="control-group">
+              <button type="button" class="btn-toggle active" id="bo-step-btn">+ Evaluate Next BO Point (arg max EI)</button>
+              <button type="button" class="btn-toggle" id="bo-reset-btn">Reset to 4 Initial Trials</button>
+            </div>
+            <span id="bo-iter-label" style="margin-left:auto; font-family:var(--font-mono); font-size:12px; font-weight:700;">Evaluations: n = 5</span>
+          </div>
+          <svg id="bo-svg" class="svg-frame" viewBox="0 0 540 295" aria-label="Figure 12 Controller tuning with Bayesian optimization"></svg>
+          <div class="stat-strip">
+            <div class="mini-stat">
+              <div class="mini-stat-label">Best Controller Gain θ* Found</div>
+              <div class="mini-stat-val" id="bo-best-theta">θ* = 2.15 (J = 1.12)</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-label">Next Candidate (Max EI)</div>
+              <div class="mini-stat-val" id="bo-next-theta">θ_next = 2.08</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: TABLE I MASTER OVERVIEW -->
+    <section id="sec-table1" class="section-block">
+      <div class="section-header">
+        <div>
+          <div class="section-eyebrow">Table I • Complete Synthesis Matrix (Sections IV–VI)</div>
+          <h2 class="section-title">TABLE I: Overview of Learning-Based Control Method Families</h2>
+        </div>
+        <p class="section-subtitle">Comparing learning objectives, prior knowledge, uncertainty quantification, synthesis tools, and closed-loop guarantees</p>
+      </div>
+
+      <div class="table-filter-bar">
+        <div class="filter-pills">
+          <button type="button" class="btn-toggle active" data-tfilter="all">All Method Families (8)</button>
+          <button type="button" class="btn-toggle" data-tfilter="sec4">Section IV: Dynamics Learning (3)</button>
+          <button type="button" class="btn-toggle" data-tfilter="sec5">Section V: Direct Data-Driven (2)</button>
+          <button type="button" class="btn-toggle" data-tfilter="sec6">Section VI: RL, IL &amp; BO (3)</button>
+        </div>
+        <input type="search" id="table-search" class="search-input" placeholder="Filter Table I (e.g., Gaussian, CBF, DeePC, Lyapunov)..." aria-label="Filter Table I">
+      </div>
+
+      <div class="table-wrap">
+        <table class="paper-table" id="table1-el">
+          <thead>
+            <tr>
+              <th style="width:16%;">Method Family</th>
+              <th style="width:13%;">What is Learned?</th>
+              <th style="width:14%;">Prior Knowledge Required</th>
+              <th style="width:15%;">Learning from Data</th>
+              <th style="width:14%;">Estimation Errors</th>
+              <th style="width:14%;">Compatible Controller Synthesis</th>
+              <th style="width:14%;">Resulting Closed-Loop Guarantees</th>
+            </tr>
+          </thead>
+          <tbody id="table1-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- FOOTER / OPEN CHALLENGES (SECTION VIII) -->
+    <footer class="footer-note">
+      <div>
+        <strong>Paper Citation:</strong> A. P. Schoellig, M. A. Müller, S. Trimpe, M. N. Zeilinger, M. Anand, A. Carron, O. Hausdörfer, V. G. Lopez, F. Solowjow, H. Zhao, and S. Zhou,
+        <em>“A Decade of Learning-Based Control: From Theoretic Foundations to Practical Deployment,”</em> arXiv:2610.29187v1 [eess.SY], Oct. 2026.
+      </div>
+      <div>
+        <strong>Section VIII Open Directions:</strong> Continual Online Adaptation • Control-Oriented Regularization • Standardized Reproducible Benchmarks
+      </div>
+    </footer>
+
+  </main>
+
+  <script>
+    // =========================================================================
+    // 1. FIGURE 1 INTERACTIVE ARCHITECTURE INSPECTOR
+    // =========================================================================
+    const FIG1_DETAILS = {
+      lyapunov: {
+        title: "Stability Certificates — Nominal, Robust (ISS), and Stochastic (Section III-A–C)",
+        desc: "Establishes convergence via Lyapunov functions V(x). Under bounded disturbances w ∈ W (ISS) or stochastic noise (Theorem 3), trajectories converge to a neighborhood around x̄ whose size scales with the uncertainty bound.",
+        link: "#sec-stability"
+      },
+      invariance: {
+        title: "Forward & Control Invariance (Section III-D, Definition 4)",
+        desc: "A set S ⊆ ℝ^{n_x} is forward invariant if every trajectory starting in S satisfies x_k ∈ S for all k ≥ 0. Ensuring S lies inside state constraints g(x,u) ≤ 0 guarantees all-time safety.",
+        link: "#sec-stability"
+      },
+      filters: {
+        title: "Safety Filters: HJ Reachability, Control Barrier Functions (CBF) & Predictive Safety Filters (PSF)",
+        desc: "Decouples performance from safety: any learned policy u_k^L is passed through a filter that minimally modifies the control input only when needed to keep the state inside an invariant safe set.",
+        link: "#sec-stability"
+      },
+      sec4: {
+        title: "Section IV: Dynamics Learning for Control (Examples 1–3, Figs. 6–7)",
+        desc: "Decomposes dynamics into a known nominal model f̂_n(x,u) plus a learned residual f̂_l(z) using Linear ID, Deep Neural Networks, or Gaussian Processes (GPs), paired with Robust/Stochastic Tube MPC.",
+        link: "#sec-dynamics"
+      },
+      sec5: {
+        title: "Section V: Direct Data-Driven Control (Example 4, Figs. 8–9)",
+        desc: "Uses Willems' Fundamental Lemma to represent system trajectories directly via offline input-output Hankel matrices (e.g., DeePC), bypassing explicit parametric system identification.",
+        link: "#sec-deepc"
+      },
+      sec6: {
+        title: "Section VI: Reinforcement Learning, Imitation Learning & Bayesian Optimization (Examples 5–6, Figs. 10–12)",
+        desc: "Directly optimizes policy parameters π_θ or controller gains θ from rollouts, demonstrations, or closed-loop cost evaluations, augmented with safety filters or GP uncertainty bounds.",
+        link: "#sec-rl-bo"
+      },
+      "app-robotics": {
+        title: "Section VII: Robotics & Autonomous Systems Applications",
+        desc: "High-speed autonomous racing, agile quadrotor flight under aerodynamic disturbances, and mobile manipulation with CBF/PSF safety filters.",
+        link: "#sec-table1"
+      },
+      "app-health": {
+        title: "Section VII: Healthcare & Medical Control Systems",
+        desc: "Personalized closed-loop insulin delivery (artificial pancreas) and safe human-robot interaction in rehabilitation exoskeletons using GP/BO adaptation.",
+        link: "#sec-table1"
+      },
+      "app-energy": {
+        title: "Section VII: Energy, Power Systems & Process Control",
+        desc: "Building HVAC predictive control, power grid frequency stabilization, and chemical reactor optimization under strict operational safety constraints.",
+        link: "#sec-table1"
+      }
+    };
+
+    document.querySelectorAll(".fig1-node").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".fig1-node").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        const key = btn.getAttribute("data-node");
+        const info = FIG1_DETAILS[key];
+        if (info) {
+          document.getElementById("fig1-detail-title").textContent = info.title;
+          document.getElementById("fig1-detail-desc").textContent = info.desc;
+          document.getElementById("fig1-detail-link").setAttribute("href", info.link);
+        }
+      });
+    });
+
+    // =========================================================================
+    // 2. FIGURE 2 HEATMAP: CDC INVITED SESSIONS CONCEPT EVOLUTION (2016–2025)
+    // =========================================================================
+    const FIG2_YEARS = [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
+    const FIG2_ROWS = [
+      { topic: "(Deep) Neural Networks", vals: [2, 3, 5, 6, 7, 8, 9, 10, 11, 12] },
+      { topic: "(Deep) Reinforcement Learning", vals: [3, 4, 6, 8, 9, 10, 11, 11, 12, 13] },
+      { topic: "Gaussian Processes (GPs)", vals: [5, 6, 7, 8, 7, 7, 6, 6, 5, 6] },
+      { topic: "Bayesian Optimization (BO)", vals: [2, 3, 3, 4, 4, 3, 4, 3, 4, 4] },
+      { topic: "Optimal Control", vals: [6, 6, 7, 7, 8, 7, 8, 8, 7, 8] },
+      { topic: "Model Predictive Control (MPC)", vals: [5, 6, 7, 8, 9, 10, 11, 12, 12, 13] },
+      { topic: "Direct Data-Driven Control", vals: [1, 1, 2, 4, 7, 9, 11, 12, 11, 12] },
+      { topic: "Safety / CBF / Lyapunov", vals: [4, 5, 6, 8, 9, 11, 12, 13, 14, 15] }
+    ];
+
+    function renderFig2Heatmap() {
+      const table = document.getElementById("fig2-heatmap");
+      let html = `<thead><tr><th class="topic-col">Concept Phrase (Title/Abstract)</th>`;
+      FIG2_YEARS.forEach(y => { html += `<th>'${String(y).slice(2)}</th>`; });
+      html += `</tr></thead><tbody>`;
+
+      FIG2_ROWS.forEach(row => {
+        html += `<tr><th class="topic-col">${row.topic}</th>`;
+        row.vals.forEach((v, idx) => {
+          const alpha = Math.min(0.92, 0.12 + (v / 15) * 0.8);
+          const textColor = v >= 9 ? "#ffffff" : "#0f172a";
+          html += `<td class="heatmap-cell" style="background:rgba(37,99,235,${alpha.toFixed(2)}); color:${textColor};" title="${row.topic} (${FIG2_YEARS[idx]}): ${v} papers">${v}</td>`;
+        });
+        html += `</tr>`;
+      });
+      html += `</tbody>`;
+      table.innerHTML = html;
+    }
+    renderFig2Heatmap();
+
+    // =========================================================================
+    // 3. FIGURES 4, 3, AND 13 BIBLIOMETRIC SVG CHARTS
+    // =========================================================================
+    const BIB_SVG = document.getElementById("bib-svg");
+
+    function drawBibChart(mode) {
+      const badge = document.getElementById("bib-chart-badge");
+      const title = document.getElementById("bib-chart-title");
+      const caption = document.getElementById("bib-chart-caption");
+
+      if (mode === "fig4") {
+        badge.textContent = "Fig. 4 • DBLP Conference Trend (2010–2025)";
+        title.textContent = "% of Papers with “Learning” in Title (CDC, ACC, ECC)";
+        caption.textContent = "Percentage of papers with the term “learning” in their titles across CDC, ACC, and ECC from 2010 to 2025 (DBLP database, May 2026).";
+
+        const years = [2010, 2012, 2014, 2016, 2018, 2020, 2022, 2024, 2025];
+        const cdc = [1.4, 1.8, 2.3, 4.1, 7.8, 11.2, 13.0, 14.4, 15.2];
+        const acc = [1.2, 1.6, 2.1, 3.6, 6.9, 10.4, 12.1, 13.8, 14.6];
+        const ecc = [0.9, 1.3, 1.9, 3.1, 5.8, 9.2, 11.0, 12.6, 13.5];
+
+        const x0 = 52, x1 = 495, y0 = 225, y1 = 28;
+        const mapX = (yr) => x0 + ((yr - 2010) / 15) * (x1 - x0);
+        const mapY = (val) => y0 - (val / 16) * (y0 - y1);
+
+        let svg = `<rect width="520" height="265" fill="#ffffff"/>`;
+        // Grid lines
+        [0, 5, 10, 15].forEach(gv => {
+          const y = mapY(gv);
+          svg += `<line x1="${x0}" y1="${y}" x2="${x1}" y2="${y}" stroke="#e2e8f0" stroke-dasharray="3,3"/>`;
+          svg += `<text x="${x0 - 8}" y="${y + 4}" text-anchor="end" font-size="11" fill="#64748b">${gv}%</text>`;
+        });
+        [2010, 2013, 2016, 2019, 2022, 2025].forEach(yr => {
+          const x = mapX(yr);
+          svg += `<line x1="${x}" y1="${y0}" x2="${x}" y2="${y0 + 5}" stroke="#94a3b8"/>`;
+          svg += `<text x="${x}" y="${y0 + 18}" text-anchor="middle" font-size="11" fill="#64748b">${yr}</text>`;
+        });
+
+        // 2016 First CDC LBC Session marker
+        const x2016 = mapX(2016);
+        svg += `<line x1="${x2016}" y1="${y1}" x2="${x2016}" y2="${y0}" stroke="#d97706" stroke-width="1.5" stroke-dasharray="4,3"/>`;
+        svg += `<text x="${x2016 + 5}" y="${y1 + 12}" font-size="10.5" font-weight="700" fill="#b45309">2016: 1st CDC LBC Session</text>`;
+
+        const makePoly = (arr, color) => {
+          const pts = years.map((yr, i) => `${mapX(yr).toFixed(1)},${mapY(arr[i]).toFixed(1)}`).join(" ");
+          let out = `<polyline fill="none" stroke="${color}" stroke-width="2.6" points="${pts}"/>`;
+          years.forEach((yr, i) => {
+            out += `<circle cx="${mapX(yr).toFixed(1)}" cy="${mapY(arr[i]).toFixed(1)}" r="3.5" fill="${color}"/>`;
+          });
+          return out;
+        };
+
+        svg += makePoly(cdc, "#2563eb");
+        svg += makePoly(acc, "#059669");
+        svg += makePoly(ecc, "#d97706");
+
+        // Legend
+        svg += `
+          <g transform="translate(68, 38)">
+            <rect width="125" height="62" rx="6" fill="rgba(248,250,252,0.9)" stroke="#cbd5e1"/>
+            <line x1="10" y1="16" x2="28" y2="16" stroke="#2563eb" stroke-width="2.6"/><circle cx="19" cy="16" r="3" fill="#2563eb"/><text x="34" y="20" font-size="11" font-weight="700" fill="#0f172a">CDC (15.2%)</text>
+            <line x1="10" y1="33" x2="28" y2="33" stroke="#059669" stroke-width="2.6"/><circle cx="19" cy="33" r="3" fill="#059669"/><text x="34" y="37" font-size="11" font-weight="700" fill="#0f172a">ACC (14.6%)</text>
+            <line x1="10" y1="50" x2="28" y2="50" stroke="#d97706" stroke-width="2.6"/><circle cx="19" cy="50" r="3" fill="#d97706"/><text x="34" y="54" font-size="11" font-weight="700" fill="#0f172a">ECC (13.5%)</text>
+          </g>
+          <text x="16" y="135" transform="rotate(-90 16,135)" text-anchor="middle" font-size="11" font-weight="600" fill="#475569">% of papers in venue</text>
+        `;
+        BIB_SVG.innerHTML = svg;
+
+      } else if (mode === "fig3") {
+        badge.textContent = "Fig. 3 • Google Scholar Citation Statistics (May 2026)";
+        title.textContent = "Annual & Cumulative Citations of CDC Invited Session Papers";
+        caption.textContent = "Bars show annual citations received per year; solid line shows cumulative citations across the 182 CDC Learning-Based Control Invited Session papers.";
+
+        const yrs = [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
+        const annual = [45, 130, 310, 620, 1080, 1650, 2240, 2890, 3450, 3920];
+        const cum = [];
+        annual.reduce((acc, v, i) => { cum[i] = acc + v; return cum[i]; }, 0);
+
+        const x0 = 52, x1 = 470, y0 = 225, y1 = 28;
+        let svg = `<rect width="520" height="265" fill="#ffffff"/>`;
+
+        [0, 1000, 2000, 3000, 4000].forEach(gv => {
+          const y = y0 - (gv / 4200) * (y0 - y1);
+          svg += `<line x1="${x0}" y1="${y}" x2="${x1}" y2="${y}" stroke="#e2e8f0" stroke-dasharray="3,3"/>`;
+          svg += `<text x="${x0 - 6}" y="${y + 4}" text-anchor="end" font-size="10.5" fill="#64748b">${gv}</text>`;
+        });
+
+        const bw = 24;
+        const pts = [];
+        yrs.forEach((yr, i) => {
+          const cx = x0 + 22 + i * 41;
+          const bh = (annual[i] / 4200) * (y0 - y1);
+          svg += `<rect x="${cx - bw / 2}" y="${y0 - bh}" width="${bw}" height="${bh}" rx="3" fill="#93c5fd" stroke="#2563eb"/>`;
+          svg += `<text x="${cx}" y="${y0 + 16}" text-anchor="middle" font-size="10.5" fill="#64748b">'${String(yr).slice(2)}</text>`;
+          const cyCum = y0 - (cum[i] / 17000) * (y0 - y1);
+          pts.push(`${cx},${cyCum.toFixed(1)}`);
+        });
+
+        svg += `<polyline fill="none" stroke="#0f172a" stroke-width="2.5" points="${pts.join(" ")}"/>`;
+        pts.forEach(p => {
+          const [px, py] = p.split(",");
+          svg += `<circle cx="${px}" cy="${py}" r="3.5" fill="#0f172a"/>`;
+        });
+        svg += `<text x="476" y="${y1 + 10}" font-size="10.5" font-weight="700" fill="#0f172a">~16.3k Cum.</text>`;
+        svg += `<text x="70" y="45" font-size="11" font-weight="700" fill="#1e40af">■ Annual Citations (Bars) &nbsp;&nbsp; ● Cumulative Citations (Line)</text>`;
+        BIB_SVG.innerHTML = svg;
+
+      } else {
+        badge.textContent = "Fig. 13 • Reproducibility & Open-Source Code (Section VIII)";
+        title.textContent = "Invited-Session Papers Releasing Open-Source Code (38 / 182 = 20.9%)";
+        caption.textContent = "Number of papers per year in the CDC Learning-Based Control Invited Sessions that released open-source code alongside publication.";
+
+        const yrs = [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
+        const codePapers = [1, 1, 2, 3, 4, 4, 5, 6, 6, 6]; // Sum = 38
+        const totalPapers = [16, 17, 18, 18, 19, 18, 19, 19, 19, 19]; // Sum = 182
+
+        const x0 = 52, x1 = 485, y0 = 225, y1 = 28;
+        let svg = `<rect width="520" height="265" fill="#ffffff"/>`;
+
+        [0, 5, 10, 15, 20].forEach(gv => {
+          const y = y0 - (gv / 20) * (y0 - y1);
+          svg += `<line x1="${x0}" y1="${y}" x2="${x1}" y2="${y}" stroke="#e2e8f0" stroke-dasharray="3,3"/>`;
+          svg += `<text x="${x0 - 6}" y="${y + 4}" text-anchor="end" font-size="10.5" fill="#64748b">${gv}</text>`;
+        });
+
+        const bw = 26;
+        yrs.forEach((yr, i) => {
+          const cx = x0 + 24 + i * 42;
+          const hTot = (totalPapers[i] / 20) * (y0 - y1);
+          const hCode = (codePapers[i] / 20) * (y0 - y1);
+          svg += `<rect x="${cx - bw / 2}" y="${y0 - hTot}" width="${bw}" height="${hTot}" rx="3" fill="#e2e8f0"/>`;
+          svg += `<rect x="${cx - bw / 2}" y="${y0 - hCode}" width="${bw}" height="${hCode}" rx="3" fill="#059669"/>`;
+          svg += `<text x="${cx}" y="${y0 - hCode - 5}" text-anchor="middle" font-size="10" font-weight="700" fill="#065f46">${codePapers[i]}</text>`;
+          svg += `<text x="${cx}" y="${y0 + 16}" text-anchor="middle" font-size="10.5" fill="#64748b">'${String(yr).slice(2)}</text>`;
+        });
+
+        svg += `<text x="65" y="44" font-size="11" font-weight="700" fill="#065f46">■ With Open-Source Code (38 papers, 20.9%) &nbsp; ■ Total Session Papers (182)</text>`;
+        BIB_SVG.innerHTML = svg;
+      }
+    }
+
+    document.querySelectorAll("[data-bibtab]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-bibtab]").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        drawBibChart(btn.getAttribute("data-bibtab"));
+      });
+    });
+    drawBibChart("fig4");
+
+    // =========================================================================
+    // 4. FIGURE 5: STABILITY & SAFETY NOTIONS PHASE PORTRAIT
+    // =========================================================================
+    let fig5Mode = "all";
+    let fig5Dist = 0.20;
+
+    function drawFig5() {
+      const svg = document.getElementById("fig5-svg");
+      const rTube = Math.round(fig5Dist * 190);
+      document.getElementById("fig5-tube-stat").textContent = `Residual Tube Radius ∝ ‖w‖ (${fig5Dist.toFixed(2)})`;
+
+      // Helper for panel (a) Nominal Stability
+      const panelA = (tx, width) => `
+        <g transform="translate(${tx}, 10)">
+          <rect width="${width}" height="330" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+          <text x="16" y="26" font-size="13.5" font-weight="800" fill="#0f172a">(a) Nominal Stability (Lyapunov V)</text>
+          <text x="16" y="44" font-size="11.5" fill="#64748b">ΔV(x_k) ≤ −α₃(‖x_k − x̄‖) ⇒ x_k → x̄</text>
+          <!-- Lyapunov level sets -->
+          <ellipse cx="${width/2}" cy="190" rx="135" ry="95" fill="#f1f5f9" stroke="#94a3b8" stroke-dasharray="4,4"/>
+          <ellipse cx="${width/2}" cy="190" rx="98" ry="68" fill="#e2e8f0" stroke="#94a3b8" stroke-dasharray="4,4"/>
+          <ellipse cx="${width/2}" cy="190" rx="60" ry="42" fill="#cbd5e1" stroke="#64748b" stroke-dasharray="4,4"/>
+          <ellipse cx="${width/2}" cy="190" rx="25" ry="18" fill="#94a3b8" opacity="0.35"/>
+          <text x="${width/2 + 95}" y="128" font-size="11" fill="#475569">Level sets of V(x)</text>
+          <!-- Converging trajectory -->
+          <path d="M ${width/2 - 115} 125 Q ${width/2 - 40} 95, ${width/2 + 45} 145 T ${width/2 - 20} 210 T ${width/2} 190" fill="none" stroke="#059669" stroke-width="3"/>
+          <circle cx="${width/2 - 115}" cy="125" r="5" fill="#0f172a"/>
+          <text x="${width/2 - 110}" y="115" font-size="11" font-weight="700" fill="#0f172a">x₀</text>
+          <circle cx="${width/2}" cy="190" r="5.5" fill="#059669" stroke="#ffffff" stroke-width="1.5"/>
+          <text x="${width/2 + 8}" y="194" font-size="12" font-weight="800" fill="#065f46">x̄</text>
+        </g>
+      `;
+
+      // Helper for panel (b) Robust & Stochastic Stability
+      const panelB = (tx, width) => `
+        <g transform="translate(${tx}, 10)">
+          <rect width="${width}" height="330" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+          <text x="16" y="26" font-size="13.5" font-weight="800" fill="#0f172a">(b) Robust (ISS) &amp; Stochastic Stability</text>
+          <text x="16" y="44" font-size="11.5" fill="#64748b">Under w_k, state converges to grey residual set around x̄</text>
+          <ellipse cx="${width/2}" cy="190" rx="135" ry="95" fill="none" stroke="#cbd5e1" stroke-dasharray="4,4"/>
+          <ellipse cx="${width/2}" cy="190" rx="95" ry="66" fill="none" stroke="#cbd5e1" stroke-dasharray="4,4"/>
+          <!-- Residual disturbance neighborhood -->
+          <ellipse cx="${width/2}" cy="190" rx="${Math.max(22, rTube * 1.25)}" ry="${Math.max(16, rTube * 0.9)}" fill="rgba(217, 119, 6, 0.22)" stroke="#d97706" stroke-width="2"/>
+          <text x="${width/2}" y="${190 + Math.max(16, rTube * 0.9) + 16}" text-anchor="middle" font-size="11" font-weight="700" fill="#92400e">Residual Set ∝ σ(‖w‖) or c</text>
+          <!-- Perturbed trajectory -->
+          <path d="M ${width/2 - 115} 120 C ${width/2 - 50} 95, ${width/2 + 60} 130, ${width/2 + 28} 175 S ${width/2 - 25} 205, ${width/2 - 12} 185 S ${width/2 + 16} 198, ${width/2 + 8} 186" fill="none" stroke="#d97706" stroke-width="2.8"/>
+          <circle cx="${width/2 - 115}" cy="120" r="5" fill="#0f172a"/>
+          <text x="${width/2 - 110}" y="110" font-size="11" font-weight="700" fill="#0f172a">x₀</text>
+          <circle cx="${width/2}" cy="190" r="4.5" fill="#0f172a"/>
+          <text x="${width/2 + 7}" y="193" font-size="11.5" font-weight="700" fill="#0f172a">x̄</text>
+        </g>
+      `;
+
+      // Helper for panel (c) Safety & Invariance (HJ, CBF, PSF)
+      const panelC = (tx, width) => `
+        <g transform="translate(${tx}, 10)">
+          <rect width="${width}" height="330" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+          <text x="16" y="26" font-size="13.5" font-weight="800" fill="#0f172a">(c) Forward Invariance &amp; Safety Filters</text>
+          <text x="16" y="44" font-size="11.5" fill="#64748b">Constraint set X (red boundary), HJ, CBF &amp; PSF backup</text>
+          <!-- Unsafe Constraint Boundary -->
+          <rect x="22" y="64" width="${width - 44}" height="240" rx="14" fill="#fef2f2" stroke="#ef4444" stroke-width="2"/>
+          <text x="34" y="84" font-size="11" font-weight="700" fill="#b91c1c">Constraint Boundary g(x,u) = 0</text>
+          <!-- HJ Maximal Control Invariant Set -->
+          <ellipse cx="${width/2}" cy="188" rx="132" ry="92" fill="#ecfdf5" stroke="#059669" stroke-width="2.2"/>
+          <text x="${width/2 - 85}" y="118" font-size="11" font-weight="700" fill="#065f46">S_HJ (Maximal Safe Set)</text>
+          <!-- CBF Inner Approximation -->
+          <ellipse cx="${width/2 - 6}" cy="192" rx="95" ry="64" fill="rgba(16, 185, 129, 0.16)" stroke="#047857" stroke-width="2" stroke-dasharray="5,3"/>
+          <text x="${width/2 - 65}" y="148" font-size="11" font-weight="700" fill="#047857">S_CBF = {b(x) ≥ 0}</text>
+          <!-- Terminal Safe Set S_f for PSF -->
+          <ellipse cx="${width/2 + 25}" cy="202" rx="42" ry="28" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+          <text x="${width/2 + 25}" y="206" text-anchor="middle" font-size="11" font-weight="800" fill="#1e40af">S_f (Terminal)</text>
+          <!-- Unfiltered unsafe step vs PSF Backup trajectory -->
+          <circle cx="${width/2 - 65}" cy="195" r="5" fill="#0f172a"/>
+          <text x="${width/2 - 88}" y="200" font-size="11" font-weight="700" fill="#0f172a">x_k</text>
+          <!-- Unsafe desired input u_k^L -->
+          <line x1="${width/2 - 65}" y1="195" x2="${width/2 - 125}" y2="140" stroke="#dc2626" stroke-width="2.2" stroke-dasharray="3,3"/>
+          <text x="${width/2 - 140}" y="134" font-size="10.5" font-weight="700" fill="#dc2626">u_k^L (Unsafe)</text>
+          <!-- PSF Filtered Backup Trajectory -->
+          <path d="M ${width/2 - 65} 195 Q ${width/2 - 20} 170, ${width/2 + 20} 198" fill="none" stroke="#2563eb" stroke-width="2.8"/>
+          <circle cx="${width/2 + 20}" cy="198" r="4" fill="#2563eb"/>
+          <text x="${width/2 - 38}" y="222" font-size="10.5" font-weight="700" fill="#1e40af">PSF T-step backup → S_f</text>
+        </g>
+      `;
+
+      if (fig5Mode === "all") {
+        svg.innerHTML = panelA(10, 360) + panelB(390, 360) + panelC(770, 360);
+      } else if (fig5Mode === "nominal") {
+        svg.innerHTML = panelA(290, 560);
+      } else if (fig5Mode === "robust") {
+        svg.innerHTML = panelB(290, 560);
+      } else {
+        svg.innerHTML = panelC(290, 560);
+      }
+    }
+
+    document.querySelectorAll("[data-fig5]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-fig5]").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        fig5Mode = btn.getAttribute("data-fig5");
+        drawFig5();
+      });
+    });
+
+    document.getElementById("fig5-dist-slider").addEventListener("input", e => {
+      fig5Dist = parseFloat(e.target.value);
+      document.getElementById("fig5-dist-val").textContent = fig5Dist.toFixed(2);
+      drawFig5();
+    });
+    drawFig5();
+
+    // =========================================================================
+    // 5. FIGURE 6: EFFECT OF PRIOR STRUCTURE ON GP DYNAMICS LEARNING
+    // =========================================================================
+    let fig6Prior = true;
+
+    function drawFig6() {
+      const svg = document.getElementById("fig6-svg");
+      const x0 = 44, x1 = 516, y0 = 250, y1 = 28;
+      const mapX = (z) => x0 + (z / 10) * (x1 - x0);
+      const mapY = (v) => y0 - ((v + 1.5) / 3.2) * (y0 - y1);
+
+      // True nonlinear dynamics profile f(z) = 0.55*sin(0.9*z) + 0.12*z - 0.3
+      const fTrue = (z) => 0.58 * Math.sin(0.85 * z) + 0.11 * z - 0.35;
+      // Nominal prior f_n(z) = 0.45*sin(0.85*z) + 0.09*z - 0.30
+      const fNom = (z) => 0.45 * Math.sin(0.85 * z) + 0.09 * z - 0.30;
+
+      let out = `<rect width="540" height="290" fill="#ffffff"/>`;
+      // Grey unmeasured region z in [3.8, 6.8]
+      const gx1 = mapX(3.8), gx2 = mapX(6.8);
+      out += `<rect x="${gx1}" y="${y1}" width="${gx2 - gx1}" height="${y0 - y1}" fill="#e2e8f0" opacity="0.7"/>`;
+      out += `<text x="${(gx1 + gx2) / 2}" y="${y1 + 18}" text-anchor="middle" font-size="11" font-weight="700" fill="#475569">Grey Region: No Data Measurements</text>`;
+
+      // Axes
+      out += `<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y0}" stroke="#94a3b8"/>`;
+      out += `<line x1="${x0}" y1="${y1}" x2="${x0}" y2="${y0}" stroke="#94a3b8"/>`;
+
+      const upperPts = [];
+      const lowerPts = [];
+      const meanPts = [];
+      const truePts = [];
+      const nomPts = [];
+
+      for (let i = 0; i <= 100; i++) {
+        const z = i * 0.1;
+        const tVal = fTrue(z);
+        const nVal = fNom(z);
+        // Distance to nearest data outside [3.8, 6.8]
+        let distGap = 0;
+        if (z > 3.8 && z < 6.8) {
+          distGap = Math.sin(((z - 3.8) / 3.0) * Math.PI);
+        }
+        const sigma = 0.08 + 0.48 * distGap;
+        const meanVal = fig6Prior
+          ? tVal * (1 - 0.65 * distGap) + nVal * (0.65 * distGap)
+          : tVal * (1 - 0.92 * distGap) + (-0.1) * (0.92 * distGap);
+
+        const px = mapX(z).toFixed(1);
+        truePts.push(`${px},${mapY(tVal).toFixed(1)}`);
+        nomPts.push(`${px},${mapY(nVal).toFixed(1)}`);
+        meanPts.push(`${px},${mapY(meanVal).toFixed(1)}`);
+        upperPts.push(`${px},${mapY(meanVal + 1.8 * sigma).toFixed(1)}`);
+        lowerPts.unshift(`${px},${mapY(meanVal - 1.8 * sigma).toFixed(1)}`);
+      }
+
+      // Shaded uncertainty band
+      out += `<polygon points="${upperPts.join(" ")} ${lowerPts.join(" ")}" fill="rgba(239, 68, 68, 0.2)" stroke="none"/>`;
+      if (fig6Prior) {
+        out += `<polyline fill="none" stroke="#059669" stroke-width="1.8" stroke-dasharray="3,3" points="${nomPts.join(" ")}"/>`;
+      }
+      // True dashed blue curve
+      out += `<polyline fill="none" stroke="#2563eb" stroke-width="2.5" stroke-dasharray="6,4" points="${truePts.join(" ")}"/>`;
+      // Posterior mean solid red curve
+      out += `<polyline fill="none" stroke="#dc2626" stroke-width="2.6" points="${meanPts.join(" ")}"/>`;
+
+      // Sampled training points outside the gap
+      [0.6, 1.3, 2.1, 2.9, 3.5, 7.1, 7.9, 8.7, 9.4].forEach(z => {
+        out += `<circle cx="${mapX(z).toFixed(1)}" cy="${mapY(fTrue(z)).toFixed(1)}" r="4" fill="#0f172a"/>`;
+      });
+
+      // Legend
+      out += `
+        <g transform="translate(54, 258)">
+          <line x1="0" y1="10" x2="20" y2="10" stroke="#2563eb" stroke-width="2.5" stroke-dasharray="4,2"/>
+          <text x="25" y="14" font-size="11" font-weight="700" fill="#1e40af">True Profile f(z)</text>
+          <line x1="130" y1="10" x2="150" y2="10" stroke="#dc2626" stroke-width="2.5"/>
+          <text x="155" y="14" font-size="11" font-weight="700" fill="#991b1b">Posterior Mean μ̂(z)</text>
+          <rect x="285" y="4" width="16" height="12" fill="rgba(239,68,68,0.28)"/>
+          <text x="306" y="14" font-size="11" font-weight="700" fill="#991b1b">±2σ̂ Uncertainty</text>
+          <circle cx="420" cy="10" r="3.5" fill="#0f172a"/>
+          <text x="428" y="14" font-size="11" font-weight="700" fill="#0f172a">Data</text>
+        </g>
+      `;
+
+      svg.innerHTML = out;
+      document.getElementById("fig6-rmse-gap").textContent = fig6Prior
+        ? "0.14 (Prior f̂_n Guides Extrapolation)"
+        : "0.68 (Reverts to Zero Mean in Gap!)";
+    }
+
+    document.getElementById("fig6-prior-on").addEventListener("click", () => {
+      fig6Prior = true;
+      document.getElementById("fig6-prior-on").classList.add("active");
+      document.getElementById("fig6-prior-off").classList.remove("active");
+      drawFig6();
+    });
+    document.getElementById("fig6-prior-off").addEventListener("click", () => {
+      fig6Prior = false;
+      document.getElementById("fig6-prior-off").classList.add("active");
+      document.getElementById("fig6-prior-on").classList.remove("active");
+      drawFig6();
+    });
+    drawFig6();
+
+    // =========================================================================
+    // 6. FIGURE 7: GP-MPC CONSTRAINT TIGHTENING & BETA TRADE-OFF
+    // =========================================================================
+    let fig7Beta = 2.0;
+
+    function drawFig7() {
+      const svg = document.getElementById("fig7-svg");
+      document.getElementById("fig7-beta-label").textContent = `β = ${fig7Beta.toFixed(2)}${Math.abs(fig7Beta - 2.0) < 0.01 ? " (Paper Fig. 7)" : ""}`;
+
+      // Left side (x: 15..265): Prediction with constraint tightening at t=0
+      // Right side (x: 290..525): Trade-off between closed-loop cost and constraint violation vs beta
+      let out = `<rect width="540" height="290" fill="#ffffff"/>`;
+
+      // Left Panel: Multi-step reachable ellipsoids & tightened constraint
+      out += `
+        <g transform="translate(14, 12)">
+          <rect width="252" height="265" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+          <text x="12" y="20" font-size="11.5" font-weight="800" fill="#0f172a">Prediction &amp; Tightening (t = 0)</text>
+          <!-- Original state constraint top line -->
+          <line x1="16" y1="45" x2="236" y2="45" stroke="#dc2626" stroke-width="2"/>
+          <rect x="16" y="28" width="220" height="17" fill="rgba(239,68,68,0.15)"/>
+          <text x="22" y="40" font-size="10" font-weight="700" fill="#991b1b">True Constraint Boundary g(x) = 0</text>
+      `;
+
+      // Tightened constraint curve & ellipsoids along horizon i=0..6
+      const tightenPts = [];
+      const predPts = [];
+      for (let i = 0; i <= 6; i++) {
+        const px = 28 + i * 33;
+        const uncRadius = (4 + i * 4.2) * (fig7Beta / 2.0);
+        const yTight = 45 + uncRadius;
+        tightenPts.push(`${px},${yTight.toFixed(1)}`);
+        const yMean = Math.max(yTight + 6, 195 - i * 22 + fig7Beta * 5);
+        predPts.push(`${px},${yMean.toFixed(1)}`);
+        out += `<ellipse cx="${px}" cy="${yMean.toFixed(1)}" rx="${4 + i * 1.5}" ry="${Math.max(2, uncRadius)}" fill="rgba(37,99,235,0.18)" stroke="#2563eb" stroke-width="1.2"/>`;
+      }
+      out += `<polyline fill="none" stroke="#d97706" stroke-width="2" stroke-dasharray="4,3" points="${tightenPts.join(" ")}"/>`;
+      out += `<text x="95" y="${45 + (4 + 4 * 4.2) * (fig7Beta / 2.0) + 13}" font-size="10" font-weight="700" fill="#b45309">Tightened Bound (−β·σ̂)</text>`;
+      out += `<polyline fill="none" stroke="#1e40af" stroke-width="2.4" points="${predPts.join(" ")}"/>`;
+      out += `<text x="20" y="252" font-size="10.5" fill="#475569">Ellipsoids = Reachable sets (β = ${fig7Beta.toFixed(2)})</text>`;
+      out += `</g>`;
+
+      // Right Panel: Trade-off Curve (Closed-Loop Cost vs Violation Probability for varying beta)
+      out += `
+        <g transform="translate(278, 12)">
+          <rect width="248" height="265" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+          <text x="12" y="20" font-size="11.5" font-weight="800" fill="#0f172a">Cost vs. Constraint Violation (β)</text>
+      `;
+
+      const bx0 = 36, bx1 = 228, by0 = 225, by1 = 44;
+      out += `<line x1="${bx0}" y1="${by0}" x2="${bx1}" y2="${by0}" stroke="#94a3b8"/>`;
+      out += `<line x1="${bx0}" y1="${by1}" x2="${bx0}" y2="${by0}" stroke="#94a3b8"/>`;
+
+      const betas = [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0];
+      const costCurve = [];
+      const violCurve = [];
+      betas.forEach(b => {
+        const x = bx0 + (b / 3.0) * (bx1 - bx0);
+        const cost = 10.5 + 1.1 * b * b; // increases with beta
+        const viol = 38 * Math.exp(-1.65 * b); // decreases exponentially with beta
+        const yCost = by0 - ((cost - 10) / 12) * (by0 - by1);
+        const yViol = by0 - (viol / 40) * (by0 - by1);
+        costCurve.push(`${x.toFixed(1)},${yCost.toFixed(1)}`);
+        violCurve.push(`${x.toFixed(1)},${yViol.toFixed(1)}`);
+        out += `<text x="${x.toFixed(1)}" y="${by0 + 14}" text-anchor="middle" font-size="9.5" fill="#64748b">${b}</text>`;
+      });
+
+      out += `<polyline fill="none" stroke="#2563eb" stroke-width="2.4" points="${costCurve.join(" ")}"/>`;
+      out += `<polyline fill="none" stroke="#dc2626" stroke-width="2.4" points="${violCurve.join(" ")}"/>`;
+
+      // Active beta vertical marker
+      const curX = bx0 + (fig7Beta / 3.0) * (bx1 - bx0);
+      const curCost = 10.5 + 1.1 * fig7Beta * fig7Beta;
+      const curViol = 38 * Math.exp(-1.65 * fig7Beta);
+      const curYCost = by0 - ((curCost - 10) / 12) * (by0 - by1);
+      const curYViol = by0 - (curViol / 40) * (by0 - by1);
+
+      out += `<line x1="${curX}" y1="${by1}" x2="${curX}" y2="${by0}" stroke="#0f172a" stroke-dasharray="3,3"/>`;
+      out += `<circle cx="${curX}" cy="${curYCost}" r="4.5" fill="#2563eb"/>`;
+      out += `<circle cx="${curX}" cy="${curYViol}" r="4.5" fill="#dc2626"/>`;
+      out += `<text x="42" y="56" font-size="10" font-weight="700" fill="#1e40af">● Closed-Loop Cost</text>`;
+      out += `<text x="145" y="56" font-size="10" font-weight="700" fill="#991b1b">● Violation %</text>`;
+      out += `<text x="132" y="252" text-anchor="middle" font-size="10.5" fill="#475569">Confidence parameter β</text>`;
+      out += `</g>`;
+
+      svg.innerHTML = out;
+      document.getElementById("fig7-cost-val").textContent = `${curCost.toFixed(1)} (${fig7Beta >= 1.75 ? "Safe Margin" : "Aggressive"})`;
+      document.getElementById("fig7-viol-val").textContent = `${curViol.toFixed(1)}% (Tightened by ${fig7Beta.toFixed(2)}σ̂)`;
+    }
+
+    document.getElementById("fig7-beta").addEventListener("input", e => {
+      fig7Beta = parseFloat(e.target.value);
+      drawFig7();
+    });
+    drawFig7();
+
+    // =========================================================================
+    // 7. FIGURES 8 & 9: DIRECT DATA-DRIVEN CONTROL (DEEPC)
+    // =========================================================================
+    let deepcMode = "fig8";
+    let deepcN = 75;
+
+    function drawDeePC() {
+      const svg = document.getElementById("deepc-svg");
+      document.getElementById("deepc-n-val").textContent = `N = ${deepcN}`;
+      document.getElementById("deepc-stat-n").textContent = `N = ${deepcN} offline samples`;
+
+      let out = `<rect width="1140" height="340" fill="#ffffff"/>`;
+
+      // Left Panel (x: 15..555): Deviation from Full-State MPC vs Data Length N
+      out += `
+        <g transform="translate(15, 12)">
+          <rect width="540" height="316" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+          <text x="18" y="26" font-size="13.5" font-weight="800" fill="#0f172a">
+            ${deepcMode === "fig8"
+              ? "Fig. 8 (Left): Deviation from Full-State MPC vs. Data Length N (Flat Terrain)"
+              : "Fig. 9 (Left): Deviation on Bumpy Terrain + Noise (Regularized DeePC)"}
+          </text>
+      `;
+
+      const lx0 = 56, lx1 = 515, ly0 = 272, ly1 = 48;
+      // Shaded PE region (N >= 52)
+      const xPE = lx0 + ((52 - 20) / 140) * (lx1 - lx0);
+      out += `<rect x="${xPE}" y="${ly1}" width="${lx1 - xPE}" height="${ly0 - ly1}" fill="rgba(16, 185, 129, 0.13)"/>`;
+      out += `<line x1="${xPE}" y1="${ly1}" x2="${xPE}" y2="${ly0}" stroke="#059669" stroke-width="1.5" stroke-dasharray="4,3"/>`;
+      out += `<text x="${xPE + 8}" y="${ly1 + 16}" font-size="11" font-weight="700" fill="#065f46">Shaded: Guaranteed Persistency of Excitation (PE)</text>`;
+
+      out += `<line x1="${lx0}" y1="${ly0}" x2="${lx1}" y2="${ly0}" stroke="#94a3b8"/>`;
+      out += `<line x1="${lx0}" y1="${ly1}" x2="${lx0}" y2="${ly0}" stroke="#94a3b8"/>`;
+
+      const nVals = [25, 50, 75, 100, 125, 150];
+      const devPts = [];
+      nVals.forEach(n => {
+        const x = lx0 + ((n - 20) / 140) * (lx1 - lx0);
+        const dev = deepcMode === "fig8"
+          ? (n < 52 ? 0.85 : 0.04)
+          : (n < 52 ? 0.92 : Math.max(0.18, 0.62 - (n - 50) * 0.004));
+        const y = ly0 - dev * (ly0 - ly1);
+        devPts.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+        out += `<text x="${x.toFixed(1)}" y="${ly0 + 16}" text-anchor="middle" font-size="10.5" fill="#64748b">N=${n}</text>`;
+      });
+
+      if (deepcMode === "fig9") {
+        // 10-90% range band over 10 trials
+        const upper = nVals.map(n => {
+          const x = lx0 + ((n - 20) / 140) * (lx1 - lx0);
+          const dev = Math.min(0.98, (n < 52 ? 0.92 : Math.max(0.18, 0.62 - (n - 50) * 0.004)) + 0.14);
+          return `${x.toFixed(1)},${(ly0 - dev * (ly0 - ly1)).toFixed(1)}`;
+        });
+        const lower = [...nVals].reverse().map(n => {
+          const x = lx0 + ((n - 20) / 140) * (lx1 - lx0);
+          const dev = Math.max(0.05, (n < 52 ? 0.92 : Math.max(0.18, 0.62 - (n - 50) * 0.004)) - 0.12);
+          return `${x.toFixed(1)},${(ly0 - dev * (ly0 - ly1)).toFixed(1)}`;
+        });
+        out += `<polygon points="${upper.join(" ")} ${lower.join(" ")}" fill="rgba(37, 99, 235, 0.18)"/>`;
+      }
+
+      out += `<polyline fill="none" stroke="#2563eb" stroke-width="2.8" points="${devPts.join(" ")}"/>`;
+      nVals.forEach((n, idx) => {
+        const [px, py] = devPts[idx].split(",");
+        const isSel = n === deepcN;
+        out += `<circle cx="${px}" cy="${py}" r="${isSel ? 7 : 4}" fill="${isSel ? "#d97706" : "#2563eb"}" stroke="#ffffff" stroke-width="1.5"/>`;
+      });
+      out += `<text x="285" y="304" text-anchor="middle" font-size="11.5" font-weight="600" fill="#475569">Offline trajectory data length N (Circled: N = ${deepcN})</text>`;
+      out += `</g>`;
+
+      // Right Panel (x: 580..1125): Closed-Loop Trajectories for Circled N Cases
+      out += `
+        <g transform="translate(580, 12)">
+          <rect width="545" height="316" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+          <text x="18" y="26" font-size="13.5" font-weight="800" fill="#0f172a">
+            ${deepcMode === "fig8"
+              ? "Fig. 8 (Right): Closed-Loop Position Trajectories y_k = p_k"
+              : "Fig. 9 (Right): Closed-Loop Trajectories with Regularization (λ_α, λ_σ)"}
+          </text>
+      `;
+
+      const rx0 = 52, rx1 = 520, ry0 = 272, ry1 = 48;
+      const yGoal = 105; // Target setpoint p_s
+      out += `<line x1="${rx0}" y1="${ry0}" x2="${rx1}" y2="${ry0}" stroke="#94a3b8"/>`;
+      out += `<line x1="${rx0}" y1="${ry1}" x2="${rx0}" y2="${ry0}" stroke="#94a3b8"/>`;
+      out += `<line x1="${rx0}" y1="${yGoal}" x2="${rx1}" y2="${yGoal}" stroke="#059669" stroke-width="2" stroke-dasharray="6,4"/>`;
+      out += `<text x="${rx1 - 6}" y="${yGoal - 6}" text-anchor="end" font-size="11" font-weight="700" fill="#065f46">Goal Setpoint p_s</text>`;
+
+      // Reference Full-State MPC trajectory
+      const mpcPts = [];
+      const deepcPts = [];
+      for (let k = 0; k <= 20; k++) {
+        const x = rx0 + (k / 20) * (rx1 - rx0);
+        const yMpc = yGoal + (ry0 - 25 - yGoal) * Math.exp(-0.28 * k);
+        mpcPts.push(`${x.toFixed(1)},${yMpc.toFixed(1)}`);
+
+        let yD = yMpc;
+        if (deepcN < 52) {
+          yD = yMpc + 42 * Math.sin(0.95 * k) * Math.exp(-0.04 * k);
+        } else if (deepcMode === "fig9") {
+          const factor = Math.max(0.15, (150 - deepcN) / 100);
+          yD = yMpc + 18 * factor * Math.sin(0.7 * k) * Math.exp(-0.12 * k);
+        }
+        deepcPts.push(`${x.toFixed(1)},${yD.toFixed(1)}`);
+      }
+
+      out += `<polyline fill="none" stroke="#0f172a" stroke-width="2.4" stroke-dasharray="4,3" points="${mpcPts.join(" ")}"/>`;
+      out += `<polyline fill="none" stroke="#d97706" stroke-width="3" points="${deepcPts.join(" ")}"/>`;
+      out += `<text x="70" y="68" font-size="11" font-weight="700" fill="#0f172a">-- Full-State Oracle MPC</text>`;
+      out += `<text x="240" y="68" font-size="11" font-weight="700" fill="#b45309">― DeePC Trajectory (N = ${deepcN})</text>`;
+      out += `<text x="285" y="304" text-anchor="middle" font-size="11.5" font-weight="600" fill="#475569">Time step k (Horizon L = 20, T_ini = 4)</text>`;
+      out += `</g>`;
+
+      svg.innerHTML = out;
+
+      if (deepcN < 52) {
+        document.getElementById("deepc-stat-dev").textContent = "High Error (PE Condition Not Met)";
+        document.getElementById("deepc-stat-note").textContent = "Insufficient data length N < 52 causes oscillatory instability";
+      } else if (deepcMode === "fig8") {
+        document.getElementById("deepc-stat-dev").textContent = "1.8 × 10⁻⁴ (Matches Full-State MPC)";
+        document.getElementById("deepc-stat-note").textContent = "Flat terrain (LTI): Willems' Lemma guarantees exact equivalence";
+      } else {
+        document.getElementById("deepc-stat-dev").textContent = `${(0.18 + (150 - deepcN) * 0.003).toFixed(2)} (Median over 10 Trials)`;
+        document.getElementById("deepc-stat-note").textContent = "Bumpy terrain: Regularization (λ_α, λ_σ) + larger N stabilizes nonlinearities";
+      }
+    }
+
+    document.querySelectorAll("[data-deepc-mode]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-deepc-mode]").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        deepcMode = btn.getAttribute("data-deepc-mode");
+        drawDeePC();
+      });
+    });
+
+    document.getElementById("deepc-n-slider").addEventListener("input", e => {
+      deepcN = parseInt(e.target.value, 10);
+      drawDeePC();
+    });
+    drawDeePC();
+
+    // =========================================================================
+    // 8. FIGURES 10 & 11: DQN vs SAFETY-FILTERED DQN ON CART-POLE
+    // =========================================================================
+    let rlMode = "fig11";
+
+    function drawRL() {
+      const svg = document.getElementById("rl-svg");
+      let out = `<rect width="540" height="295" fill="#ffffff"/>`;
+
+      // Left plot: Cart-Pole trajectories
+      out += `
+        <g transform="translate(12, 12)">
+          <rect width="250" height="270" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+          <text x="12" y="20" font-size="11.5" font-weight="800" fill="#0f172a">
+            ${rlMode === "fig11" ? "Fig. 11 (Left): Pole-Tip Trajectories" : "Fig. 10 (Left): Early vs. Final Swing-Up"}
+          </text>
+      `;
+
+      if (rlMode === "fig11") {
+        // Forbidden red cart regions on left and right
+        out += `<rect x="12" y="32" width="38" height="210" fill="rgba(239,68,68,0.22)"/>`;
+        out += `<rect x="200" y="32" width="38" height="210" fill="rgba(239,68,68,0.22)"/>`;
+        out += `<line x1="50" y1="32" x2="50" y2="242" stroke="#dc2626" stroke-dasharray="3,3"/>`;
+        out += `<line x1="200" y1="32" x2="200" y2="242" stroke="#dc2626" stroke-dasharray="3,3"/>`;
+        out += `<text x="125" y="45" text-anchor="middle" font-size="9.5" font-weight="700" fill="#991b1b">Red Shaded = Forbidden Cart Positions</text>`;
+
+        // Vanilla DQN trajectory violating right boundary
+        out += `<path d="M 125 215 C 185 210, 228 165, 215 115 S 140 75, 130 70" fill="none" stroke="#64748b" stroke-width="2.4" stroke-dasharray="4,3"/>`;
+        // Safety-filtered DQN staying inside safe zone
+        out += `<path d="M 125 215 C 175 205, 192 155, 165 115 S 132 78, 125 68" fill="none" stroke="#059669" stroke-width="3"/>`;
+        out += `<circle cx="125" cy="68" r="4.5" fill="#059669"/>`;
+        out += `<text x="16" y="258" font-size="10" font-weight="700" fill="#059669">― DQN + Safety Filter</text>`;
+        out += `<text x="140" y="258" font-size="10" font-weight="700" fill="#64748b">-- Vanilla DQN</text>`;
+      } else {
+        // Fig 10: Early vs Converged swing-up
+        out += `<path d="M 125 215 C 75 210, 65 180, 155 195 S 95 220, 110 205" fill="none" stroke="#94a3b8" stroke-width="2.2" stroke-dasharray="4,3"/>`;
+        out += `<path d="M 125 215 C 65 195, 75 115, 125 68" fill="none" stroke="#2563eb" stroke-width="3"/>`;
+        out += `<circle cx="125" cy="68" r="4.5" fill="#2563eb"/>`;
+        out += `<text x="16" y="258" font-size="10" font-weight="700" fill="#2563eb">― Trained DQN Swing-Up</text>`;
+        out += `<text x="150" y="258" font-size="10" font-weight="700" fill="#64748b">-- Early Episode</text>`;
+      }
+      out += `</g>`;
+
+      // Right plot: Learning Curves
+      out += `
+        <g transform="translate(274, 12)">
+          <rect width="254" height="270" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+          <text x="12" y="20" font-size="11.5" font-weight="800" fill="#0f172a">Episode Return Learning Curve</text>
+      `;
+
+      const rx0 = 36, rx1 = 236, ry0 = 232, ry1 = 42;
+      out += `<line x1="${rx0}" y1="${ry0}" x2="${rx1}" y2="${ry0}" stroke="#94a3b8"/>`;
+      out += `<line x1="${rx0}" y1="${ry1}" x2="${rx0}" y2="${ry0}" stroke="#94a3b8"/>`;
+
+      const vanillaPts = [];
+      const safePts = [];
+      for (let i = 0; i <= 20; i++) {
+        const x = rx0 + (i / 20) * (rx1 - rx0);
+        const vRet = 1 / (1 + Math.exp(-(i - 12) * 0.45));
+        const sRet = 1 / (1 + Math.exp(-(i - 6.5) * 0.6));
+        vanillaPts.push(`${x.toFixed(1)},${(ry0 - vRet * (ry0 - ry1 - 15)).toFixed(1)}`);
+        safePts.push(`${x.toFixed(1)},${(ry0 - sRet * (ry0 - ry1 - 10)).toFixed(1)}`);
+      }
+
+      if (rlMode === "fig11") {
+        out += `<polyline fill="none" stroke="#64748b" stroke-width="2.4" points="${vanillaPts.join(" ")}"/>`;
+        out += `<polyline fill="none" stroke="#059669" stroke-width="2.8" points="${safePts.join(" ")}"/>`;
+        out += `<text x="45" y="58" font-size="10" font-weight="700" fill="#059669">― DQN + Safety Filter (Faster)</text>`;
+        out += `<text x="45" y="74" font-size="10" font-weight="700" fill="#64748b">― Vanilla DQN</text>`;
+      } else {
+        out += `<polyline fill="none" stroke="#2563eb" stroke-width="2.8" points="${vanillaPts.join(" ")}"/>`;
+        out += `<text x="45" y="58" font-size="10" font-weight="700" fill="#2563eb">― Mean Return ± Std Shade</text>`;
+      }
+      out += `<text x="136" y="258" text-anchor="middle" font-size="10.5" fill="#475569">Environment Episodes →</text>`;
+      out += `</g>`;
+
+      svg.innerHTML = out;
+    }
+
+    document.querySelectorAll("[data-rlmode]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-rlmode]").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        rlMode = btn.getAttribute("data-rlmode");
+        drawRL();
+      });
+    });
+    drawRL();
+
+    // =========================================================================
+    // 9. FIGURE 12: CONTROLLER TUNING WITH BAYESIAN OPTIMIZATION (BO)
+    // =========================================================================
+    const INITIAL_BO_POINTS = [0.45, 1.25, 2.75, 3.65, 2.15];
+    let boPoints = [...INITIAL_BO_POINTS];
+
+    // True closed-loop cost J(theta) on [0, 4] (minimum around theta = 2.08)
+    function trueJ(theta) {
+      return 1.10 + 0.55 * Math.pow(theta - 2.08, 2) - 0.28 * Math.cos(2.4 * (theta - 2.08));
+    }
+
+    function computeGPAndEI() {
+      const grid = [];
+      const yMin = Math.min(...boPoints.map(trueJ));
+
+      for (let i = 0; i <= 80; i++) {
+        const th = (i / 80) * 4.0;
+        // Kernel interpolation from sampled boPoints
+        let wSum = 0;
+        let ySum = 0;
+        let minDist = 99;
+        boPoints.forEach(p => {
+          const d = Math.abs(th - p);
+          if (d < minDist) minDist = d;
+          const k = Math.exp(-(d * d) / (2 * 0.38 * 0.38));
+          wSum += k;
+          ySum += k * trueJ(p);
+        });
+        const priorMean = 2.1;
+        const mu = (ySum + 0.15 * priorMean) / (wSum + 0.15);
+        const sigma = 0.04 + 0.52 * (1 - Math.exp(-(minDist * minDist) / (2 * 0.35 * 0.35)));
+        // Expected Improvement for minimization
+        const imp = Math.max(0, yMin - mu + 0.45 * sigma);
+        const ei = imp * Math.exp(-0.5 * Math.pow(Math.max(0, mu - yMin) / (sigma + 1e-4), 2));
+        grid.push({ th, mu, sigma, ei, truth: trueJ(th) });
+      }
+      return grid;
+    }
+
+    function drawBO() {
+      const svg = document.getElementById("bo-svg");
+      const grid = computeGPAndEI();
+
+      let maxEI = -1;
+      let nextTh = 2.08;
+      grid.forEach(g => {
+        if (g.ei > maxEI) {
+          maxEI = g.ei;
+          nextTh = g.th;
+        }
+      });
+
+      let bestP = boPoints[0];
+      boPoints.forEach(p => {
+        if (trueJ(p) < trueJ(bestP)) bestP = p;
+      });
+
+      document.getElementById("bo-iter-label").textContent = `Evaluations: n = ${boPoints.length}`;
+      document.getElementById("bo-best-theta").textContent = `θ* = ${bestP.toFixed(2)} (J = ${trueJ(bestP).toFixed(2)})`;
+      document.getElementById("bo-next-theta").textContent = `θ_next = ${nextTh.toFixed(2)}`;
+
+      const x0 = 46, x1 = 516;
+      const mapX = (th) => x0 + (th / 4.0) * (x1 - x0);
+
+      // Top plot: GP surrogate of J(theta) (y: 18..162)
+      const ty0 = 158, ty1 = 22;
+      const mapTopY = (v) => ty0 - ((v - 0.4) / 3.4) * (ty0 - ty1);
+
+      // Bottom plot: Acquisition function EI(theta) (y: 190..268)
+      const by0 = 266, by1 = 192;
+      const mapBotY = (ei) => by0 - (ei / Math.max(0.25, maxEI * 1.15)) * (by0 - by1);
+
+      let out = `<rect width="540" height="295" fill="#ffffff"/>`;
+
+      // Top Frame
+      out += `<rect x="${x0}" y="${ty1}" width="${x1 - x0}" height="${ty0 - ty1}" fill="#f8fafc" stroke="#cbd5e1"/>`;
+      // Bottom Frame
+      out += `<rect x="${x0}" y="${by1}" width="${x1 - x0}" height="${by0 - by1}" fill="#f8fafc" stroke="#cbd5e1"/>`;
+
+      const upper = [];
+      const lower = [];
+      const meanPts = [];
+      const truePts = [];
+      const eiPts = [];
+
+      grid.forEach(g => {
+        const px = mapX(g.th).toFixed(1);
+        meanPts.push(`${px},${mapTopY(g.mu).toFixed(1)}`);
+        truePts.push(`${px},${mapTopY(g.truth).toFixed(1)}`);
+        upper.push(`${px},${mapTopY(g.mu + 1.8 * g.sigma).toFixed(1)}`);
+        lower.unshift(`${px},${mapTopY(g.mu - 1.8 * g.sigma).toFixed(1)}`);
+        eiPts.push(`${px},${mapBotY(g.ei).toFixed(1)}`);
+      });
+
+      // GP uncertainty band
+      out += `<polygon points="${upper.join(" ")} ${lower.join(" ")}" fill="rgba(124, 58, 237, 0.2)"/>`;
+      out += `<polyline fill="none" stroke="#64748b" stroke-width="1.8" stroke-dasharray="4,3" points="${truePts.join(" ")}"/>`;
+      out += `<polyline fill="none" stroke="#7c3aed" stroke-width="2.5" points="${meanPts.join(" ")}"/>`;
+
+      // Sampled points
+      boPoints.forEach(p => {
+        out += `<circle cx="${mapX(p).toFixed(1)}" cy="${mapTopY(trueJ(p)).toFixed(1)}" r="4.5" fill="#0f172a" stroke="#ffffff" stroke-width="1.2"/>`;
+      });
+
+      // Bottom EI fill & curve
+      out += `<polygon points="${mapX(0)},${by0} ${eiPts.join(" ")} ${mapX(4)},${by0}" fill="rgba(5, 150, 105, 0.18)"/>`;
+      out += `<polyline fill="none" stroke="#059669" stroke-width="2.4" points="${eiPts.join(" ")}"/>`;
+
+      // Vertical line at nextTh
+      const nx = mapX(nextTh).toFixed(1);
+      out += `<line x1="${nx}" y1="${ty1}" x2="${nx}" y2="${by0}" stroke="#d97706" stroke-width="1.8" stroke-dasharray="4,3"/>`;
+      out += `<circle cx="${nx}" cy="${mapBotY(maxEI).toFixed(1)}" r="5" fill="#d97706"/>`;
+
+      out += `<text x="54" y="36" font-size="10.5" font-weight="700" fill="#5b21b6">Top: GP Surrogate of Cost J(θ) &nbsp; (-- True J, ― GP Mean, ● Tested θ)</text>`;
+      out += `<text x="54" y="206" font-size="10.5" font-weight="700" fill="#065f46">Bottom: Acquisition Function (Expected Improvement) → Peak at θ = ${nextTh.toFixed(2)}</text>`;
+      out += `<text x="280" y="286" text-anchor="middle" font-size="11" font-weight="600" fill="#475569">Controller Parameter θ</text>`;
+
+      svg.innerHTML = out;
+      return nextTh;
+    }
+
+    document.getElementById("bo-step-btn").addEventListener("click", () => {
+      const grid = computeGPAndEI();
+      let maxEI = -1, nextTh = 2.08;
+      grid.forEach(g => { if (g.ei > maxEI) { maxEI = g.ei; nextTh = g.th; } });
+      if (boPoints.length < 12) {
+        boPoints.push(nextTh);
+        drawBO();
+      }
+    });
+
+    document.getElementById("bo-reset-btn").addEventListener("click", () => {
+      boPoints = [0.45, 1.25, 2.75, 3.65];
+      drawBO();
+    });
+    drawBO();
+
+    // =========================================================================
+    // 10. TABLE I: MASTER OVERVIEW OF LEARNING-BASED CONTROL FAMILIES
+    // =========================================================================
+    const TABLE1_ROWS = [
+      {
+        sec: "sec4",
+        secLabel: "Sec. IV-B",
+        family: "Linear System Models",
+        learned: "System matrices (Â, B̂) or linear residual parameters",
+        prior: "Linear structure; optional nominal model (A_n, B_n) & noise bounds",
+        data: "Offline or online least-squares / set-membership identification",
+        errors: "Parametric confidence ellipsoids (stochastic) or polytopic parameter sets (bounded error)",
+        synthesis: "Robust MPC, Tube MPC, LQR, Linear CBFs",
+        guarantees: "Robust / high-probability ISS stability & recursive constraint satisfaction",
+        warn: false
+      },
+      {
+        sec: "sec4",
+        secLabel: "Sec. IV-C",
+        family: "Deterministic Nonlinear Models (e.g., DNNs, Basis Functions)",
+        learned: "Nonlinear dynamics f̂_l(z) or neural residual weights",
+        prior: "Known nominal physics f̂_n(x,u); Lipschitz constant or RKHS norm bound",
+        data: "Supervised regression / simulation error minimization on state-input trajectories",
+        errors: "Uniform deterministic bounds via Lipschitz / conformal or set-membership bounds",
+        synthesis: "Nonlinear Robust MPC, CLF/CBF-QP, Predictive Safety Filter (PSF)",
+        guarantees: "Input-to-state stability (ISS) & robust forward invariance under bounded error",
+        warn: false
+      },
+      {
+        sec: "sec4",
+        secLabel: "Sec. IV-D",
+        family: "Gaussian Processes (GPs) & Probabilistic Models (Examples 1–3)",
+        learned: "Posterior distribution GP(μ̂(z), Σ̂(z)) of unknown dynamics f̂_l(z)",
+        prior: "Nominal model f̂_n(x,u); kernel function k(z, z') & smoothness hyperpriors",
+        data: "Nonparametric Bayesian posterior inference (or sparse/variational GP approximations)",
+        errors: "Closed-form posterior variance σ̂²(z) yielding high-probability confidence bounds ±β·σ̂(z)",
+        synthesis: "GP-MPC with constraint tightening (Fig. 7), Stochastic CBFs, Probabilistic Reachability",
+        guarantees: "Stochastic stability in expectation & high-probability safety (chance constraints)",
+        warn: false
+      },
+      {
+        sec: "sec5",
+        secLabel: "Sec. V-C",
+        family: "Direct Data-Driven Control (State/Output Feedback)",
+        learned: "Nonparametric Hankel subspace H_L or direct feedback gain K from data matrices",
+        prior: "Controllable LTI structure (or known nonlinear basis); system order / lag bound",
+        data: "Single persistently exciting (PE) offline trajectory of length N (Willems' Lemma)",
+        errors: "Matrix disturbance bounds or Petersen's Lemma / S-procedure LMI bounds",
+        synthesis: "Data-driven LQR / LMI synthesis",
+        guarantees: "Closed-loop Lyapunov stability & robust invariance for LTI / weakly nonlinear systems",
+        warn: false
+      },
+      {
+        sec: "sec5",
+        secLabel: "Sec. V-D",
+        family: "Data-Enabled Predictive Control — DeePC (Example 4)",
+        learned: "Implicit trajectory representation via Hankel matrix [U_p; Y_p; U_f; Y_f]α",
+        prior: "Persistency of Excitation (PE) rank condition on input data; horizon T_ini; online data updates",
+        data: "Direct optimization over trajectory weights α from N offline I/O samples",
+        errors: "Slack variables σ_y and L1/L2 regularization (λ_α‖α‖², λ_σ‖σ_y‖²) for noise & nonlinearities",
+        synthesis: "Receding-horizon constrained QP/NLP (Figs. 8–9) with terminal constraints",
+        guarantees: "Exact equivalence to MPC in deterministic LTI case; regularized practical stability under noise",
+        warn: false
+      },
+      {
+        sec: "sec6",
+        secLabel: "Sec. VI-A",
+        family: "Model-Free Reinforcement Learning (Example 5)",
+        learned: "Policy π_θ(u|x) and/or action-value function Q_ϕ(x,u)",
+        prior: "Generally little: reward function r(x,u) and state/action space definition; no dynamics model",
+        data: "Trial-and-error interaction with simulator or system (data hungry); or offline RL dataset",
+        errors: "Not modeled explicitly in vanilla RL; captured via stochastic policies or value ensembles",
+        synthesis: "Policy-gradient (PPO/SAC) or DQN Updates + External Safety Filter (Fig. 11) or CMDP",
+        guarantees: "None intrinsic; safety & invariance achieved by augmenting with CBF / PSF safety filter",
+        warn: true
+      },
+      {
+        sec: "sec6",
+        secLabel: "Sec. VI-B–C",
+        family: "Model-Based RL & Imitation Learning (IL)",
+        learned: "Transition model f̂ + policy π_θ (MBRL); or expert policy mapping π_θ(x) (IL)",
+        prior: "Reward function & model class (MBRL); expert demonstrations D_E (Behavior Cloning / IRL)",
+        data: "Iterative model learning + policy rollouts (MBRL); supervised learning / DAgger on expert data (IL)",
+        errors: "Ensemble epistemic uncertainty (MBRL); covariate shift / distribution mismatch bounds (IL)",
+        synthesis: "Dyna / MPPI / Differentiable MPC + Lyapunov/CBF regularizers or Safety Filters",
+        guarantees: "Stability & safety when paired with certified model bounds or online safety filtering",
+        warn: false
+      },
+      {
+        sec: "sec6",
+        secLabel: "Sec. VI-D",
+        family: "Bayesian Optimization (BO) for Controller Tuning (Example 6)",
+        learned: "GP surrogate model of closed-loop performance cost Ĵ(θ) & safety constraints",
+        prior: "Pre-structured stabilizing controller family π(x; θ) (e.g., PID, LQR, MPC weights) & compact Θ",
+        data: "Sequential closed-loop hardware/simulation experiments guided by acquisition function (Fig. 12)",
+        errors: "GP posterior mean μ_J(θ) and variance σ_J²(θ) over the low-dimensional parameter space Θ",
+        synthesis: "Expected Improvement (EI), GP-UCB, or SafeOpt (restricting queries to certified safe set S_θ)",
+        guarantees: "Inherited from underlying controller structure; high-probability safe exploration with SafeOpt",
+        warn: false
+      }
+    ];
+
+    let activeTableSec = "all";
+
+    function renderTable1() {
+      const q = document.getElementById("table-search").value.trim().toLowerCase();
+      const tbody = document.getElementById("table1-body");
+
+      const filtered = TABLE1_ROWS.filter(r => {
+        const matchSec = activeTableSec === "all" || r.sec === activeTableSec;
+        const blob = `${r.family} ${r.secLabel} ${r.learned} ${r.prior} ${r.data} ${r.errors} ${r.synthesis} ${r.guarantees}`.toLowerCase();
+        return matchSec && (!q || blob.includes(q));
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:24px; color:var(--muted);">No method families match your filter. Try clearing the search box.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(r => {
+        const secClass = r.sec === "sec4" ? "sec-iv" : (r.sec === "sec5" ? "sec-v" : "sec-vi");
+        return `
+          <tr>
+            <td>
+              <span class="sec-tag ${secClass}">${r.secLabel}</span>
+              <div class="method-cell-title" style="margin-top:5px;">${r.family}</div>
+            </td>
+            <td>${r.learned}</td>
+            <td>${r.prior}</td>
+            <td>${r.data}</td>
+            <td>${r.errors}</td>
+            <td><strong>${r.synthesis}</strong></td>
+            <td><span class="guarantee-chip ${r.warn ? 'warn' : ''}">${r.guarantees}</span></td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    document.querySelectorAll("[data-tfilter]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-tfilter]").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        activeTableSec = btn.getAttribute("data-tfilter");
+        renderTable1();
+      });
+    });
+
+    document.getElementById("table-search").addEventListener("input", renderTable1);
+    renderTable1();
+  </script>
+</body>
+</html>
