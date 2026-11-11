@@ -1,0 +1,578 @@
+<title>DiffDreamer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..800&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..650;1,8..60,400&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']], packages: { '[+]': ['html'] } },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg-full.js" defer></script>
+<style>
+/* Layout: one ~68ch reading column; diagrams, tables and paper figures widen to 1120px.
+   Color = which pathway owns a thing (same coding as the paper's Fig. 1):
+   blue = implicit / world model / critic, orange = explicit / simulator / motion reward, red = stop-gradient. */
+:root {
+  --bg: #F5F6F8;
+  --surface: #FFFFFF;
+  --sunk: #EBEEF2;
+  --ink: #161A21;
+  --muted: #5C6574;
+  --line: #D6DBE2;
+  --edge: #8A93A1;
+  --imp: #2361C4;
+  --imp-soft: #E1EAF9;
+  --exp: #B8590C;
+  --exp-soft: #FAE8D7;
+  --stop: #C42B3A;
+  --mat: #FFFFFF;
+  --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Source Serif 4", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --f-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F1218; --surface: #171B23; --sunk: #1F2530; --ink: #E5E8EE; --muted: #9AA3B2; --line: #2C3442; --edge: #6E7889;
+    --imp: #7DA9F3; --imp-soft: #1A2A46; --exp: #F2A35F; --exp-soft: #3A2716; --stop: #F27A86; --mat: #F3F4F6;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F1218; --surface: #171B23; --sunk: #1F2530; --ink: #E5E8EE; --muted: #9AA3B2; --line: #2C3442; --edge: #6E7889;
+  --imp: #7DA9F3; --imp-soft: #1A2A46; --exp: #F2A35F; --exp-soft: #3A2716; --stop: #F27A86; --mat: #F3F4F6;
+  color-scheme: dark;
+}
+
+body { background: var(--bg); color: var(--ink); font: 400 17px/1.6 var(--f-body); }
+.wrap {
+  max-width: 1120px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 44px 80px;
+  display: flex; flex-direction: column; gap: 76px;
+}
+header, section { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+.prose { max-width: 68ch; display: flex; flex-direction: column; gap: 12px; }
+p { margin: 0; }
+a { color: var(--imp); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--imp); outline-offset: 3px; border-radius: 4px; }
+.imp { color: var(--imp); } .exp { color: var(--exp); }
+b.imp, b.exp { font-weight: 600; }
+
+.eyebrow { font: 500 12px/1.4 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1, h2 { font-family: var(--f-display); margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(2.6rem, 7vw, 4.4rem); font-weight: 800; font-stretch: 118%; line-height: 1; letter-spacing: -.01em; }
+h2 { font-size: clamp(1.6rem, 3.4vw, 2.2rem); font-weight: 700; font-stretch: 110%; line-height: 1.1; }
+h3 { font: 700 1.05rem/1.3 var(--f-display); font-stretch: 105%; margin: 0; }
+.sec-head { display: flex; flex-direction: column; gap: 6px; }
+
+/* hero */
+.subtitle { font-size: clamp(1.1rem, 2.2vw, 1.35rem); line-height: 1.4; max-width: 46ch; color: var(--ink); }
+.byline { font: 400 13px/1.5 var(--f-mono); color: var(--muted); }
+.thesis {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+}
+.thesis > div { padding: 16px 18px 18px 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.thesis > div + div { padding-left: 18px; border-left: 1px solid var(--line); }
+.thesis .k { font: 500 11px/1.3 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; }
+.thesis p { font-size: 15.5px; line-height: 1.5; }
+@media (max-width: 760px) {
+  .thesis { grid-template-columns: 1fr; }
+  .thesis > div, .thesis > div + div { padding: 14px 0; border-left: 0; }
+  .thesis > div + div { border-top: 1px solid var(--line); }
+}
+
+/* figures from the paper sit on a white mat in both themes */
+figure { margin: 0; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.mat { background: var(--mat); border: 1px solid var(--line); border-radius: 6px; padding: 14px; }
+.mat img { display: block; width: 100%; height: auto; }
+figcaption { font-size: 14.5px; line-height: 1.5; color: var(--muted); max-width: 80ch; }
+figcaption b { color: var(--ink); font-weight: 600; }
+.figs-2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.45fr); gap: 22px; align-items: start; }
+@media (max-width: 860px) { .figs-2 { grid-template-columns: 1fr; } }
+
+/* who-handles-what matrix */
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { border-collapse: collapse; width: 100%; }
+.matrix { min-width: 640px; font-size: 15px; }
+.matrix th, .matrix td { text-align: left; padding: 11px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.matrix thead th { font: 600 13px/1.3 var(--f-display); font-stretch: 105%; color: var(--muted); border-bottom: 1.5px solid var(--ink); }
+.matrix thead th.us { color: var(--ink); }
+.matrix tbody th { font-weight: 600; width: 30%; }
+.matrix tbody th small { display: block; font: 400 12.5px/1.4 var(--f-body); color: var(--muted); }
+.matrix td.us { background: var(--sunk); }
+.chip { display: inline-block; font: 500 12px/1.2 var(--f-mono); padding: 4px 8px; border-radius: 4px; border: 1px solid; white-space: nowrap; }
+.chip.c-imp { color: var(--imp); background: var(--imp-soft); border-color: color-mix(in srgb, var(--imp) 35%, transparent); }
+.chip.c-exp { color: var(--exp); background: var(--exp-soft); border-color: color-mix(in srgb, var(--exp) 35%, transparent); }
+.chip.c-none { color: var(--muted); background: transparent; border-color: var(--line); border-style: dashed; }
+.note { display: block; font-size: 12.5px; color: var(--muted); margin-top: 4px; line-height: 1.35; }
+
+/* main rollout diagram */
+.diagram { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg button {
+  font: 500 13px/1.2 var(--f-mono); padding: 8px 12px; border-radius: 6px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+}
+.seg button[aria-pressed="true"][data-mode="exp"] { background: var(--exp-soft); border-color: var(--exp); color: var(--exp); }
+.seg button[aria-pressed="true"][data-mode="imp"] { background: var(--imp-soft); border-color: var(--imp); color: var(--imp); }
+.seg button[aria-pressed="true"][data-mode="fwd"] { background: var(--sunk); border-color: var(--ink); }
+.dg { display: block; width: 100%; min-width: 760px; height: auto; }
+.dg text { fill: var(--ink); font-family: var(--f-body); font-size: 15px; }
+.dg text .sup, .dg text .sub { font-size: 11px; }
+.dg text.mono { font-family: var(--f-mono); font-size: 10.5px; fill: var(--muted); }
+.dg text.time { font-family: var(--f-mono); font-size: 13px; fill: var(--muted); }
+.dg text.loss-imp { fill: var(--imp); font-size: 13px; }
+.dg text.loss-exp { fill: var(--exp); font-size: 13px; }
+.dg .box { fill: var(--surface); stroke: var(--ink); stroke-width: 1.3; }
+.dg .st-imp, .dg .m-imp, .dg .critic { fill: var(--imp-soft); stroke: var(--imp); stroke-width: 1.4; }
+.dg .st-exp, .dg .m-exp, .dg .rew { fill: var(--exp-soft); stroke: var(--exp); stroke-width: 1.4; }
+.dg .m-imp, .dg .m-exp { stroke-width: 2; }
+.dg .bracket { fill: none; stroke: var(--edge); stroke-width: 1.2; stroke-dasharray: 4 4; }
+.dg .e { fill: none; stroke: var(--edge); stroke-width: 1.6; marker-end: url(#ah); transition: opacity .2s; }
+.dg .e.nohead { marker-end: none; }
+.dg .e.tail { stroke-dasharray: 3 4; }
+.dg .jn { fill: var(--edge); }
+.dg .ah-p { fill: var(--edge); } .dg .ah-imp-p { fill: var(--imp); } .dg .ah-exp-p { fill: var(--exp); }
+.dg .sg rect { fill: var(--surface); stroke: var(--stop); stroke-width: 1.3; }
+.dg .sg text { fill: var(--stop); font-family: var(--f-mono); font-size: 11px; font-weight: 500; }
+.dg .node { transition: opacity .2s; }
+.dg[data-mode="exp"] .e[data-g~="exp"] { stroke: var(--exp); stroke-width: 2.8; stroke-dasharray: 7 5; marker-end: url(#ah-exp); animation: flow .9s linear infinite; }
+.dg[data-mode="imp"] .e[data-g~="imp"] { stroke: var(--imp); stroke-width: 2.8; stroke-dasharray: 7 5; marker-end: url(#ah-imp); animation: flow .9s linear infinite; }
+.dg[data-mode="exp"] .e:not([data-g~="exp"]), .dg[data-mode="imp"] .e:not([data-g~="imp"]) { opacity: .3; }
+.dg[data-mode="exp"] .node:not([data-g~="exp"]), .dg[data-mode="imp"] .node:not([data-g~="imp"]) { opacity: .4; }
+.dg[data-mode="exp"] .jn { fill: var(--exp); }
+.dg[data-mode="imp"] .jn { fill: var(--imp); }
+/* dash offset growing = dashes travel toward the path start, i.e. backward, like gradients */
+@keyframes flow { to { stroke-dashoffset: 24; } }
+@media (prefers-reduced-motion: reduce) { .dg .e { animation: none !important; } }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 14px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.legend svg { flex: none; }
+.mode-note { font-size: 15px; max-width: 80ch; min-height: 3em; }
+
+/* equations */
+.eqs { display: flex; flex-direction: column; gap: 18px; }
+.eq-card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+  padding: 18px 20px; display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 4px 18px;
+}
+.eq-card .tag { font: 500 12px/1.4 var(--f-mono); color: var(--muted); padding-top: 14px; }
+.eq-card .body { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.eq { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }
+.eq mjx-container[display="true"] { margin: 6px 0 !important; }
+.eq-card p { font-size: 15.5px; color: var(--ink); max-width: 72ch; }
+.eq-card p.dim { color: var(--muted); font-size: 14.5px; }
+.eq-card.k-imp { border-left: 3px solid var(--imp); }
+.eq-card.k-exp { border-left: 3px solid var(--exp); }
+.eq-card.k-both { border-left: 3px solid var(--ink); }
+@media (max-width: 560px) {
+  .eq-card { grid-template-columns: 1fr; padding: 14px; }
+  .eq-card .tag { padding-top: 0; }
+}
+.example {
+  font: 400 13.5px/1.55 var(--f-mono); background: var(--sunk); border-radius: 6px; padding: 10px 12px;
+  overflow-x: auto; white-space: pre; color: var(--ink);
+}
+.example .c { color: var(--muted); }
+mjx-container .mi-imp { fill: var(--imp); stroke: var(--imp); }
+mjx-container .mi-exp { fill: var(--exp); stroke: var(--exp); }
+mjx-container .mi-stop { fill: var(--stop); stroke: var(--stop); }
+.subhead { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
+.subhead .eyebrow { color: var(--muted); }
+
+/* reward split mini charts */
+.split { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+@media (max-width: 700px) { .split { grid-template-columns: 1fr; } }
+.split figure { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font: 400 11px var(--f-mono); }
+.chart text.t { fill: var(--ink); font: 500 13px var(--f-body); }
+.chart .ax { stroke: var(--edge); stroke-width: 1; fill: none; }
+.chart .zero { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 3; fill: none; }
+.chart .l-exp { stroke: var(--exp); stroke-width: 2.4; fill: none; }
+.chart .l-imp { stroke: var(--imp); stroke-width: 2.4; fill: none; }
+.chart .d-imp { fill: var(--imp); }
+.chart text.a-exp { fill: var(--exp); } .chart text.a-imp { fill: var(--imp); }
+
+/* results tables */
+.res { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+@media (max-width: 900px) { .res { grid-template-columns: 1fr; } }
+.res .card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.res table { font-size: 14px; font-variant-numeric: tabular-nums; min-width: 420px; }
+.res th, .res td { padding: 7px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+.res thead th { font: 600 12px/1.3 var(--f-mono); color: var(--muted); border-bottom: 1.5px solid var(--ink); }
+.res tr.us td, .res tr.us th { font-weight: 650; }
+.res tbody th { font-weight: 500; white-space: nowrap; }
+.bar { display: flex; align-items: center; gap: 8px; }
+.bar i { display: block; height: 9px; border-radius: 2px; background: var(--edge); min-width: 1px; }
+.bar.zero i { background: transparent; border-left: 1px solid var(--edge); }
+.res tr.us .bar i { background: var(--ink); }
+.bar span { font-family: var(--f-mono); font-size: 12.5px; min-width: 2.6em; }
+.res td small { color: var(--muted); font: 400 11px var(--f-mono); }
+.res .cap { font-size: 13.5px; color: var(--muted); }
+
+ul.tight { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 6px; max-width: 72ch; }
+footer { font: 400 13px/1.6 var(--f-mono); color: var(--muted); border-top: 1px solid var(--line); padding-top: 18px; }
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">arXiv 2610.31617 · cs.RO · Oct 2026</div>
+  <h1>DiffDreamer</h1>
+  <p class="subtitle">Coupling World Models with Differentiable Simulation for Agile Quadrotor Control</p>
+  <p class="byline">F. Li, Y. Huang, S. Wang, F. Sun, S. Wu, T. Zhang, D. Zuo, Y. Yufei, D. Zou, W. Yu · <a href="https://arxiv.org/html/2610.31617v1">read the paper</a></p>
+  <div class="thesis">
+    <div><span class="k imp">Learn the world</span><p>A <b class="imp">world model</b> (a network that learns to predict what happens next) imagines where the moving gates or target will go.</p></div>
+    <div><span class="k exp">Compute the body</span><p>A <b class="exp">differentiable simulator</b> (physics code you can take gradients through) predicts where the drone itself will go.</p></div>
+    <div><span class="k">Train through both</span><p>The same action drives both rollouts, and one policy is trained on gradients from both. Result: 8 gates passed at 2 m/s, vs 3 for PPO and 1 for MPC.</p></div>
+  </div>
+</header>
+
+<section>
+  <div class="sec-head"><div class="eyebrow">§ I · The problem</div><h2>Two kinds of motion, two kinds of reward</h2></div>
+  <div class="prose">
+    <p>Racing through moving gates mixes things that are easy to compute (the drone's rigid-body physics) with things you can only guess from history (where a gate is heading). Existing methods put everything on one side.</p>
+  </div>
+  <div class="scroll">
+    <table class="matrix">
+      <thead><tr><th></th><th>DreamerV3<br><small>world-model RL</small></th><th>BPTT<br><small>differentiable RL</small></th><th class="us">DiffDreamer</th></tr></thead>
+      <tbody>
+        <tr><th>Gate / target motion<small>future unknown, depends on history</small></th>
+          <td><span class="chip c-imp">world model</span></td>
+          <td><span class="chip c-none">not predicted</span><span class="note">sees only current gate position</span></td>
+          <td class="us"><span class="chip c-imp">world model</span></td></tr>
+        <tr><th>Drone motion<small>Newton–Euler rigid body, Eq. 8</small></th>
+          <td><span class="chip c-imp">world model</span><span class="note">learned, so it can be biased</span></td>
+          <td><span class="chip c-exp">simulator</span><span class="note">exact physics gradients</span></td>
+          <td class="us"><span class="chip c-exp">simulator</span></td></tr>
+        <tr><th>Smooth motion reward<small>e.g. speed toward the gate</small></th>
+          <td><span class="chip c-imp">critic</span><span class="note">learned value estimate</span></td>
+          <td><span class="chip c-exp">backprop through sim</span></td>
+          <td class="us"><span class="chip c-exp">backprop through sim</span></td></tr>
+        <tr><th>Gate-pass bonus<small>0, or k₃ when the drone passes</small></th>
+          <td><span class="chip c-imp">critic</span></td>
+          <td><span class="chip c-none">no gradient</span><span class="note">a jump from 0 to k₃ has no slope</span></td>
+          <td class="us"><span class="chip c-imp">critic</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><div class="eyebrow">§ III-D · The idea</div><h2>Imagine the world, simulate the body</h2></div>
+  <div class="figs-2">
+    <figure>
+      <div class="mat"><img src="figs/human.jpg" alt="Left: a person catching a ball imagines the ball's path while planning arm motion. Right: policy training with an implicit-state lane (learned transition, critic) and an explicit-state lane (analytical dynamics, analytical reward) feeding tightly-coupled optimization." loading="lazy"></div>
+      <figcaption><b>Fig. 2.</b> Catching a ball: you guess the ball's path (outside world) and plan your arm (your own body) at the same time. DiffDreamer copies this split.</figcaption>
+    </figure>
+    <figure>
+      <div class="mat"><img src="figs/overview.jpg" alt="DiffDreamer overview: system identification builds a digital twin, inference uses a single MLP actor taking implicit hidden state and observable state, training couples world-model imagination with analytical dynamics." loading="lazy"></div>
+      <figcaption><b>Fig. 1.</b> System ID builds a calibrated digital twin. In training, the <span class="imp">blue lane</span> imagines gate states with the world model and the <span class="exp">orange lane</span> rolls the drone forward with analytical dynamics. One small MLP outputs thrust + body rates and is deployed zero-shot.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><div class="eyebrow">§ III-D · One actor update</div><h2>Two synchronized rollouts, two gradient paths</h2></div>
+  <div class="prose">
+    <p>Each step, the actor reads the latent state and the drone state, picks action \(a_t\), and that one action advances both the world model and the simulator. Pick a path to see where its gradient flows.</p>
+  </div>
+  <div class="diagram">
+    <div class="seg" role="group" aria-label="Highlight a gradient path">
+      <button type="button" id="mode-exp" data-mode="exp" aria-pressed="true">Simulator path · L_exp</button>
+      <button type="button" id="mode-imp" data-mode="imp" aria-pressed="false">Critic path · L_imp</button>
+      <button type="button" id="mode-fwd" data-mode="fwd" aria-pressed="false">Forward pass only</button>
+    </div>
+    <div class="scroll">
+<svg class="dg" id="rollout" data-mode="exp" viewBox="0 0 930 470" role="img" aria-label="Unrolled DiffDreamer training graph over steps t, t+1, t+2. Top lane: latent states advanced by the world model. Bottom lane: drone states advanced by the simulator. Middle: the actor reads both (latent through a stop-gradient) and its action feeds both models. Critics read the joint state; motion rewards read the drone state.">
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path class="ah-p" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="ah-imp" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path class="ah-imp-p" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="ah-exp" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path class="ah-exp-p" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<path class="e" data-g="" d="M110 130 H229"/>
+<path class="e" data-g="imp" d="M330 130 H389"/>
+<path class="e" data-g="" d="M110 340 H229"/>
+<path class="e" data-g="exp imp" d="M330 340 H389"/>
+<path class="e" d="M100 150 L152 214"/>
+<path class="e" data-g="" d="M100 320 L152 256"/>
+<path class="e nohead" data-g="exp imp" d="M198 235 H280"/>
+<path class="e" data-g="imp" d="M280 235 V153"/>
+<path class="e" data-g="exp imp" d="M280 235 V317"/>
+<circle class="jn" cx="280" cy="235" r="3.5"/>
+<path class="e" data-g="imp" d="M450 130 H569"/>
+<path class="e" data-g="imp" d="M670 130 H729"/>
+<path class="e" data-g="exp imp" d="M450 340 H569"/>
+<path class="e" data-g="exp imp" d="M670 340 H729"/>
+<path class="e" d="M440 150 L492 214"/>
+<path class="e" data-g="exp imp" d="M440 320 L492 256"/>
+<path class="e nohead" data-g="exp imp" d="M538 235 H620"/>
+<path class="e" data-g="imp" d="M620 235 V153"/>
+<path class="e" data-g="exp imp" d="M620 235 V317"/>
+<circle class="jn" cx="620" cy="235" r="3.5"/>
+<path class="e" data-g="imp" d="M420 97 V73"/>
+<path class="e" data-g="exp" d="M420 360 V397"/>
+<path class="e" data-g="imp" d="M760 97 V73"/>
+<path class="e" data-g="exp" d="M760 360 V397"/>
+<path class="e tail" d="M790 130 H850"/><path class="e tail" d="M790 340 H850"/>
+<text x="874" y="135" text-anchor="middle">…</text><text x="874" y="345" text-anchor="middle">…</text>
+<g class="node" data-g=""><rect class="bracket" x="42" y="98" width="76" height="272" rx="14"/><text x="80" y="244" text-anchor="middle"><tspan font-style="italic">s</tspan><tspan class="sub" dy="5">t</tspan></text></g>
+<g class="node" data-g=""><rect class="st-imp" x="50" y="110" width="60" height="40" rx="9"/><text x="80" y="136" text-anchor="middle"><tspan font-style="italic">s</tspan><tspan class="sup" dy="-7">imp</tspan></text></g>
+<g class="node" data-g=""><rect class="st-exp" x="50" y="320" width="60" height="40" rx="9"/><text x="80" y="346" text-anchor="middle"><tspan font-style="italic">s</tspan><tspan class="sup" dy="-7">exp</tspan></text></g>
+<text class="time" x="80" y="462" text-anchor="middle">t</text>
+<g class="node" data-g="imp"><rect class="m-imp" x="230" y="108" width="100" height="44" rx="6"/><text x="280" y="128" text-anchor="middle" font-size="14">World model</text><text class="mono" x="280" y="144" text-anchor="middle">RSSM, frozen</text></g>
+<g class="node" data-g="exp imp"><rect class="m-exp" x="230" y="318" width="100" height="44" rx="6"/><text x="280" y="338" text-anchor="middle" font-size="14">Simulator</text><text class="mono" x="280" y="354" text-anchor="middle">s + d(s,a)·Δt</text></g>
+<g class="node" data-g="exp imp"><rect class="box" x="142" y="215" width="56" height="40" rx="9"/><text x="170" y="241" text-anchor="middle"><tspan font-style="italic">π</tspan><tspan class="sub" dy="5">θ</tspan></text></g>
+<text x="238" y="226" text-anchor="middle"><tspan font-style="italic">a</tspan><tspan class="sub" dy="5">t</tspan></text>
+<g class="sg"><rect x="118.2" y="179.4" width="26" height="18" rx="4"/><text x="131.2" y="192.4" text-anchor="middle">sg</text></g>
+<g class="node" data-g="imp"><rect class="bracket" x="382" y="98" width="76" height="272" rx="14"/><text x="420" y="244" text-anchor="middle"><tspan font-style="italic">s</tspan><tspan class="sub" dy="5">t+1</tspan></text></g>
+<g class="node" data-g="imp"><rect class="st-imp" x="390" y="110" width="60" height="40" rx="9"/><text x="420" y="136" text-anchor="middle"><tspan font-style="italic">s</tspan><tspan class="sup" dy="-7">imp</tspan></text></g>
+<g class="node" data-g="exp imp"><rect class="st-exp" x="390" y="320" width="60" height="40" rx="9"/><text x="420" y="346" text-anchor="middle"><tspan font-style="italic">s</tspan><tspan class="sup" dy="-7">exp</tspan></text></g>
+<text class="time" x="420" y="462" text-anchor="middle">t+1</text>
+<g class="node" data-g="imp"><rect class="m-imp" x="570" y="108" width="100" height="44" rx="6"/><text x="620" y="128" text-anchor="middle" font-size="14">World model</text><text class="mono" x="620" y="144" text-anchor="middle">RSSM, frozen</text></g>
+<g class="node" data-g="exp imp"><rect class="m-exp" x="570" y="318" width="100" height="44" rx="6"/><text x="620" y="338" text-anchor="middle" font-size="14">Simulator</text><text class="mono" x="620" y="354" text-anchor="middle">s + d(s,a)·Δt</text></g>
+<g class="node" data-g="exp imp"><rect class="box" x="482" y="215" width="56" height="40" rx="9"/><text x="510" y="241" text-anchor="middle"><tspan font-style="italic">π</tspan><tspan class="sub" dy="5">θ</tspan></text></g>
+<text x="578" y="226" text-anchor="middle"><tspan font-style="italic">a</tspan><tspan class="sub" dy="5">t+1</tspan></text>
+<g class="sg"><rect x="458.2" y="179.4" width="26" height="18" rx="4"/><text x="471.2" y="192.4" text-anchor="middle">sg</text></g>
+<g class="node" data-g="imp"><rect class="critic" x="386" y="40" width="68" height="32" rx="6"/><text x="420" y="61" text-anchor="middle" font-size="14">critic <tspan font-style="italic">V̂</tspan></text></g>
+<g class="node" data-g="exp"><rect class="rew" x="386" y="398" width="68" height="30" rx="6"/><text x="420" y="419" text-anchor="middle"><tspan font-style="italic">r</tspan><tspan class="sup" dy="-7">diff</tspan></text></g>
+<g class="node" data-g="imp"><rect class="bracket" x="722" y="98" width="76" height="272" rx="14"/><text x="760" y="244" text-anchor="middle"><tspan font-style="italic">s</tspan><tspan class="sub" dy="5">t+2</tspan></text></g>
+<g class="node" data-g="imp"><rect class="st-imp" x="730" y="110" width="60" height="40" rx="9"/><text x="760" y="136" text-anchor="middle"><tspan font-style="italic">s</tspan><tspan class="sup" dy="-7">imp</tspan></text></g>
+<g class="node" data-g="exp imp"><rect class="st-exp" x="730" y="320" width="60" height="40" rx="9"/><text x="760" y="346" text-anchor="middle"><tspan font-style="italic">s</tspan><tspan class="sup" dy="-7">exp</tspan></text></g>
+<text class="time" x="760" y="462" text-anchor="middle">t+2</text>
+<g class="node" data-g="imp"><rect class="critic" x="726" y="40" width="68" height="32" rx="6"/><text x="760" y="61" text-anchor="middle" font-size="14">critic <tspan font-style="italic">V̂</tspan></text></g>
+<g class="node" data-g="exp"><rect class="rew" x="726" y="398" width="68" height="30" rx="6"/><text x="760" y="419" text-anchor="middle"><tspan font-style="italic">r</tspan><tspan class="sup" dy="-7">diff</tspan></text></g>
+<text class="loss-imp" x="804" y="54">Σ γᵗ V̂ →</text><text class="loss-imp" x="804" y="70">−L_imp</text>
+<text class="loss-exp" x="804" y="410">Σ γᵗ r_diff →</text><text class="loss-exp" x="804" y="426">−L_exp</text>
+</svg>
+    </div>
+    <p class="mode-note" id="mode-note"></p>
+    <div class="legend">
+      <span><svg width="34" height="10" aria-hidden="true"><line x1="0" y1="5" x2="34" y2="5" stroke="var(--edge)" stroke-width="1.6"/></svg>forward data</span>
+      <span><svg width="34" height="10" aria-hidden="true"><line x1="0" y1="5" x2="34" y2="5" stroke="var(--exp)" stroke-width="2.8" stroke-dasharray="7 5"/></svg>gradient of L_exp</span>
+      <span><svg width="34" height="10" aria-hidden="true"><line x1="0" y1="5" x2="34" y2="5" stroke="var(--imp)" stroke-width="2.8" stroke-dasharray="7 5"/></svg>gradient of L_imp</span>
+      <span><svg width="30" height="18" aria-hidden="true"><rect x="1" y="1" width="28" height="16" rx="4" fill="var(--surface)" stroke="var(--stop)"/><text x="15" y="13" text-anchor="middle" font-size="11" font-family="var(--f-mono)" fill="var(--stop)">sg</text></svg>stop-gradient: latent is a fixed input</span>
+      <span><svg width="34" height="18" aria-hidden="true"><rect x="1" y="1" width="32" height="16" rx="6" fill="none" stroke="var(--edge)" stroke-dasharray="4 4"/></svg>joint state \(s_t\)</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><div class="eyebrow">§ III · The math</div><h2>From Dreamer and DiffRL to DiffDreamer</h2></div>
+  <div class="prose"><p>DiffDreamer is built from two known recipes. Here are the pieces it borrows, then the three equations it changes.</p></div>
+
+  <div class="eqs">
+    <div class="subhead"><h3>Ingredient 1 · World-model RL (DreamerV3)</h3></div>
+
+    <div class="eq-card k-imp">
+      <div class="tag">Eq. 2–3</div>
+      <div class="body">
+        <div class="eq">\[ a_t \sim \pi_\theta(\cdot \mid s_t^{imp}), \qquad \nabla_\theta \mathcal{L}(\theta) = -\sum_{t=0}^{T} \gamma^t\, \nabla_\theta \hat{\mathcal{V}}_t \]</div>
+        <p>The actor sees only the latent \(s_t^{imp} = (h_t, z_t)\) from an RSSM (recurrent state-space model: a GRU memory \(h_t\) plus a random code \(z_t\)). It is trained to raise the critic's value \(\hat{\mathcal V}_t\) along imagined rollouts of length \(T\).</p>
+      </div>
+    </div>
+
+    <div class="eq-card k-imp">
+      <div class="tag">Eq. 4</div>
+      <div class="body">
+        <div class="eq">\[ \hat{\mathcal{R}}_t^{\lambda} = \hat{r}_t + \gamma\, c_t \Big[ (1-\lambda)\, \hat{\mathcal{V}}_{t+1} + \lambda\, \hat{\mathcal{R}}_{t+1}^{\lambda} \Big], \qquad \mathcal{L}(\psi) = -\sum_{t} \ln p_\psi\big(\hat{\mathcal{R}}_t^{\lambda} \mid s_t^{imp}\big) \]</div>
+        <p>The critic learns the λ-return: a blend of "reward now + my value guess next step" and "the longer imagined return". \(c_t\) is 0 if the episode ends. Here \(\hat r_t\) covers <em>all</em> rewards.</p>
+      </div>
+    </div>
+
+    <div class="subhead"><h3>Ingredient 2 · Differentiable RL (BPTT)</h3></div>
+
+    <div class="eq-card k-exp">
+      <div class="tag">Eq. 5–6</div>
+      <div class="body">
+        <div class="eq">\[ \nabla_\theta \mathcal{J} = \sum_{t=0}^{T} \gamma^t \Bigg[ \frac{\partial R_t}{\partial a_t}\frac{\partial a_t}{\partial \theta} + \frac{\partial R_t}{\partial s_t^{exp}} \sum_{i=1}^{t} \class{mi-exp}{\Bigg( \prod_{j=i+1}^{t} \frac{\partial s_j^{exp}}{\partial s_{j-1}^{exp}} \Bigg) \frac{\partial s_i^{exp}}{\partial a_{i-1}}} \frac{\partial a_{i-1}}{\partial \theta} \Bigg] \]</div>
+        <p>Backprop through time: every reward is pushed back through the chain of <span class="exp">simulator Jacobians</span> (orange) to every earlier action. These Jacobians are exact, not learned, so the gradient has low variance. But it only works if the reward is smooth and the dynamics are known.</p>
+      </div>
+    </div>
+
+    <div class="eq-card k-exp">
+      <div class="tag">Eq. 7–8</div>
+      <div class="body">
+        <div class="eq">\[ s_{t+1}^{exp} = s_t^{exp} + d(s_t^{exp}, a_t)\,\Delta t \]</div>
+        <div class="eq">\[ \dot{\mathbf p}_W = \mathbf v_W, \quad \dot{\mathbf v}_W = \tfrac{1}{m}\big(\mathbf R_{WB}\,\mathbf f_B + \mathbf d_W\big) + \mathbf g, \quad \dot{\mathbf q} = \tfrac12\, \mathbf q \otimes \boldsymbol\Omega, \quad \dot{\boldsymbol\Omega} = \mathbf J^{-1}\big(\boldsymbol\eta - \boldsymbol\Omega \times \mathbf J \boldsymbol\Omega\big) \]</div>
+        <p>Full nonlinear quadrotor: world-frame position \(\mathbf p_W\) (m) and velocity \(\mathbf v_W\) (m/s), attitude quaternion \(\mathbf q\), body rates \(\boldsymbol\Omega\) (rad/s). Thrust \(\mathbf f_B = [0,0,f]^\top\) acts along body z. Euler steps make each Jacobian simple.</p>
+        <div class="example"><span class="c"># example: one Euler step, Δt = 0.01 s (illustrative)</span>
+p_t = [0, 0, 1] m,  v_t = [3, 0, 0] m/s
+p_t+1 = p_t + v_t·Δt = [0.03, 0, 1] m
+∂p_t+1/∂v_t = Δt·I = 0.01·I   <span class="c"># exact: "1 m/s more now = 1 cm further next step"</span></div>
+      </div>
+    </div>
+
+    <div class="subhead"><h3>DiffDreamer · what changes</h3></div>
+
+    <div class="eq-card k-both">
+      <div class="tag">Eq. 9</div>
+      <div class="body">
+        <div class="eq">\[ a_t \sim \pi_\theta\big(\cdot \mid \class{mi-stop}{\mathrm{sg}}(\class{mi-imp}{s_t^{imp}}),\ \class{mi-exp}{s_t^{exp}}\big), \qquad \hat{\mathcal V}_t \sim v_\psi(\cdot \mid s_t), \qquad s_t = \{\class{mi-imp}{s_t^{imp}}, \class{mi-exp}{s_t^{exp}}\} \]</div>
+        <p><b>Joint state.</b> The actor and critic see both the <span class="imp">latent</span> (gate motion patterns) and the <span class="exp">explicit drone state</span> \(\{\mathbf p, \mathbf v, \mathbf q, \boldsymbol\Omega\}\). <span style="color:var(--stop)">sg</span> (stop-gradient) feeds the latent in as a fixed number: no gradient flows back into it through this input.</p>
+      </div>
+    </div>
+
+    <div class="eq-card k-imp">
+      <div class="tag">Eq. 10</div>
+      <div class="body">
+        <div class="eq">\[ \hat{\mathcal{R}}_t^{\lambda} = \class{mi-imp}{r_t^{disc}} + \gamma\, c_t \Big[ (1-\lambda)\, \hat{\mathcal{V}}_{t+1} + \lambda\, \hat{\mathcal{R}}_{t+1}^{\lambda} \Big], \qquad \mathcal{L}(\psi) = -\sum_{t} \ln p_\psi\big(\hat{\mathcal{R}}_t^{\lambda} \mid s_t\big) \]</div>
+        <p><b>Critic only learns the jumpy part.</b> Same as Eq. 4, but \(\hat r_t\) is replaced by \(r_t^{disc}\), the non-differentiable reward (gate passed or not). Smooth rewards are left to the simulator.</p>
+        <div class="example"><span class="c"># example: γ = 0.99, λ = 0.95, c_t = 1, V̂_t+1 = 40, R^λ_t+1 = 42 (illustrative)</span>
+no gate this step (r_disc = 0):   R^λ_t = 0  + 0.99·(0.05·40 + 0.95·42) = 41.48
+gate passed (r_disc = k₃ = 50):   R^λ_t = 50 + 41.48                   = 91.48</div>
+      </div>
+    </div>
+
+    <div class="eq-card k-both">
+      <div class="tag">Eq. 11</div>
+      <div class="body">
+        <div class="eq">\[ \mathcal{L}(\theta) = \lambda_{imp}\,\class{mi-imp}{\mathcal{L}_{imp}(\theta)} + \lambda_{exp}\,\class{mi-exp}{\mathcal{L}_{exp}(\theta)}, \qquad \class{mi-imp}{\mathcal{L}_{imp}} = -\sum_{t=0}^{T}\gamma^t\,\hat{\mathcal V}_t, \qquad \class{mi-exp}{\mathcal{L}_{exp}} = -\sum_{t=0}^{T}\gamma^t\, r_t^{diff} \]</div>
+        <p><b>Dual-pathway actor loss.</b> <span class="imp">\(\mathcal L_{imp}\)</span>: raise the critic's value (covers gate-pass bonuses and the future beyond \(T\)). <span class="exp">\(\mathcal L_{exp}\)</span>: raise the smooth motion reward, with exact gradients through the simulator (Eq. 6). World-model and critic weights stay frozen during this step; only \(\theta\) moves.</p>
+      </div>
+    </div>
+
+    <div class="subhead"><h3>Example · the racing reward, split in two</h3><span class="eyebrow">Eq. 15</span></div>
+
+    <div class="eq-card k-both">
+      <div class="tag">Eq. 15</div>
+      <div class="body">
+        <div class="eq">\[ \class{mi-exp}{R_{diff}} = k_0\,\lVert \mathbf v_{approach} \rVert_2 - k_1\,\lVert \mathbf v_{away} \rVert_2 - k_2\,\lVert \boldsymbol\Omega_W \rVert_2, \qquad \class{mi-imp}{R_{disc}} = \begin{cases} k_3 & \text{gate passed} \\ 0 & \text{otherwise} \end{cases} \]</div>
+        <p>Policy input (Eq. 14): positions of the next two gates relative to the drone, plus \(\mathbf v, \mathbf q, \boldsymbol\Omega\). Output: collective thrust and body rates (CTBR), \(a_t = [f^d, \omega_x^d, \omega_y^d, \omega_z^d]\).</p>
+      </div>
+    </div>
+
+    <div class="split">
+      <figure>
+        <svg class="chart" viewBox="0 0 320 214" role="img" aria-label="r diff versus velocity toward the gate: a continuous line through zero, slope k1 for moving away and k0 for approaching.">
+          <text class="t" x="44" y="13">r<tspan dy="-5" font-size="9">diff</tspan><tspan dy="5"> — smooth</tspan></text>
+          <line class="zero" x1="44" y1="76" x2="300" y2="76"/>
+          <line class="zero" x1="172" y1="22" x2="172" y2="164"/>
+          <polyline class="l-exp" points="44,160 172,76 300,20"/>
+          <text class="a-exp" x="244" y="70">slope k₀</text>
+          <text class="a-exp" x="62" y="104">slope k₁</text>
+          <text x="180" y="88">0</text>
+          <path class="ax" d="M44 170 H300 M86.7 170 v5 M172 170 v5 M257.3 170 v5"/>
+          <text x="86.7" y="188" text-anchor="middle">−2</text>
+          <text x="172" y="188" text-anchor="middle">0</text>
+          <text x="257.3" y="188" text-anchor="middle">2</text>
+          <text x="172" y="208" text-anchor="middle">velocity toward gate (m/s)</text>
+        </svg>
+        <figcaption><span class="exp">Has a slope everywhere</span> → backprop it through the simulator (\(\mathcal L_{exp}\)). Shape only; the paper does not list the \(k\) values.</figcaption>
+      </figure>
+      <figure>
+        <svg class="chart" viewBox="0 0 320 214" role="img" aria-label="r disc versus distance past the gate plane: zero everywhere except a single spike of height k3 at the gate.">
+          <text class="t" x="44" y="13">r<tspan dy="-5" font-size="9">disc</tspan><tspan dy="5"> — jumpy</tspan></text>
+          <line class="zero" x1="236" y1="22" x2="236" y2="150"/>
+          <line class="l-imp" x1="44" y1="150" x2="300" y2="150"/>
+          <line class="l-imp" x1="236" y1="150" x2="236" y2="34"/>
+          <circle class="d-imp" cx="236" cy="32" r="4.5"/>
+          <text class="a-imp" x="246" y="36">k₃</text>
+          <text class="a-imp" x="60" y="140">flat: gradient = 0</text>
+          <path class="ax" d="M44 170 H300 M108 170 v5 M172 170 v5 M236 170 v5 M300 170 v5"/>
+          <text x="108" y="188" text-anchor="middle">−2</text>
+          <text x="172" y="188" text-anchor="middle">−1</text>
+          <text x="236" y="188" text-anchor="middle">0 gate</text>
+          <text x="294" y="188" text-anchor="middle">1</text>
+          <text x="172" y="208" text-anchor="middle">distance past gate plane (m)</text>
+        </svg>
+        <figcaption><span class="imp">No useful slope</span> → let the critic learn its value (\(\mathcal L_{imp}\), Eq. 10).</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><div class="eyebrow">§ IV · Results</div><h2>Faster training, tighter tracking, more gates</h2></div>
+  <div class="prose"><p>All methods are trained in the VisFly simulator (PyTorch, differentiable) with the same observations and rewards, 5 seeds each. Tracking keeps a fast 3-D target centered in the camera at a fixed distance; racing passes four moving gates in a loop.</p></div>
+  <div class="res">
+    <div class="card">
+      <h3>Dynamic-gate racing · gates passed in 512 steps</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>method</th><th>v = 1.0 m/s</th><th>1.5 m/s</th><th>2.0 m/s</th></tr></thead>
+          <tbody>
+            <tr><th>DreamerV3</th><td><div class="bar"><i style="width:12px"></i><span>3</span></div></td><td><div class="bar"><i style="width:4px"></i><span>1</span></div></td><td><div class="bar zero"><i></i><span>0</span></div></td></tr>
+            <tr><th>BPTT</th><td><div class="bar"><i style="width:24px"></i><span>6</span></div></td><td><div class="bar zero"><i></i><span>0</span></div></td><td><div class="bar zero"><i></i><span>0</span></div></td></tr>
+            <tr><th>PPO</th><td><div class="bar"><i style="width:56px"></i><span>14</span></div></td><td><div class="bar"><i style="width:32px"></i><span>8</span></div></td><td><div class="bar"><i style="width:12px"></i><span>3</span></div></td></tr>
+            <tr><th>MPC</th><td><div class="bar"><i style="width:48px"></i><span>12</span></div></td><td><div class="bar"><i style="width:16px"></i><span>4</span></div></td><td><div class="bar"><i style="width:4px"></i><span>1</span></div></td></tr>
+            <tr class="us"><th>DiffDreamer</th><td><div class="bar"><i style="width:64px"></i><span>16</span></div></td><td><div class="bar"><i style="width:48px"></i><span>12</span></div></td><td><div class="bar"><i style="width:32px"></i><span>8</span></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="cap">Table II, mean over 5 random environments. v = max gate speed. Higher is better. Bar length: 4 px per gate.</p>
+    </div>
+    <div class="card">
+      <h3>Aggressive tracking · errors (lower is better)</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>method</th><th>|e_h|</th><th>|e_v|</th><th>distance |e_d| (m)</th></tr></thead>
+          <tbody>
+            <tr><th>DreamerV3</th><td>0.318</td><td>0.314</td><td><div class="bar"><i style="width:60px"></i><span>1.003</span></div></td></tr>
+            <tr><th>BPTT</th><td>0.198</td><td>0.235</td><td><div class="bar"><i style="width:50px"></i><span>0.835</span></div></td></tr>
+            <tr><th>Elastic Tracker</th><td>0.333</td><td>0.382</td><td><div class="bar"><i style="width:47.4px"></i><span>0.793</span></div></td></tr>
+            <tr class="us"><th>DiffDreamer</th><td>0.168</td><td>0.215</td><td><div class="bar"><i style="width:22.8px"></i><span>0.381</span></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="cap">Table I. |e_h|, |e_v|: target's offset from image center (unitless). Bar length is proportional to distance error (60 px = 1.003 m).</p>
+    </div>
+  </div>
+
+  <div class="figs-2" style="grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.7fr);">
+    <figure>
+      <div class="mat"><img src="figs/train_curve.jpg" alt="Training reward curves. Top, tracking: DiffDreamer and BPTT rise fast to about 250 and 220; Dreamer slowly reaches about 160; PPO stays near 0. Bottom, racing: DiffDreamer reaches about 70; PPO about 25; BPTT near 5; Dreamer about minus 30." loading="lazy"></div>
+      <figcaption><b>Fig. 5.</b> Training reward, tracking (top) and racing (bottom), mean ± std over 5 seeds. <b>DiffDreamer</b> (purple) learns fastest; the gap is largest in racing, where prediction matters most.</figcaption>
+    </figure>
+    <figure>
+      <div class="mat"><img src="figs/sim_exp.jpg" alt="Panel A: predicted target trajectories over 2 s, world model prediction close to the true path while EKF drifts. Panel B: heatmaps of target position in the drone frame, tightest for DiffDreamer. Panel C: predicted gate trajectories. Panel D: bar chart of gates passed." loading="lazy"></div>
+      <figcaption><b>Fig. 4.</b> (A, C) 2-second open-loop predictions: the world model (light blue / yellow) follows the true path; a constant-acceleration EKF (black) drifts off once the target turns. (B) Where the target sits in the drone's view: DiffDreamer's cloud is tightest, inside the camera cone. (D) Gates passed.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><div class="eyebrow">§ IV-E · Ablations</div><h2>Both reward halves matter</h2></div>
+  <figure>
+    <div class="mat"><img src="figs/abs_target_predict_ablation.jpg" alt="Left: world-model position error is lower for the relative-position model. Middle: target heatmaps for relative world model, absolute world model, and Elastic Tracker. Right: gates passed versus gate speed for full reward (16, 12, 8), without differentiable reward (7, 4, 2), and without discrete reward (2, 2, 0)." loading="lazy"></div>
+    <figcaption><b>Fig. 6.</b> <b>Left/middle:</b> predicting the target <em>relative</em> to the drone (with odometry) gives smaller world-model error than predicting its absolute position, and tighter tracking. <b>Right:</b> gates passed at 1.0 / 1.5 / 2.0 m/s: full reward 16 / 12 / 8; without the smooth reward 7 / 4 / 2; without the gate bonus 2 / 2 / 0.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="sec-head"><div class="eyebrow">§ IV-F, VI · Real flight and limits</div><h2>What was tested, and what wasn't</h2></div>
+  <ul class="tight">
+    <li><b>Real flight:</b> 3.5-inch quadrotor, Jetson Orin NX, policy onboard at &gt;100 Hz sending CTBR commands to a Betaflight controller. Both tasks flew, as a proof of concept.</li>
+    <li><b>State comes from motion capture</b> for both the drone and the gates/target. Onboard perception and sensor noise are untested.</li>
+    <li><b>Quadrotors only.</b> Other robots need their own differentiable model; contacts and hard limits make gradients harder.</li>
+  </ul>
+</section>
+
+<footer>Source: Li et al., “DiffDreamer: Coupling World Models with Differentiable Simulation for Agile Quadrotor Control”, arXiv:2610.31617v1, 2026. Figures 1, 2, 4, 5, 6 are reproduced from the paper. Fig. 3 (real-flight photos) is not shown because the image file on arXiv is truncated.</footer>
+
+</div>
+
+<script>
+(function () {
+  var notes = {
+    exp: 'L_exp: each smooth motion reward r_diff is differentiated through the simulator chain back to every earlier action, then into the actor weights θ. This is plain BPTT (Eq. 6).',
+    imp: 'L_imp: the critic\'s value V̂ depends on the joint state, so its gradient flows back through both rollouts to the actions. The world model and critic are frozen here: they pass gradients but are not updated.',
+    fwd: 'Forward pass: one action a_t advances the world model (gate latent) and the simulator (drone state) together, so the two stay in sync step by step.'
+  };
+  var svg = document.getElementById('rollout');
+  var note = document.getElementById('mode-note');
+  var btns = document.querySelectorAll('.seg button');
+  function set(mode) {
+    if (svg) svg.setAttribute('data-mode', mode);
+    btns.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.mode === mode)); });
+    if (note) note.textContent = notes[mode];
+  }
+  btns.forEach(function (b) { b.addEventListener('click', function () { set(b.dataset.mode); }); });
+  set('exp');
+})();
+</script>

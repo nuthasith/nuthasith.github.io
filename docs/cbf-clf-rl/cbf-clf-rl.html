@@ -1,0 +1,1066 @@
+<title>CBF-RL and CLF-RL</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap">
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']], packages: { '[+]': ['html'] } },
+    svg: { fontCache: 'global' },
+    options: { enableMenu: false }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+<style>
+  :root {
+    /* Layout: one reading column (max 1040px). Each paper is a section keyed to its own accent:
+       teal = barrier / safe set, violet = Lyapunov bowl. Equations sit in 2-up cards; paper figures sit on white plates. */
+    --bg: #F4F6F9;
+    --surface: #FFFFFF;
+    --ink: #131922;
+    --ink-2: #465163;
+    --muted: #6B7587;
+    --rule: #DAE0E8;
+    --cbf: #0B7A63;
+    --cbf-tint: #E1F2EB;
+    --clf: #5A48C8;
+    --clf-tint: #ECE9FB;
+    --warn: #C4501B;
+    --warn-tint: #FBE8DD;
+    --base: #8A93A3;
+    --plate: #FFFFFF;
+    --f-display: "Source Serif 4", Georgia, "Times New Roman", serif;
+    --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --f-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0E1218; --surface: #161B24; --ink: #E7EBF1; --ink-2: #B2BAC7; --muted: #8A93A3; --rule: #2A313D;
+      --cbf: #3FC3A2; --cbf-tint: #10302A; --clf: #9483F0; --clf-tint: #221E3E; --warn: #F08A57; --warn-tint: #3A2117;
+      --base: #6C7586; --plate: #FFFFFF; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0E1218; --surface: #161B24; --ink: #E7EBF1; --ink-2: #B2BAC7; --muted: #8A93A3; --rule: #2A313D;
+    --cbf: #3FC3A2; --cbf-tint: #10302A; --clf: #9483F0; --clf-tint: #221E3E; --warn: #F08A57; --warn-tint: #3A2117;
+    --base: #6C7586; --plate: #FFFFFF; color-scheme: dark;
+  }
+
+  body { background: var(--bg); color: var(--ink); font: 16px/1.6 var(--f-body); }
+  .wrap {
+    max-width: 1040px; margin: 0 auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  a { color: inherit; text-decoration-color: var(--muted); text-underline-offset: 3px; }
+  a:hover { text-decoration-color: currentColor; }
+  :focus-visible { outline: 2px solid var(--clf); outline-offset: 2px; }
+
+  header.top { padding-block: 44px 8px; }
+  .eyebrow, .tag, .no, .t-label {
+    font: 500 12px/1.4 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+  }
+  h1 {
+    font: 600 clamp(2.3rem, 6vw, 3.6rem)/1.04 var(--f-display); letter-spacing: -0.01em;
+    margin: 10px 0 14px; text-wrap: balance;
+  }
+  h1 .c1 { color: var(--cbf); }
+  h1 .c2 { color: var(--clf); }
+  .dek { font-size: 1.125rem; color: var(--ink-2); max-width: 60ch; margin: 0; }
+  .papers { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 12px; margin-top: 24px; }
+  .chip-paper { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px; min-width: 0; }
+  .chip-paper .tag.cbf, .tag.cbf { color: var(--cbf); }
+  .chip-paper .tag.clf, .tag.clf { color: var(--clf); }
+  .chip-paper b { display: block; font-weight: 600; margin: 2px 0; }
+  .chip-paper span { color: var(--ink-2); font-size: .9rem; }
+  nav.toc { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 22px; font: 500 13px var(--f-mono); }
+  nav.toc a { text-decoration: none; color: var(--ink-2); }
+  nav.toc a:hover { color: var(--ink); }
+
+  section.band { padding-block: 44px; border-top: 1px solid var(--rule); margin-top: 36px; }
+  h2 { font: 600 clamp(1.65rem, 3.6vw, 2.15rem)/1.15 var(--f-display); margin: 6px 0 10px; text-wrap: balance; }
+  h3 { font: 600 1.08rem/1.3 var(--f-body); margin: 40px 0 12px; text-wrap: balance; }
+  h4 { font: 600 .95rem/1.3 var(--f-body); margin: 0 0 4px; }
+  p { margin: 0 0 10px; }
+  .byline { color: var(--ink-2); font-size: .95rem; margin: 0; }
+  .note { color: var(--ink-2); font-size: .95rem; max-width: 68ch; }
+  .muted { color: var(--muted); }
+  .cbf-c { color: var(--cbf); } .clf-c { color: var(--clf); } .warn-c { color: var(--warn); }
+
+  /* primer */
+  .mirror { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
+  .card { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 16px; min-width: 0; }
+  .card h4 { font-size: 1rem; }
+  .card p { color: var(--ink-2); font-size: .93rem; margin: 6px 0 0; }
+  .math { overflow-x: auto; overflow-y: hidden; padding-block: 2px; }
+  .math.cbf-c, .math.clf-c { font-size: 1.15rem; }
+  .flow { list-style: none; padding: 0; margin: 16px 0 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+  .flow li { position: relative; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 12px; font-size: .9rem; color: var(--ink-2); min-width: 0; }
+  .flow li b { display: block; color: var(--ink); font-weight: 600; margin-bottom: 2px; }
+  .flow .n { font: 500 12px var(--f-mono); color: var(--muted); }
+  .flow li:not(:last-child)::after {
+    content: "→"; position: absolute; right: -10px; top: 50%; transform: translate(50%, -50%);
+    color: var(--muted); font-size: 14px; z-index: 1;
+  }
+  .badge { display: inline-block; font: 500 11px var(--f-mono); letter-spacing: .04em; padding: 1px 7px; border-radius: 999px; background: var(--warn-tint); color: var(--warn); margin-top: 6px; }
+  .badge.go { background: var(--cbf-tint); color: var(--cbf); }
+
+  /* paper lead */
+  .lead { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: 24px; align-items: start; margin-top: 18px; }
+  dl.pir { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 12px 14px; margin: 0; }
+  dl.pir dt { font: 500 12px/1.9 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  dl.pir dd { margin: 0; }
+
+  /* figures */
+  figure { margin: 0; min-width: 0; }
+  .plate { background: var(--plate); border: 1px solid var(--rule); border-radius: 8px; padding: 10px; }
+  .plate img { display: block; width: 100%; height: auto; }
+  figcaption { font-size: .9rem; color: var(--ink-2); margin-top: 8px; max-width: 72ch; }
+  figcaption .src { font: 12px var(--f-mono); color: var(--muted); margin-right: 6px; }
+  .fig-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 16px; }
+  .stack { display: grid; gap: 18px; margin-top: 16px; }
+  .diagram { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 12px; }
+  /* direct children only: MathJax also renders equations as <svg>, and must keep its own size */
+  .diagram > svg, .chart > svg, .mini > svg { display: block; width: 100%; height: auto; }
+
+  /* equations */
+  .eqs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .eq { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .eq.wide { grid-column: 1 / -1; }
+  .eq .no b { font-weight: 500; }
+  .cbf-sec .eq .no b { color: var(--cbf); }
+  .clf-sec .eq .no b { color: var(--clf); }
+  .eq p { margin: 0; color: var(--ink-2); font-size: .92rem; }
+  mjx-container[jax="SVG"][display="true"] { margin: .5em 0 !important; }
+  .hl-cbf { fill: var(--cbf); stroke: var(--cbf); }
+  .hl-clf { fill: var(--clf); stroke: var(--clf); }
+  .hl-warn { fill: var(--warn); stroke: var(--warn); }
+  .example { background: var(--surface); border: 1px dashed var(--rule); border-radius: 8px; padding: 12px 16px; margin-top: 12px; font-size: .93rem; color: var(--ink-2); }
+  .example b { color: var(--ink); font-weight: 600; }
+
+  /* demo */
+  .demo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, .95fr); gap: 14px; align-items: start; }
+  .panel-title { font: 600 .9rem/1.3 var(--f-body); margin: 0 0 6px; }
+  .panel-title span { font-weight: 400; color: var(--muted); }
+  .demo figcaption { font-size: .85rem; margin-top: 6px; }
+  #demo-vel { cursor: crosshair; }
+  .handle { cursor: grab; touch-action: none; }
+  .handle-ring { fill: var(--surface); stroke: var(--ink); stroke-width: 2; }
+  .handle:focus { outline: none; }
+  .handle:focus-visible .handle-ring { stroke: var(--clf); stroke-width: 3; }
+  .controls { display: grid; gap: 12px; min-width: 0; }
+  .ctl label { display: flex; justify-content: space-between; gap: 8px; font-size: .9rem; color: var(--ink-2); }
+  .ctl output { font: 500 13px var(--f-mono); color: var(--ink); font-variant-numeric: tabular-nums; }
+  .ctl input { width: 100%; accent-color: var(--cbf); }
+  ol.steps { margin: 0; padding-left: 20px; display: grid; gap: 8px; font-size: .9rem; color: var(--ink-2); }
+  ol.steps b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .btns { display: flex; gap: 8px; }
+  button { font: 500 13px var(--f-body); padding: 7px 14px; border-radius: 6px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); cursor: pointer; }
+  button:hover { border-color: var(--muted); }
+  button.primary { background: var(--cbf); border-color: var(--cbf); color: var(--surface); }
+  .run-out { font-size: .88rem; color: var(--ink-2); background: var(--bg); border-radius: 6px; padding: 8px 10px; margin: 0; }
+  @media (max-width: 960px) {
+    .demo { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .demo .controls { grid-column: 1 / -1; }
+  }
+  .pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font: 500 12px var(--f-mono); }
+  .pill.ok { background: var(--cbf-tint); color: var(--cbf); }
+  .pill.bad { background: var(--warn-tint); color: var(--warn); }
+
+  /* mini h cards */
+  .minis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .mini { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 14px; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+  .mini p { margin: 0; font-size: .9rem; color: var(--ink-2); }
+
+  /* charts */
+  .chart { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; min-width: 0; }
+  .chart .sub { font-size: .88rem; color: var(--ink-2); margin: 0 0 8px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: .85rem; color: var(--ink-2); margin-bottom: 4px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+  details { margin-top: 8px; font-size: .88rem; }
+  summary { cursor: pointer; color: var(--muted); font-family: var(--f-mono); font-size: 12px; }
+  .tbl-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  thead th { font: 500 11.5px var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  td.num, th.num { text-align: right; }
+  table.cmp { font-size: .93rem; min-width: 640px; }
+  table.cmp tbody th { font-weight: 600; color: var(--ink); width: 22%; }
+  table.cmp thead th.cbf { color: var(--cbf); }
+  table.cmp thead th.clf { color: var(--clf); }
+  table.weights { font-size: .88rem; }
+
+  #tip {
+    position: fixed; z-index: 30; pointer-events: none; max-width: 260px;
+    background: var(--ink); color: var(--bg); border-radius: 6px; padding: 6px 9px;
+    font: 12px/1.45 var(--f-mono); white-space: pre-line;
+  }
+
+  /* svg tokens */
+  .ax { stroke: var(--rule); stroke-width: 1; fill: none; }
+  .ax-strong { stroke: var(--muted); stroke-width: 1; fill: none; }
+  .t { fill: var(--ink-2); font: 12px var(--f-body); }
+  .t-m { fill: var(--muted); font: 11px var(--f-mono); }
+  .t-ink { fill: var(--ink); } .t-cbf { fill: var(--cbf); } .t-clf { fill: var(--clf); } .t-warn { fill: var(--warn); }
+  .t-on { fill: var(--surface); font: 500 11px var(--f-mono); }
+  .s-cbf, .s-clf, .s-ink, .s-warn, .s-muted, .s-base { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .s-cbf { stroke: var(--cbf); } .s-clf { stroke: var(--clf); } .s-ink { stroke: var(--ink); }
+  .s-warn { stroke: var(--warn); } .s-muted { stroke: var(--muted); } .s-base { stroke: var(--base); }
+  .dash { stroke-dasharray: 5 4; }
+  .f-cbf { fill: var(--cbf); } .f-clf { fill: var(--clf); } .f-warn { fill: var(--warn); } .f-ink { fill: var(--ink); }
+  .f-muted { fill: var(--muted); } .f-base { fill: var(--base); } .f-surface { fill: var(--surface); } .f-rule { fill: var(--rule); }
+  .f-cbf-t { fill: var(--cbf-tint); } .f-clf-t { fill: var(--clf-tint); } .f-warn-t { fill: var(--warn-tint); }
+
+  footer { border-top: 1px solid var(--rule); padding-block: 24px 48px; margin-top: 24px; font-size: .85rem; color: var(--muted); }
+
+  @media (max-width: 820px) {
+    .flow { grid-template-columns: minmax(0, 1fr); }
+    .flow li:not(:last-child)::after { content: "↓"; right: 50%; top: auto; bottom: -10px; transform: translate(50%, 50%); }
+  }
+  @media (max-width: 760px) {
+    .mirror, .lead, .eqs, .fig-row, .demo, .minis { grid-template-columns: minmax(0, 1fr); }
+    .eq.wide { grid-column: auto; }
+  }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">Reading notes · AMBER Lab, Caltech · Unitree G1 humanoid</div>
+    <h1><span class="c1">CBF</span>-RL and <span class="c2">CLF</span>-RL</h1>
+    <p class="dek">Two papers that put classic control certificates into RL training. One keeps the robot safe, the other keeps it on track. Both are used only during training, so the robot runs a plain policy.</p>
+    <div class="papers">
+      <a class="chip-paper" href="https://arxiv.org/abs/2510.14959" style="text-decoration:none">
+        <span class="tag cbf">Paper 1 · Safety</span>
+        <b>CBF-RL: Safety Filtering RL in Training with Control Barrier Functions</b>
+        <span>Yang, Werner, de Sa, Ames · arXiv 2510.14959 (v6, 2026)</span>
+      </a>
+      <a class="chip-paper" href="https://doi.org/10.1109/LRA.2026.3653329" style="text-decoration:none">
+        <span class="tag clf">Paper 2 · Stability</span>
+        <b>CLF-RL: Control Lyapunov Function Guided Reinforcement Learning</b>
+        <span>Li, Olkin, Yue, Ames · IEEE RA-L 11(3), 2026</span>
+      </a>
+    </div>
+    <nav class="toc" aria-label="Sections">
+      <a href="#idea">The idea</a><a href="#cbf">CBF-RL</a><a href="#clf">CLF-RL</a><a href="#compare">Side by side</a>
+    </nav>
+  </header>
+
+  <!-- ============ PRIMER ============ -->
+  <section class="band" id="idea">
+    <div class="tag">The core idea</div>
+    <h2>Two mirror-image inequalities</h2>
+    <p class="note">A barrier \(h\) must not reach zero. A Lyapunov function \(V\) must reach zero. Each gets one inequality on its rate of change.</p>
+    <div class="mirror">
+      <div class="card">
+        <div class="tag cbf">Barrier function (CBF): stay safe</div>
+        <div class="math cbf-c">\[ \dot h(q) \;\ge\; -\alpha\, h(q) \]</div>
+        <svg id="plot-cbf" viewBox="0 0 340 178" role="img" aria-label="h of t stays above an exponential floor and never crosses zero"></svg>
+        <p>\(h\) may shrink, but more slowly the closer it gets to 0. Example: with \(\alpha = 2\) and \(h = 0.1\) m, \(h\) can drop by at most 0.2 m/s.</p>
+      </div>
+      <div class="card">
+        <div class="tag clf">Lyapunov function (CLF): converge</div>
+        <div class="math clf-c">\[ \dot V(\eta) \;\le\; -\lambda\, V(\eta) \]</div>
+        <svg id="plot-clf" viewBox="0 0 340 178" role="img" aria-label="V of t stays below an exponential ceiling and goes to zero"></svg>
+        <p>\(V\) must shrink at least this fast. Example: with \(\lambda = 2\), after 1 s, \(V\) is at most \(e^{-2} \approx 13.5\%\) of where it started.</p>
+      </div>
+    </div>
+
+    <h3>The shared recipe</h3>
+    <ol class="flow">
+      <li><span class="n">1</span><b>Reduced-order model</b>A few coordinates instead of all joints: base velocity, a foot, or 21 tracked outputs.</li>
+      <li><span class="n">2</span><b>Certificate</b>\(h(q)\) for safety, or \(V(\eta)=\eta^\top P\eta\) for tracking.<br><span class="badge">training only</span></li>
+      <li><span class="n">3</span><b>Reward (and filter)</b>CBF: filter the action and score the fix. CLF: score \(V\) and \(\dot V\).<br><span class="badge">training only</span></li>
+      <li><span class="n">4</span><b>PPO in IsaacLab</b>4096 parallel simulated robots.</li>
+      <li><span class="n">5</span><b>Deploy the bare policy</b>No filter, no reference, no optimizer on the robot.<br><span class="badge go">runs on G1</span></li>
+    </ol>
+  </section>
+
+  <!-- ============ CBF-RL ============ -->
+  <section class="band cbf-sec" id="cbf">
+    <div class="tag cbf">Paper 1</div>
+    <h2>CBF-RL: teach safety by filtering during training</h2>
+    <p class="byline">Lizhi Yang*, Blake Werner*, Massimiliano de Sa, Aaron D. Ames · Caltech</p>
+
+    <div class="lead">
+      <figure>
+        <div class="plate"><img src="img/cbf_fig1.webp" width="690" height="724" alt="CBF-RL overview: a G1 humanoid climbing outdoor stairs with a policy trained using a CBF filter and reward"></div>
+        <figcaption><span class="src">Fig. 1</span>Train with filter + reward; deploy the policy alone.</figcaption>
+      </figure>
+      <dl class="pir">
+        <dt>Problem</dt>
+        <dd>A safety filter at run time keeps the robot safe, but the policy never learns safety and the filter must always run. A reward penalty alone enforces nothing.</dd>
+        <dt>Idea</dt>
+        <dd>Do both during training. Project every action onto the safe set with a closed-form CBF filter, and add a reward that says how much the filter had to fix. Remove the filter at deployment.</dd>
+        <dt>Result</dt>
+        <dd>The G1 steers around obstacles and climbs 0.3 m stairs with no run-time filter. In 2D navigation without a filter: <b class="cbf-c">92.7%</b> success vs 38.7% for filter-only training.</dd>
+      </dl>
+    </div>
+
+    <h3>The training loop</h3>
+    <figure>
+      <div class="plate"><img src="img/cbf_fig2.webp" width="1400" height="527" alt="CBF-RL framework diagram: RL policy, CBF safety filter, simulation, and CBF-guided policy update"></div>
+      <figcaption><span class="src">Fig. 2</span>Policy proposes \(v^{\text{policy}}\). The filter returns \(v^{\text{filtered}}\) for the simulator and \(r_{\text{cbf}}\) for the update.</figcaption>
+    </figure>
+
+    <h3>The math in six equations</h3>
+    <div class="eqs">
+      <div class="eq">
+        <div class="no"><b>eq. 2</b> · safe set</div>
+        <div class="math">\[ \mathcal S = \{\, q : h(q) \ge 0 \,\} \]</div>
+        <p>\(h\) works like a signed distance: positive is safe, 0 is the edge.</p>
+      </div>
+      <div class="eq">
+        <div class="no"><b>eq. 1, 7</b> · reduced-order model</div>
+        <div class="math">\[ q_{k+1} = q_k + \Delta t\, v_k \]</div>
+        <p>A single integrator. The action \(v\) is a velocity of a few coordinates.</p>
+      </div>
+      <div class="eq wide">
+        <div class="no"><b>eq. 18–19</b> · training-time filter (a QP, quadratic program)</div>
+        <div class="math">\[ v^{\text{safe}}_k = \operatorname*{arg\,min}_{v}\ \tfrac12 \lVert v - v^{\text{policy}}_k \rVert^2 \quad \text{s.t.} \quad \nabla h(q_k)^\top v \;\ge\; -\alpha\, h(q_k) \]</div>
+        <p>Pick the velocity closest to what the policy wanted that still meets the CBF condition.</p>
+      </div>
+      <div class="eq wide">
+        <div class="no"><b>eq. 20–21</b> · closed-form answer</div>
+        <div class="math">\[ v^{\text{safe}} = \begin{cases} v^{\text{policy}}, &amp; a^\top v^{\text{policy}} \ge b \\[4pt] v^{\text{policy}} + \class{hl-warn}{\dfrac{b - a^\top v^{\text{policy}}}{\lVert a \rVert^2}\, a}, &amp; \text{otherwise} \end{cases} \qquad a = \nabla h(q),\quad b = -\alpha\, h(q) \]</div>
+        <p>One linear constraint, so the QP is just a projection onto a half-plane. No solver needed, cheap across 4096 environments.</p>
+      </div>
+      <div class="eq wide">
+        <div class="no"><b>eq. 22–23</b> · safety reward</div>
+        <div class="math">\[ r_{\text{cbf}} = \underbrace{\min\!\big(a^\top v^{\text{policy}} - b,\ 0\big)}_{\text{how badly the condition is broken}} \;+\; \underbrace{\exp\!\Big(-\tfrac{\lVert v^{\text{policy}} - v^{\text{safe}} \rVert^2}{\sigma^2}\Big) - 1}_{\text{how big the correction was, in } [-1,\,0]} \qquad r = r_{\text{nominal}} + r_{\text{cbf}} \]</div>
+        <p>Both terms are 0 when the policy is already safe. The policy sees what it wanted, what the filter changed, and how the reward moved.</p>
+      </div>
+      <div class="eq wide">
+        <div class="no"><b>eq. 15</b> · Theorem 1: continuous CBF still works in a discrete simulator</div>
+        <div class="math">\[ h(q_k) \;\ge\; (1 - \Delta t\,\alpha)^k\, h(q_0) \;-\; \frac{\mu(\Delta t)}{\Delta t\,\alpha}, \qquad \lim_{\Delta t \to 0} \frac{\mu(\Delta t)}{\Delta t} = 0 \]</div>
+        <p>RL steps in discrete time. The error term vanishes as \(\Delta t \to 0\), so with \(\Delta t \le 0.01\) s the simple continuous-time condition is good enough.</p>
+      </div>
+    </div>
+
+    <h3>Try the filter</h3>
+    <p class="note">For one round obstacle, the CBF rule is a speed limit: the robot may move <em>toward</em> the obstacle at most \(\alpha h\) m/s, where \(h\) is the gap. The closer it gets, the lower the limit. At \(h = 0\) it may not approach at all, so it slows down and slides past but never touches. Sideways motion is never limited.</p>
+    <div class="demo">
+      <figure class="diagram">
+        <div class="panel-title">Top view <span>(meters)</span></div>
+        <svg id="demo-scene" viewBox="0 0 320 300" role="img" aria-label="Top view of the robot, the obstacle and the gap h"></svg>
+        <figcaption>Arrows show where the robot would be 0.25 s later: black = what the policy asked, teal = after the filter.</figcaption>
+      </figure>
+      <figure class="diagram">
+        <div class="panel-title">Velocity choices <span>(m/s, one square = 1 m/s)</span></div>
+        <svg id="demo-vel" viewBox="0 0 300 300" role="group" aria-label="Velocity plane. Drag the black dot to set the policy velocity."></svg>
+        <figcaption>Each point is a velocity. Teal area = velocities the CBF allows, \(a^\top v \ge b\). Drag the black dot.</figcaption>
+      </figure>
+      <div class="controls">
+        <div class="ctl">
+          <label for="in-h">Starting gap \(h\) <output id="out-h">0.40 m</output></label>
+          <input id="in-h" type="range" min="0.05" max="1" step="0.01" value="0.4">
+        </div>
+        <div class="ctl">
+          <label for="in-a">\(\alpha\): how fast the limit tightens <output id="out-a">2.0 /s</output></label>
+          <input id="in-a" type="range" min="0.5" max="5" step="0.1" value="2">
+        </div>
+        <ol class="steps" aria-live="polite">
+          <li>Speed limit toward the obstacle: \(\alpha h\) = <span id="s-a"></span> × <span id="s-h"></span> = <b id="s-lim"></b></li>
+          <li>Policy asks to <span id="s-ask"></span>, plus <span id="s-side"></span> m/s sideways. <span id="s-verdict"></span></li>
+          <li>Filter: <span id="s-fix"></span>. \(v^{\text{safe}}\) = <b id="s-vs"></b></li>
+          <li>Reward \(r_{\text{cbf}}\): <span id="s-r1"></span> (over the limit) + <span id="s-r2"></span> (size of the fix) = <b id="s-r"></b></li>
+        </ol>
+        <div class="btns"><button id="btn-run" class="primary" type="button">Run 2.5 s</button><button id="btn-reset" type="button">Reset</button></div>
+        <p class="run-out" id="run-out"></p>
+      </div>
+    </div>
+    <div class="example"><b>Worked example.</b> \(h = 0.4\) m, \(\alpha = 2\) → \(b = -0.8\) m/s. The policy asks for \(v = (-2.0,\ 0.9)\). Then \(a^\top v = -2.0 < -0.8\), so the filter moves it to \((-0.8,\ 0.9)\): only the part pointing at the obstacle is cut. \(r_{\text{cbf}} = -1.2 + (e^{-5.76} - 1) \approx -2.20\).</div>
+
+    <h3>What is \(h\) on the robot?</h3>
+    <div class="minis">
+      <div class="mini">
+        <div class="no"><b>eq. 24</b> · 2D navigation test</div>
+        <svg viewBox="0 0 220 150" role="img" aria-label="Agent in a square world with circular obstacles">
+          <rect x="45" y="10" width="130" height="130" class="s-ink" stroke-width="1.5"/>
+          <circle cx="95" cy="45" r="18" class="s-warn dash" stroke-width="1"/>
+          <circle cx="95" cy="45" r="12" class="f-warn"/>
+          <circle cx="146" cy="100" r="20" class="s-warn dash" stroke-width="1"/>
+          <circle cx="146" cy="100" r="14" class="f-warn"/>
+          <circle cx="150" cy="38" r="15" class="s-warn dash" stroke-width="1"/>
+          <circle cx="150" cy="38" r="9" class="f-warn"/>
+          <line x1="86" y1="99" x2="93" y2="57" class="s-muted dash" stroke-width="1.3"/>
+          <line x1="79" y1="105" x2="46" y2="105" class="s-muted dash" stroke-width="1.3"/>
+          <circle cx="85" cy="105" r="6" class="f-cbf"/>
+          <text x="98" y="82" class="t-m">obstacle term</text>
+          <text x="50" y="122" class="t-m">wall term</text>
+        </svg>
+        <div class="math">\[ h(q) = \min\Big\{ \min_j \big(\lVert q - p_j \rVert - r_a - r_j\big),\ x - r_a,\ L - x - r_a,\ \dots \Big\} \]</div>
+        <p>Nearest obstacle or wall wins. 1000 random maps.</p>
+      </div>
+      <div class="mini">
+        <div class="no"><b>eq. 26</b> · G1 obstacle avoidance</div>
+        <svg viewBox="0 0 220 150" role="img" aria-label="Robot and cylindrical obstacle with gap h between them">
+          <defs><marker id="mk-m1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="f-muted"/></marker></defs>
+          <circle cx="58" cy="72" r="26" class="f-warn"/>
+          <text x="58" y="76" class="t-on" text-anchor="middle">Rₒ</text>
+          <circle cx="160" cy="72" r="16" class="f-cbf"/>
+          <text x="160" y="76" class="t-on" text-anchor="middle">Rᵣ</text>
+          <line x1="86" y1="72" x2="142" y2="72" class="s-muted" stroke-width="1.3" marker-start="url(#mk-m1)" marker-end="url(#mk-m1)"/>
+          <text x="114" y="64" class="t t-ink" text-anchor="middle" font-style="italic">h</text>
+          <line x1="178" y1="72" x2="206" y2="72" class="s-muted" stroke-width="1.3" marker-end="url(#mk-m1)"/>
+          <text x="192" y="64" class="t-m" text-anchor="middle">∇h</text>
+          <line x1="160" y1="104" x2="104" y2="104" class="s-ink dash" stroke-width="1.3" marker-end="url(#mk-m1)"/>
+          <text x="160" y="122" class="t-m" text-anchor="end">command pushes in</text>
+        </svg>
+        <div class="math">\[ h(p) = \lVert p^r_o \rVert - R_r - R_o, \qquad v = [v_x,\ v_y] \]</div>
+        <p>The policy learns to bend its own base velocity away, even when the command points at the obstacle.</p>
+      </div>
+      <div class="mini">
+        <div class="no"><b>eq. 27</b> · G1 stair climbing</div>
+        <svg viewBox="0 0 220 150" role="img" aria-label="Swing foot approaching a stair riser, h is the horizontal gap to the riser plane">
+          <defs><marker id="mk-m2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="f-muted"/></marker></defs>
+          <path d="M0 128 H96 V100 H156 V72 H220 V150 H0 Z" class="f-rule"/>
+          <path d="M0 128 H96 V100 H156 V72 H220" class="s-ink" stroke-width="1.5"/>
+          <line x1="96" y1="16" x2="96" y2="128" class="s-warn dash" stroke-width="1.4"/>
+          <text x="100" y="26" class="t-m t-warn">riser plane</text>
+          <rect x="6" y="120" width="26" height="8" rx="2" class="f-ink"/>
+          <rect x="44" y="104" width="24" height="8" rx="2" class="f-cbf"/>
+          <line x1="68" y1="92" x2="95" y2="92" class="s-muted" stroke-width="1.3" marker-start="url(#mk-m2)" marker-end="url(#mk-m2)"/>
+          <text x="81" y="86" class="t t-ink" text-anchor="middle" font-style="italic">h</text>
+          <path d="M68 104 C 86 58, 118 56, 134 94" class="s-muted dash" stroke-width="1.2" marker-end="url(#mk-m2)"/>
+          <text x="40" y="143" class="t-m">swing foot</text>
+        </svg>
+        <div class="math">\[ h(q) = p^{\text{stair}}_x - p_x, \qquad q^{\text{sw}}_{k+1} = q^{\text{sw}}_k + \Delta t\, J^{\text{sw}}(q)\, v^{\text{sw}}_k \]</div>
+        <div class="math">\[ \dot h = -J^{\text{sw}}_x(q)\, v^{\text{sw}} \;\ge\; -\alpha\, h \]</div>
+        <p>\(J^{\text{sw}}\) is the foot Jacobian: it turns joint speeds into foot speed. Example for a 3-joint leg: \(J^{\text{sw}}_x = [0.3,\ 0.4,\ 0.1]\) m/rad and joint speeds \([1,\ 0.5,\ 0]\) rad/s give a toe speed of \(0.3 + 0.2 + 0 = 0.5\) m/s toward the riser, so \(h\) shrinks at 0.5 m/s.</p>
+        <p>Stops toe-stubbing on the next riser. Blind: proprioception only.</p>
+      </div>
+    </div>
+
+    <h3>Results</h3>
+    <div class="fig-row">
+      <div class="chart">
+        <h4>Success with no run-time filter</h4>
+        <p class="sub">2D navigation, 1000 random maps, no domain randomization. Hover a bar for the randomized-dynamics number.</p>
+        <svg id="bars" viewBox="0 0 460 172" role="img" aria-label="Bar chart of success rates without a runtime filter"></svg>
+        <p class="sub" style="margin-top:6px">With the run-time filter left on, both reach ~99% (Dual 99.0%, Filter only 98.8%). The drop for Filter only shows it never learned safety.</p>
+        <details>
+          <summary>Show as table (Table I)</summary>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Method</th><th class="num">No DR</th><th class="num">DR</th></tr></thead>
+            <tbody>
+              <tr><td>Dual, with run-time filter</td><td class="num">99.0%</td><td class="num">99.0%</td></tr>
+              <tr><td>Dual, no run-time filter</td><td class="num">92.7%</td><td class="num">91.7%</td></tr>
+              <tr><td>Reward only</td><td class="num">91.9%</td><td class="num">87.6%</td></tr>
+              <tr><td>Filter only, with run-time filter</td><td class="num">98.8%</td><td class="num">96.7%</td></tr>
+              <tr><td>Filter only, no run-time filter</td><td class="num">38.7%</td><td class="num">36.8%</td></tr>
+              <tr><td>Nominal</td><td class="num">51.4%</td><td class="num">55.0%</td></tr>
+            </tbody>
+          </table></div>
+        </details>
+      </div>
+      <div class="stack" style="margin-top:0">
+        <figure>
+          <div class="plate"><img src="img/cbf_fig3.webp" width="644" height="460" alt="Training reward and collisions over steps for Dual, Reward only, Filter only, Nominal"></div>
+          <figcaption><span class="src">Fig. 3</span>Dual and Filter-only converge fast with near-zero training collisions. Reward-only is slow.</figcaption>
+        </figure>
+      </div>
+    </div>
+    <div class="stack">
+      <figure>
+        <div class="plate" style="max-width:640px"><img src="img/cbf_fig4.webp" width="728" height="376" alt="Trajectory comparison on one 2D map"></div>
+        <figcaption><span class="src">Fig. 4</span>One map: Dual reaches the goal even without the filter; filter-only training crashes once the filter is gone.</figcaption>
+      </figure>
+      <figure>
+        <div class="plate"><img src="img/cbf_fig5.webp" width="1264" height="450" alt="Hardware trajectory around two obstacles then up stairs, with velocity and h plots"></div>
+        <figcaption><span class="src">Fig. 5</span>Hardware: the G1 bends its path around two cylinders, then climbs stairs. \(h\) stays above 0 with no filter running.</figcaption>
+      </figure>
+      <figure>
+        <div class="plate"><img src="img/cbf_fig6.webp" width="1256" height="384" alt="Snapshots on 0.3 m stairs: nominal policy stumbles, CBF-RL climbs up and down"></div>
+        <figcaption><span class="src">Fig. 6</span>0.3 m risers: the nominal policy clips the riser (red) and stumbles; CBF-RL clears it going up and down.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ============ CLF-RL ============ -->
+  <section class="band clf-sec" id="clf">
+    <div class="tag clf">Paper 2</div>
+    <h2>CLF-RL: reward the error for shrinking, not just for being small</h2>
+    <p class="byline">Kejun Li*, Zachary Olkin*, Yisong Yue, Aaron D. Ames · Caltech</p>
+
+    <div class="lead">
+      <figure>
+        <div class="plate"><img src="img/clf_fig1.webp" width="748" height="472" alt="CLF-RL overview: reference generation, Lyapunov bowl, RL training and deployment on G1"></div>
+        <figcaption><span class="src">Fig. 1</span>Reference → error \(\eta\) → CLF reward → policy.</figcaption>
+      </figure>
+      <dl class="pir">
+        <dt>Problem</dt>
+        <dd>Walking rewards are piles of hand-tuned terms. A plain tracking reward only scores today's error, so a policy heading back to the reference and one drifting away get the same reward.</dd>
+        <dt>Idea</dt>
+        <dd>Build a reference gait (H-LIP or HZD), measure the error \(\eta\), and use a CLF \(V = \eta^\top P \eta\). One reward for small \(V\), one penalty for \(V\) not shrinking fast enough.</dd>
+        <dt>Result</dt>
+        <dd>7 reward weights in total. About <b class="clf-c">10% lower</b> velocity error and up to ~25% less spread than tracking alone. Walks with a 3.55 kg backpack where the baseline drifts and hits a table.</dd>
+      </dl>
+    </div>
+
+    <h3>The training loop</h3>
+    <figure>
+      <div class="plate"><img src="img/clf_fig2.webp" width="1400" height="242" alt="CLF-RL framework: desired velocity, reference generation (H-LIP or HZD), CLF-based reward, actor-critic policy, robot"></div>
+      <figcaption><span class="src">Fig. 2</span>Command \(v^d\) → reference \(y^d, \dot y^d\) → CLF reward \(R\) → PPO actor-critic → joint targets.</figcaption>
+    </figure>
+
+    <h3>What \(V\) measures, and why the decay term matters</h3>
+    <div class="fig-row">
+      <figure>
+        <div class="diagram"><svg id="phase" viewBox="0 0 340 262" role="img" aria-label="Phase plane: level sets of V as nested ellipses and an error trajectory spiraling to the origin"></svg></div>
+        <figcaption>Level sets of \(V = \eta^\top P \eta\) for one output. A good controller crosses them inward until \(\eta = 0\).</figcaption>
+      </figure>
+      <figure>
+        <div class="diagram"><svg id="rollouts" viewBox="0 0 340 262" role="img" aria-label="Two rollouts with equal V at time t-star: one converging, one diverging"></svg></div>
+        <figcaption>At \(t^*\) both rollouts have the same \(V\), so the same tracking reward \(r_v\). Only the decay term \(r_{\dot V}\) tells them apart.</figcaption>
+      </figure>
+    </div>
+
+    <h3>The math</h3>
+    <div class="eqs">
+      <div class="eq">
+        <div class="no"><b>eq. 1–2</b> · hybrid walking dynamics</div>
+        <div class="math">\[ \dot x = f(x) + g(x)\,u \ \ \text{(swing)}, \qquad x^+ = \Delta(x^-) \ \ \text{(impact)} \]</div>
+        <p>Smooth motion, plus an instant jump when a foot lands.</p>
+      </div>
+      <div class="eq">
+        <div class="no"><b>eq. 7</b> · tracking error</div>
+        <div class="math">\[ \eta(t) = \begin{pmatrix} y^d(t) - y(q) \\ \dot y^d(t) - \dot y(q, \dot q) \end{pmatrix} \]</div>
+        <p>21 outputs \(y\): CoM position, pelvis angles, swing-foot pose, arm joints.</p>
+      </div>
+      <div class="eq">
+        <div class="no"><b>eq. 8</b> · the CLF, built with LQR</div>
+        <div class="math">\[ V(\eta) = \eta^\top P \eta, \qquad A_\eta^\top P + P A_\eta - P B_\eta R^{-1} B_\eta^\top P + Q = 0 \]</div>
+        <p>After feedback linearization the error is a double integrator, \(A_\eta = \left[\begin{smallmatrix}0 &amp; I\\ 0 &amp; 0\end{smallmatrix}\right]\), \(B_\eta = \left[\begin{smallmatrix}0\\ I\end{smallmatrix}\right]\). \(P\) solves the Riccati equation (CARE).</p>
+      </div>
+      <div class="eq">
+        <div class="no"><b>eq. 6, 10</b> · why it is a valid CLF (Prop. 1)</div>
+        <div class="math">\[ \dot V \;\le\; -\frac{\lambda_{\min}(\bar Q)}{\lambda_{\max}(P)}\, V \]</div>
+        <p>Under the LQR feedback \(V\) decays exponentially, so a controller meeting \(\dot V \le -\lambda V\) exists.</p>
+      </div>
+      <div class="eq">
+        <div class="no"><b>CLF tracking</b> · reward small \(V\)</div>
+        <div class="math">\[ r_v = w_v \exp\!\Big(-\frac{V_t}{\sigma_v}\Big) \]</div>
+        <p>Equals \(w_v\) when the error is 0. One term replaces many per-joint tracking terms.</p>
+      </div>
+      <div class="eq">
+        <div class="no"><b>CLF decay</b> · penalize slow convergence</div>
+        <div class="math">\[ r_{\dot V} = -w_{\dot V}\, \mathrm{clip}\Big(\frac{\class{hl-clf}{\dot V_t + \lambda V_t}}{\sigma_{\dot V}},\, 0,\, 1\Big), \quad \dot V_t \approx \frac{V_{t+1} - V_t}{\Delta t} \]</div>
+        <p>Zero when \(V\) shrinks at rate \(\lambda\) or faster. A finite difference avoids computing \(\ddot y\).</p>
+      </div>
+      <div class="eq wide">
+        <div class="no"><b>total reward</b></div>
+        <div class="math">\[ R = \class{hl-clf}{r_v + r_{\dot V}} + \underbrace{r_{\text{hol}}}_{\text{stance foot stays put}} + \underbrace{r_{\text{reg}}}_{\text{torque, action rate, joint limits}} \]</div>
+      </div>
+    </div>
+    <div class="example"><b>Worked example.</b> \(\lambda = 2\), \(\Delta t = 0.02\) s, \(V_t = 1.0\). If \(V_{t+1} = 1.01\): \(\dot V \approx +0.5\), so \(\dot V + \lambda V = 2.5 > 0\) → penalty. If \(V_{t+1} = 0.95\): \(\dot V \approx -2.5\), so \(\dot V + \lambda V = -0.5\) → clipped to 0, no penalty.</div>
+
+    <h3>Two ways to make the reference</h3>
+    <div class="eqs">
+      <div class="eq">
+        <div class="no"><b>H-LIP</b> · reduced order, online</div>
+        <div class="math">\[ x_{k+1} = A x_k + B u_k, \quad x = \begin{bmatrix} p_{\text{com}} \\ v_{\text{com}} \end{bmatrix}, \quad u^* = v^d T \]</div>
+        <p>Hybrid linear inverted pendulum. Solve the fixed point \(x^* = A x^* + B u^*\) for the commanded speed; CoM path is closed-form, swing foot is a 5th-order Bézier curve.</p>
+      </div>
+      <div class="eq">
+        <div class="no"><b>HZD</b> · full order, offline</div>
+        <div class="math">\[ \{\alpha^*, X^*\} = \operatorname*{arg\,min}_{\alpha, X} \Phi(X) \ \ \text{s.t. dynamics},\ \Delta(\mathcal S \cap \mathcal Z_\alpha) \subset \mathcal Z_\alpha,\ \text{limits} \]</div>
+        <p>Hybrid zero dynamics: a gait library over speeds (IPOPT + CasADi). In training, pick the nearest speed. Gave the best results.</p>
+      </div>
+    </div>
+    <details>
+      <summary>All reward weights (Table I)</summary>
+      <div class="tbl-wrap" style="max-width:420px"><table class="weights">
+        <thead><tr><th>Term</th><th class="num">Weight</th></tr></thead>
+        <tbody>
+          <tr><td>Torque penalty</td><td class="num">1×10⁻⁵</td></tr>
+          <tr><td>Action-rate penalty</td><td class="num">1×10⁻³</td></tr>
+          <tr><td>Joint-limit penalty</td><td class="num">1.0</td></tr>
+          <tr><td>CLF tracking \(w_v\)</td><td class="num">10.0</td></tr>
+          <tr><td>CLF decay \(w_{\dot V}\)</td><td class="num">2.0</td></tr>
+          <tr><td>Stance-foot position</td><td class="num">4.0</td></tr>
+          <tr><td>Stance-foot velocity</td><td class="num">2.0</td></tr>
+        </tbody>
+      </table></div>
+    </details>
+
+    <h3>Results</h3>
+    <div class="fig-row">
+      <div class="chart">
+        <h4>Does the decay term help?</h4>
+        <p class="sub">Mean velocity tracking error at 0.75 m/s, 200 randomized sim robots (Table II).</p>
+        <div class="legend"><span><i class="f-base" style="background:var(--base)"></i>Tracking reward only</span><span><i style="background:var(--clf)"></i>CLF (tracking + decay)</span></div>
+        <svg id="dumbbell" viewBox="0 0 460 236" role="img" aria-label="Dumbbell chart comparing velocity error for tracking-only and CLF rewards"></svg>
+        <details>
+          <summary>Show as table (Table II, linear velocities)</summary>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Output</th><th class="num">Tracking only</th><th class="num">CLF</th><th class="num">Change</th></tr></thead>
+            <tbody id="db-table"></tbody>
+          </table></div>
+        </details>
+      </div>
+      <figure>
+        <div class="plate"><img src="img/clf_fig3.webp" width="690" height="328" alt="Velocity tracking with randomly displaced torso mass for four policies"></div>
+        <figcaption><span class="src">Fig. 3</span>Torso mass shifted randomly, 50 trials: CLF policies have tighter bands than the hand-tuned baselines.</figcaption>
+      </figure>
+    </div>
+    <div class="fig-row">
+      <figure>
+        <div class="plate"><img src="img/clf_fig4.webp" width="690" height="312" alt="Velocity tracking with 8 kg added to the torso"></div>
+        <figcaption><span class="src">Fig. 4</span>+8 kg on the torso, 0.75 m/s command: steady speed about 0.62 (HZD-CLF), 0.49 (LIP-CLF), 0.44 m/s (hand-tuned).</figcaption>
+      </figure>
+      <figure>
+        <div class="plate"><img src="img/clf_fig6.webp" width="696" height="540" alt="Hardware velocity tracking with backpack mass for HZD-CLF and baseline"></div>
+        <figcaption><span class="src">Fig. 6</span>Hardware with a backpack: HZD-CLF holds speed at 0, 1.765 and 3.55 kg; the baseline slows and collides at 3.55 kg.</figcaption>
+      </figure>
+    </div>
+    <p class="note" style="margin-top:14px">Also: a 0.25-mile outdoor walk with no falls. Potential-based shaping in place of the tracking reward never learned to walk.</p>
+  </section>
+
+  <!-- ============ COMPARE ============ -->
+  <section class="band" id="compare">
+    <div class="tag">Side by side</div>
+    <h2>Same lab, same robot, opposite questions</h2>
+    <div class="tbl-wrap" style="margin-top:14px">
+      <table class="cmp">
+        <thead><tr><th></th><th class="cbf">CBF-RL</th><th class="clf">CLF-RL</th></tr></thead>
+        <tbody>
+          <tr><th>Question</th><td>Is this action safe?</td><td>Am I converging to the reference?</td></tr>
+          <tr><th>Certificate</th><td>\(h(q) \ge 0\)</td><td>\(V(\eta) = \eta^\top P \eta\)</td></tr>
+          <tr><th>Condition</th><td>\(\dot h \ge -\alpha h\)</td><td>\(\dot V \le -\lambda V\)</td></tr>
+          <tr><th>You must supply</th><td>\(h\) and \(\nabla h\) by hand; a reduced-order model (foot Jacobian for stairs)</td><td>A reference gait (H-LIP or HZD) and \(P\) from the Riccati equation</td></tr>
+          <tr><th>Used in training as</th><td>Closed-form action filter + reward \(r_{\text{cbf}}\)</td><td>Rewards \(r_v + r_{\dot V}\) only, no filter</td></tr>
+          <tr><th>On the robot</th><td>Policy only</td><td>Policy only</td></tr>
+          <tr><th>Setup</th><td>G1 12-DoF lower body, IsaacLab, \(\Delta t = 0.005\) s, MLP [512, 256, 128] at 50 Hz</td><td>G1 21 actuated DoF, IsaacLab, MLP [512, 256, 128] at 50 Hz</td></tr>
+          <tr><th>Headline</th><td>0.3 m stairs; 92.7% vs 38.7% success without filter</td><td>~10% lower velocity error, less spread; 3.55 kg backpack</td></tr>
+          <tr><th>Run-time guarantee</th><td>None formal: safety is learned, not enforced</td><td>None formal: authors list it as future work</td></tr>
+          <tr><th>Code</th><td><a href="https://github.com/lzyang2000/cbf-rl-navigation-demo">lzyang2000/cbf-rl-navigation-demo</a></td><td><a href="https://github.com/Zolkin1/robot_rl">Zolkin1/robot_rl</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note" style="margin-top:16px">Classic controllers combine both in one CLF-CBF-QP: track with the CLF, stay safe with the CBF. Each paper moves one half into RL training. Neither paper uses both rewards in one run.</p>
+  </section>
+
+  <footer>
+    Figures are reproduced from the two papers for study: Yang et al., arXiv:2510.14959v6; Li et al., IEEE RA-L 11(3):3230–3237, 2026 (© IEEE). Diagrams, charts and the filter demo are redrawn from the papers' equations and tables.
+  </footer>
+</div>
+<div id="tip" hidden></div>
+
+<script>
+(() => {
+  const NS = 'http://www.w3.org/2000/svg';
+  const E = (tag, attrs = {}, parent) => {
+    const n = document.createElementNS(NS, tag);
+    for (const k in attrs) n.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(n);
+    return n;
+  };
+  const T = (parent, x, y, text, cls = 't', anchor) => {
+    const t = E('text', { x, y, class: cls }, parent);
+    if (anchor) t.setAttribute('text-anchor', anchor);
+    t.textContent = text;
+    return t;
+  };
+  const lin = (d0, d1, r0, r1) => v => r0 + (v - d0) / (d1 - d0) * (r1 - r0);
+  const D = pts => 'M' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L');
+  // Euler-integrate a scalar ODE dy/dt = f(t, y); returns [[t, y], ...]
+  const simulate = (f, y0, t1, dt = 0.01) => {
+    const out = [[0, y0]]; let y = y0;
+    for (let t = 0; t < t1 - 1e-9; t += dt) { y += f(t, y) * dt; out.push([t + dt, y]); }
+    return out;
+  };
+  const arrowMarker = (svg, id, cls) => {
+    const defs = svg.querySelector('defs') || E('defs', {}, svg);
+    const m = E('marker', { id, viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' }, defs);
+    E('path', { d: 'M0 0 L10 5 L0 10 z', class: cls }, m);
+  };
+
+  /* ---------- tooltip ---------- */
+  const tipEl = document.getElementById('tip');
+  const place = (x, y) => {
+    const w = tipEl.offsetWidth, h = tipEl.offsetHeight;
+    tipEl.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, x + 12)) + 'px';
+    tipEl.style.top = Math.min(window.innerHeight - h - 8, y + 14) + 'px';
+  };
+  const tip = (node, text) => {
+    node.addEventListener('pointerenter', e => { tipEl.textContent = text; tipEl.hidden = false; place(e.clientX, e.clientY); });
+    node.addEventListener('pointermove', e => place(e.clientX, e.clientY));
+    node.addEventListener('pointerleave', () => { tipEl.hidden = true; });
+    node.addEventListener('focus', () => { const r = node.getBoundingClientRect(); tipEl.textContent = text; tipEl.hidden = false; place(r.left + r.width / 2, r.top); });
+    node.addEventListener('blur', () => { tipEl.hidden = true; });
+  };
+
+  /* ---------- primer: h(t) above its floor ---------- */
+  (() => {
+    const svg = document.getElementById('plot-cbf');
+    const L = 34, R = 330, Tp = 12, B = 150;
+    const sx = lin(0, 6, L, R), sy = lin(-0.28, 1.08, B, Tp);
+    const alpha = 1.0;
+    E('rect', { x: L, y: sy(0), width: R - L, height: B - sy(0), class: 'f-warn-t' }, svg);
+    E('line', { x1: L, x2: R, y1: sy(0), y2: sy(0), class: 's-warn', 'stroke-width': 1.2 }, svg);
+    T(svg, R - 4, B - 8, 'h < 0: unsafe', 't-m t-warn', 'end');
+    E('line', { x1: L, x2: L, y1: Tp, y2: B, class: 'ax-strong' }, svg);
+    T(svg, L - 6, sy(1) + 4, '1', 't-m', 'end');
+    T(svg, L - 6, sy(0) + 4, '0', 't-m', 'end');
+    T(svg, R, B + 18, 'time t', 't-m', 'end');
+    const floor = [];
+    for (let t = 0; t <= 6.001; t += 0.05) floor.push([sx(t), sy(Math.exp(-alpha * t))]);
+    E('path', { d: D(floor), class: 's-cbf dash', 'stroke-width': 1.5 }, svg);
+    // dh/dt = -alpha h + u(t) with u >= 0, so the CBF condition holds at every instant
+    const h = simulate((t, y) => -alpha * y + 0.38 * Math.max(0, Math.sin(1.25 * t - 0.5)), 1, 6);
+    E('path', { d: D(h.map(([t, y]) => [sx(t), sy(y)])), class: 's-ink', 'stroke-width': 2.2 }, svg);
+    T(svg, sx(0.95), sy(0.62), 'h(t)', 't t-ink');
+    T(svg, sx(0.12), sy(0.18), 'floor h₀e^(−αt)', 't-m t-cbf');
+    T(svg, sx(4.2), sy(0.2), 'slows near the edge', 't-m');
+  })();
+
+  /* ---------- primer: V(t) below its ceiling ---------- */
+  (() => {
+    const svg = document.getElementById('plot-clf');
+    const L = 34, R = 330, Tp = 12, B = 150;
+    const sx = lin(0, 6, L, R), sy = lin(0, 1.08, B, Tp);
+    const lam = 0.45;
+    const ceil = [];
+    for (let t = 0; t <= 6.001; t += 0.05) ceil.push([sx(t), sy(Math.exp(-lam * t))]);
+    E('path', { d: D(ceil) + ` L${R} ${Tp} L${L} ${Tp} Z`, class: 'f-warn-t' }, svg);
+    E('path', { d: D(ceil), class: 's-clf dash', 'stroke-width': 1.5 }, svg);
+    E('line', { x1: L, x2: R, y1: B, y2: B, class: 'ax-strong' }, svg);
+    E('line', { x1: L, x2: L, y1: Tp, y2: B, class: 'ax-strong' }, svg);
+    T(svg, L - 6, sy(1) + 4, '1', 't-m', 'end');
+    T(svg, L - 6, B + 4, '0', 't-m', 'end');
+    T(svg, R, B + 18, 'time t', 't-m', 'end');
+    // dV/dt = -lam V - extra decay, so V never rises above the ceiling
+    const V = simulate((t, y) => -lam * y - 0.9 * Math.max(0, Math.sin(1.6 * t)) * y, 1, 6);
+    E('path', { d: D(V.map(([t, y]) => [sx(t), sy(y)])), class: 's-ink', 'stroke-width': 2.2 }, svg);
+    T(svg, R - 4, Tp + 16, 'too slow: not allowed', 't-m t-warn', 'end');
+    T(svg, sx(1.9), sy(0.5), 'ceiling V₀e^(−λt)', 't-m t-clf');
+    T(svg, sx(1.05), sy(0.3), 'V(t)', 't t-ink');
+  })();
+
+  /* ---------- CLF phase plane ---------- */
+  (() => {
+    const svg = document.getElementById('phase');
+    // closed loop e'' = -a e - b e', Lyapunov eq A^T P + P A = -I solved in closed form
+    const a = 4, b = 1.2;
+    const p12 = 1 / (2 * a), p22 = (p12 + 0.5) / b, p11 = a * p22 + b * p12;
+    const L = 40, R = 330, Tp = 14, B = 226;
+    const sx = lin(-1.15, 1.15, L, R), sy = lin(-2.3, 2.3, B, Tp);
+    E('line', { x1: L, x2: R, y1: sy(0), y2: sy(0), class: 'ax' }, svg);
+    E('line', { x1: sx(0), x2: sx(0), y1: Tp, y2: B, class: 'ax' }, svg);
+    const V0 = p11;
+    [1, 0.5, 0.22, 0.07].forEach(f => {
+      const c = V0 * f, pts = [];
+      for (let k = 0; k <= 120; k++) {
+        const th = k / 120 * 2 * Math.PI, ce = Math.cos(th), sd = Math.sin(th);
+        const r = Math.sqrt(c / (p11 * ce * ce + 2 * p12 * ce * sd + p22 * sd * sd));
+        pts.push([sx(r * ce), sy(r * sd)]);
+      }
+      E('path', { d: D(pts) + ' Z', class: 'f-clf', 'fill-opacity': 0.08 }, svg);
+      E('path', { d: D(pts) + ' Z', class: 's-clf', 'stroke-width': 1, 'stroke-opacity': 0.6 }, svg);
+    });
+    let e = 1, d = 0; const traj = [[e, d]]; const dt = 0.004;
+    for (let i = 0; i < 2600; i++) { d += (-a * e - b * d) * dt; e += d * dt; traj.push([e, d]); }
+    const px = traj.map(([x, y]) => [sx(x), sy(y)]);
+    E('path', { d: D(px), class: 's-ink', 'stroke-width': 1.8 }, svg);
+    [60, 260, 520, 820].forEach(i => {
+      const [x0, y0] = px[i], [x1, y1] = px[i + 6];
+      const ang = Math.atan2(y1 - y0, x1 - x0) * 180 / Math.PI;
+      E('path', { d: 'M-5 -4 L4 0 L-5 4 Z', class: 'f-ink', transform: `translate(${x0.toFixed(1)} ${y0.toFixed(1)}) rotate(${ang.toFixed(1)})` }, svg);
+    });
+    E('circle', { cx: sx(1), cy: sy(0), r: 4, class: 'f-ink' }, svg);
+    E('circle', { cx: sx(0), cy: sy(0), r: 3.5, class: 'f-clf' }, svg);
+    T(svg, sx(1) - 4, sy(0) - 8, 'η(0)', 't-m t-ink', 'end');
+    T(svg, R, B + 20, 'error e = yᵈ − y', 't-m', 'end');
+    T(svg, L, Tp + 4, 'ė', 't-m');
+    T(svg, sx(-1.1), sy(-2.0), 'rings: V = c', 't-m t-clf');
+  })();
+
+  /* ---------- CLF rollouts ---------- */
+  (() => {
+    const svg = document.getElementById('rollouts');
+    arrowMarker(svg, 'mk-r', 'f-muted');
+    const L = 40, R = 330, Tp = 14, B = 220;
+    const sx = lin(0, 2.6, L, R), sy = lin(0, 1.3, B, Tp);
+    const lam = 0.6, ts = 1.2;
+    const VA = t => 1.4 * Math.exp(-0.9 * t);
+    const Vs = VA(ts);
+    const VB = t => 0.12 + (Vs - 0.12) * Math.pow(t / ts, 1.6);
+    E('line', { x1: L, x2: R, y1: B, y2: B, class: 'ax-strong' }, svg);
+    E('line', { x1: L, x2: L, y1: Tp, y2: B, class: 'ax-strong' }, svg);
+    E('line', { x1: sx(ts), x2: sx(ts), y1: Tp + 8, y2: B, class: 'ax' }, svg);
+    T(svg, sx(ts), B + 16, 't*: same V → same r_v', 't-m', 'middle');
+    T(svg, R, B + 16, 'time', 't-m', 'end');
+    T(svg, L - 6, Tp + 10, 'V', 't-m', 'end');
+    const env = [];
+    for (let t = ts; t <= 2.6001; t += 0.02) env.push([sx(t), sy(Vs * Math.exp(-lam * (t - ts)))]);
+    E('path', { d: D(env), class: 's-muted dash', 'stroke-width': 1.4 }, svg);
+    T(svg, R - 2, sy(0.45), 'needed decay', 't-m', 'end');
+    const A = [], Bp = [];
+    for (let t = 0; t <= 2.6001; t += 0.02) {
+      A.push([sx(t), sy(VA(t))]);
+      const vb = VB(t); if (vb <= 1.28) Bp.push([sx(t), sy(vb)]);
+    }
+    E('path', { d: D(A), class: 's-clf', 'stroke-width': 2.4 }, svg);
+    E('path', { d: D(Bp), class: 's-warn', 'stroke-width': 2.4 }, svg);
+    E('circle', { cx: sx(ts), cy: sy(Vs), r: 5, class: 'f-ink' }, svg);
+    T(svg, sx(2.1), sy(VA(2.1)) + 18, 'A: converging, r_V̇ = 0', 't-m t-clf', 'middle');
+    T(svg, sx(1.92), sy(1.2), 'B: drifting, r_V̇ < 0', 't-m t-warn', 'end');
+  })();
+
+  /* ---------- CBF interactive filter: top view (m) + velocity plane (m/s) ---------- */
+  (() => {
+    const sc = document.getElementById('demo-scene'), vp = document.getElementById('demo-vel');
+    const Ro = 0.45, Rr = 0.12, R = Ro + Rr, sigma = 0.5, LOOK = 0.25, DT = 0.01, T_RUN = 2.5;
+    const st = { alpha: 2, h0: 0.4, v: [-2.0, 0.9], p: [0, 0], path: [], ghost: [], hit: null, simT: 0, raf: 0 };
+    const SX = lin(-1.5, 2.05, 0, 320), SY = lin(-1.0, 2.33, 300, 0), PXM = SX(1) - SX(0);
+    const VX = lin(-3, 3, 20, 280), VY = lin(-3, 3, 280, 20);
+    const VXi = lin(20, 280, -3, 3), VYi = lin(280, 20, -3, 3);
+    const $ = id => document.getElementById(id);
+    const fmt = x => (Math.abs(x) < 0.005 ? '0.00' : (x < 0 ? '−' : '') + Math.abs(x).toFixed(2));
+    const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
+    const pts = (arr, fx, fy) => arr.map(q => fx(q[0]).toFixed(1) + ',' + fy(q[1]).toFixed(1)).join(' ');
+    const setLine = (ln, x1, y1, x2, y2) => { ln.setAttribute('x1', x1); ln.setAttribute('y1', y1); ln.setAttribute('x2', x2); ln.setAttribute('y2', y2); };
+    const show = (node, on) => { node.style.visibility = on ? 'visible' : 'hidden'; };
+    const inView = q => q[0] > -1.35 && q[0] < 1.9 && q[1] > -0.85 && q[1] < 2.18;   // stop before the robot hits the frame edge
+    // h = gap between robot and obstacle surfaces (m); a = ∇h, the unit vector pointing away from the obstacle
+    const geom = p => { const d = Math.hypot(p[0], p[1]); return { h: d - R, a: [p[0] / d, p[1] / d] }; };
+    // eq. 20-21 with |a| = 1: push v along a just enough that a·v >= b
+    const filt = (v, a, h) => {
+      const b = -st.alpha * h, av = a[0] * v[0] + a[1] * v[1], k = Math.max(0, b - av);
+      return { b, av, k, act: k > 0, vs: [v[0] + k * a[0], v[1] + k * a[1]] };
+    };
+    ['ink', 'cbf', 'muted'].forEach(c => { arrowMarker(sc, 'mk-s-' + c, 'f-' + c); arrowMarker(vp, 'mk-v-' + c, 'f-' + c); });
+
+    const s = {};
+    E('circle', { cx: SX(0), cy: SY(0), r: R * PXM, class: 's-warn dash', 'stroke-width': 1 }, sc);
+    E('circle', { cx: SX(0), cy: SY(0), r: Ro * PXM, class: 'f-warn' }, sc);
+    T(sc, SX(0), SY(0) + 4, 'obstacle', 't-on', 'middle');
+    E('line', { x1: 12, x2: 12 + PXM, y1: 288, y2: 288, class: 's-muted', 'stroke-width': 2 }, sc);
+    T(sc, 12 + PXM / 2, 280, '1 m', 't-m', 'middle');
+    s.ghost = E('polyline', { class: 's-muted dash', 'stroke-width': 1.4 }, sc);
+    s.path = E('polyline', { class: 's-cbf', 'stroke-width': 1.8 }, sc);
+    s.ghostBot = E('circle', { r: Rr * PXM, class: 's-muted', 'stroke-width': 1.4 }, sc);
+    s.hit = E('path', { d: 'M-6 -6 L6 6 M6 -6 L-6 6', class: 's-warn', 'stroke-width': 2.5 }, sc);
+    s.gap = E('line', { class: 's-muted', 'stroke-width': 1.2, 'marker-start': 'url(#mk-s-muted)', 'marker-end': 'url(#mk-s-muted)' }, sc);
+    s.gapLbl = T(sc, 0, 0, '', 't-m t-ink', 'middle');
+    s.robot = E('circle', { r: Rr * PXM, class: 'f-cbf' }, sc);
+    s.vs = E('line', { class: 's-cbf', 'stroke-width': 3, 'marker-end': 'url(#mk-s-cbf)' }, sc);
+    s.vp = E('line', { class: 's-ink', 'stroke-width': 2, 'marker-end': 'url(#mk-s-ink)' }, sc);
+
+    const v = {};
+    const cp = E('clipPath', { id: 'vclip' }, vp.querySelector('defs'));
+    E('rect', { x: 20, y: 20, width: 260, height: 260 }, cp);
+    v.allowed = E('polygon', { class: 'f-cbf-t', 'clip-path': 'url(#vclip)' }, vp);
+    for (let k = -3; k <= 3; k++) {
+      const cls = k === 0 ? 'ax-strong' : 'ax';
+      E('line', { x1: VX(k), x2: VX(k), y1: 20, y2: 280, class: cls }, vp);
+      E('line', { x1: 20, x2: 280, y1: VY(k), y2: VY(k), class: cls }, vp);
+    }
+    T(vp, 276, VY(0) + 14, 'vx', 't-m', 'end');
+    T(vp, VX(0) + 6, 34, 'vy', 't-m');
+    v.line = E('line', { class: 's-warn dash', 'stroke-width': 1.8, 'clip-path': 'url(#vclip)' }, vp);
+    v.lineLbl = T(vp, 0, 0, 'speed limit', 't-m t-warn');
+    v.away = E('line', { class: 's-muted', 'stroke-width': 1.3, 'marker-end': 'url(#mk-v-muted)' }, vp);
+    v.awayLbl = T(vp, 0, 0, 'away', 't-m', 'middle');
+    v.dv = E('line', { class: 's-warn dash', 'stroke-width': 1.5 }, vp);
+    v.vs = E('line', { class: 's-cbf', 'stroke-width': 3, 'marker-end': 'url(#mk-v-cbf)' }, vp);
+    v.vp = E('line', { class: 's-ink', 'stroke-width': 2, 'marker-end': 'url(#mk-v-ink)' }, vp);
+    v.vpLbl = T(vp, 0, 0, 'policy', 't t-ink');
+    v.vsLbl = T(vp, 0, 0, 'safe', 't t-cbf');
+    v.handle = E('g', { class: 'handle', tabindex: 0, role: 'button', 'aria-label': 'Policy velocity. Drag it, or use the arrow keys.' }, vp);
+    E('circle', { r: 16, fill: 'transparent' }, v.handle);
+    E('circle', { r: 7, class: 'handle-ring' }, v.handle);
+
+    function render() {
+      const p = st.p, { h, a } = geom(p), f = filt(st.v, a, h), t = [-a[1], a[0]];
+      const P = st.v, Q = f.vs;
+      // top view
+      const rx = SX(p[0]), ry = SY(p[1]);
+      s.robot.setAttribute('cx', rx); s.robot.setAttribute('cy', ry);
+      const o = [-0.25 * t[0], -0.25 * t[1]];   // draw the gap ruler 0.25 m off the center line
+      const g1 = [a[0] * Ro + o[0], a[1] * Ro + o[1]], g2 = [p[0] - a[0] * Rr + o[0], p[1] - a[1] * Rr + o[1]];
+      setLine(s.gap, SX(g1[0]), SY(g1[1]), SX(g2[0]), SY(g2[1]));
+      show(s.gap, h > 0.06 && h < 1.05); show(s.gapLbl, h < 1.05);
+      s.gapLbl.setAttribute('x', SX((g1[0] + g2[0]) / 2 + 0.6 * o[0]));
+      s.gapLbl.setAttribute('y', SY((g1[1] + g2[1]) / 2 + 0.6 * o[1]) + 4);
+      s.gapLbl.textContent = 'h = ' + h.toFixed(2) + ' m';
+      setLine(s.vp, rx, ry, SX(p[0] + LOOK * P[0]), SY(p[1] + LOOK * P[1]));
+      setLine(s.vs, rx, ry, SX(p[0] + LOOK * Q[0]), SY(p[1] + LOOK * Q[1]));
+      show(s.vs, f.act);
+      // velocity plane: the limit line a·v = b is perpendicular to a, through c = b·a
+      const c = [f.b * a[0], f.b * a[1]], L = 10;
+      setLine(v.line, VX(c[0] + L * t[0]), VY(c[1] + L * t[1]), VX(c[0] - L * t[0]), VY(c[1] - L * t[1]));
+      v.allowed.setAttribute('points', pts([
+        [c[0] + L * t[0], c[1] + L * t[1]], [c[0] - L * t[0], c[1] - L * t[1]],
+        [c[0] - L * t[0] + L * a[0], c[1] - L * t[1] + L * a[1]], [c[0] + L * t[0] + L * a[0], c[1] + L * t[1] + L * a[1]]
+      ], VX, VY));
+      let lp = null;
+      for (const d of [-2.3, 2.3, -1.2, 1.2, 0]) {
+        const q = [c[0] + d * t[0], c[1] + d * t[1]];
+        if (Math.abs(q[0]) < 2.6 && Math.abs(q[1]) < 2.7) { lp = q; break; }
+      }
+      show(v.lineLbl, lp);
+      if (lp) { v.lineLbl.setAttribute('x', VX(lp[0]) + 5); v.lineLbl.setAttribute('y', VY(lp[1]) + 4); }
+      setLine(v.away, VX(0), VY(0), VX(a[0]), VY(a[1]));
+      v.awayLbl.setAttribute('x', VX(1.5 * a[0])); v.awayLbl.setAttribute('y', VY(1.5 * a[1]) + 4);
+      setLine(v.vp, VX(0), VY(0), VX(P[0]), VY(P[1]));
+      setLine(v.vs, VX(0), VY(0), VX(Q[0]), VY(Q[1]));
+      setLine(v.dv, VX(P[0]), VY(P[1]), VX(Q[0]), VY(Q[1]));
+      show(v.vs, f.act); show(v.dv, f.act); show(v.vsLbl, f.act);
+      v.vpLbl.textContent = f.act ? 'policy' : 'policy = safe';
+      v.vpLbl.setAttribute('x', clamp(VX(P[0]) + 10, 22, 200)); v.vpLbl.setAttribute('y', clamp(VY(P[1]) - 10, 32, 278));
+      v.vsLbl.setAttribute('x', clamp(VX(Q[0]) + 10, 22, 250)); v.vsLbl.setAttribute('y', clamp(VY(Q[1]) + 18, 32, 278));
+      v.handle.setAttribute('transform', `translate(${VX(P[0]).toFixed(1)} ${VY(P[1]).toFixed(1)})`);
+      // plain-language steps
+      const lim = st.alpha * h, app = -f.av, side = P[0] * t[0] + P[1] * t[1];
+      $('s-a').textContent = st.alpha.toFixed(1);
+      $('s-h').textContent = h.toFixed(2) + ' m';
+      $('s-lim').textContent = lim.toFixed(2) + ' m/s';
+      $('s-ask').textContent = app >= 0 ? `move toward it at ${app.toFixed(2)} m/s` : `move away at ${(-app).toFixed(2)} m/s`;
+      $('s-side').textContent = Math.abs(side).toFixed(2);
+      $('s-verdict').innerHTML = f.act ? '<span class="pill bad">✕ too fast</span>' : '<span class="pill ok">✓ within the limit</span>';
+      $('s-fix').textContent = f.act ? `cut the approach to ${lim.toFixed(2)} m/s, keep the sideways part` : 'nothing to fix, pass it through';
+      $('s-vs').textContent = `(${fmt(Q[0])}, ${fmt(Q[1])}) m/s`;
+      const r1 = Math.min(f.av - f.b, 0), r2 = Math.exp(-(f.k * f.k) / (sigma * sigma)) - 1;
+      $('s-r1').textContent = fmt(r1); $('s-r2').textContent = fmt(r2); $('s-r').textContent = fmt(r1 + r2);
+      $('out-h').textContent = st.h0.toFixed(2) + ' m';
+      $('out-a').textContent = st.alpha.toFixed(1) + ' /s';
+    }
+
+    function drawPaths() {
+      s.path.setAttribute('points', pts(st.path, SX, SY));
+      const shown = st.ghost.slice(0, Math.min(st.ghost.length, Math.round(st.simT / DT) + 1));
+      s.ghost.setAttribute('points', pts(shown, SX, SY));
+      const gl = shown[shown.length - 1];
+      show(s.ghostBot, shown.length > 1);
+      if (gl) { s.ghostBot.setAttribute('cx', SX(gl[0])); s.ghostBot.setAttribute('cy', SY(gl[1])); }
+      const crashed = st.hit !== null && st.simT >= st.hit - 1e-9;
+      show(s.hit, crashed);
+      if (crashed) s.hit.setAttribute('transform', `translate(${SX(gl[0]).toFixed(1)} ${SY(gl[1]).toFixed(1)})`);
+    }
+
+    function reset() {
+      cancelAnimationFrame(st.raf); st.raf = 0;
+      st.p = [R + st.h0, 0]; st.path = []; st.ghost = []; st.hit = null; st.simT = 0;
+      drawPaths(); render();
+      $('run-out').textContent = 'Press Run to play this command for 2.5 s, with and without the filter.';
+    }
+
+    function run() {
+      reset();
+      // without filter: straight line until contact
+      let g = st.p.slice(); st.ghost = [g];
+      for (let i = 1; i * DT <= T_RUN + 1e-9 && inView(g); i++) {
+        g = [g[0] + st.v[0] * DT, g[1] + st.v[1] * DT]; st.ghost.push(g);
+        if (Math.hypot(g[0], g[1]) <= R) { st.hit = i * DT; break; }
+      }
+      st.path = [st.p.slice()];
+      let hMin = geom(st.p).h, goal = 0, last = null;
+      const step = () => {
+        const { h, a } = geom(st.p), f = filt(st.v, a, h);
+        st.p = [st.p[0] + f.vs[0] * DT, st.p[1] + f.vs[1] * DT];
+        st.simT += DT; st.path.push(st.p); hMin = Math.min(hMin, geom(st.p).h);
+      };
+      const done = () => st.simT >= T_RUN - 1e-9 || !inView(st.p);
+      const finish = () => {
+        st.raf = 0; drawPaths(); render();
+        $('run-out').textContent = `With the filter: closest gap ${hMin.toFixed(2)} m, ${hMin > 0 ? 'never touches' : 'touches'}. Without it: ` +
+          (st.hit !== null ? `hits the obstacle after ${st.hit.toFixed(2)} s.` : 'no contact either, this command was already safe.');
+      };
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) { while (!done()) step(); finish(); return; }
+      $('run-out').textContent = 'Running at 0.6× speed…';
+      const frame = now => {
+        if (last === null) last = now;
+        goal = Math.min(T_RUN, goal + (now - last) / 1000 * 0.6); last = now;
+        while (st.simT < goal - 1e-9 && !done()) step();
+        drawPaths(); render();
+        if (done()) finish(); else st.raf = requestAnimationFrame(frame);
+      };
+      st.raf = requestAnimationFrame(frame);
+    }
+
+    const pt = vp.createSVGPoint();
+    const toV = e => {
+      pt.x = e.clientX; pt.y = e.clientY;
+      const q = pt.matrixTransform(vp.getScreenCTM().inverse());
+      return [clamp(Math.round(VXi(q.x) * 20) / 20, -3, 3), clamp(Math.round(VYi(q.y) * 20) / 20, -3, 3)];
+    };
+    const setV = vel => { st.v = vel; reset(); };
+    let dragging = false;
+    v.handle.addEventListener('pointerdown', e => { dragging = true; v.handle.setPointerCapture(e.pointerId); e.preventDefault(); });
+    v.handle.addEventListener('pointermove', e => { if (dragging) setV(toV(e)); });
+    v.handle.addEventListener('pointerup', () => { dragging = false; });
+    v.handle.addEventListener('pointercancel', () => { dragging = false; });
+    vp.addEventListener('click', e => { if (!v.handle.contains(e.target)) setV(toV(e)); });
+    v.handle.addEventListener('keydown', e => {
+      const d = e.shiftKey ? 0.5 : 0.1, k = { ArrowLeft: [-d, 0], ArrowRight: [d, 0], ArrowUp: [0, d], ArrowDown: [0, -d] }[e.key];
+      if (!k) return;
+      e.preventDefault();
+      setV([clamp(+(st.v[0] + k[0]).toFixed(2), -3, 3), clamp(+(st.v[1] + k[1]).toFixed(2), -3, 3)]);
+    });
+    $('in-h').addEventListener('input', e => { st.h0 = +e.target.value; reset(); });
+    $('in-a').addEventListener('input', e => { st.alpha = +e.target.value; reset(); });
+    $('btn-run').addEventListener('click', run);
+    $('btn-reset').addEventListener('click', reset);
+    st.h0 = +$('in-h').value; st.alpha = +$('in-a').value;
+    reset();
+  })();
+
+  /* ---------- CBF Table I bars ---------- */
+  (() => {
+    const svg = document.getElementById('bars');
+    const data = [
+      { k: 'Dual (filter + reward)', v: 92.7, dr: 91.7, hi: true },
+      { k: 'Reward only', v: 91.9, dr: 87.6 },
+      { k: 'Nominal (no CBF)', v: 51.4, dr: 55.0 },
+      { k: 'Filter only', v: 38.7, dr: 36.8 }
+    ];
+    const L = 150, R = 410, top = 28, rowH = 34, bh = 18, r = 4;
+    const sx = lin(0, 100, L, R);
+    [0, 25, 50, 75, 100].forEach(v => {
+      E('line', { x1: sx(v), x2: sx(v), y1: top - 6, y2: top + rowH * data.length - 10, class: 'ax' }, svg);
+      T(svg, sx(v), top - 12, v + '%', 't-m', 'middle');
+    });
+    data.forEach((d, i) => {
+      const y = top + i * rowH, x1 = sx(d.v);
+      T(svg, L - 10, y + bh / 2 + 4, d.k, d.hi ? 't t-ink' : 't', 'end');
+      E('path', { d: `M${L} ${y} H${x1 - r} Q${x1} ${y} ${x1} ${y + r} V${y + bh - r} Q${x1} ${y + bh} ${x1 - r} ${y + bh} H${L} Z`, class: d.hi ? 'f-cbf' : 'f-base' }, svg);
+      T(svg, x1 + 6, y + bh / 2 + 4, d.v.toFixed(1) + '%', 't-m t-ink');
+      const hit = E('rect', { x: 0, y: y - 8, width: 460, height: rowH, fill: 'transparent', tabindex: 0 }, svg);
+      tip(hit, `${d.k}\nNo DR: ${d.v.toFixed(1)}%\nWith DR: ${d.dr.toFixed(1)}%`);
+    });
+  })();
+
+  /* ---------- CLF Table II dumbbell ---------- */
+  (() => {
+    const svg = document.getElementById('dumbbell');
+    const rows = [ // name, tracking-only mean, CLF mean, tracking-only std, CLF std (cm/s)
+      ['CoM x', 9.6, 7.3, 5.8, 4.6], ['CoM y', 6.2, 5.9, 4.0, 3.7], ['CoM z', 7.7, 7.2, 4.7, 4.4],
+      ['Swing ankle x', 21.1, 17.2, 13.9, 11.3], ['Swing ankle y', 11.2, 9.7, 8.3, 7.4], ['Swing ankle z', 20.5, 21.2, 7.4, 7.4]
+    ];
+    const L = 112, R = 392, top = 26, rowH = 32;
+    const sx = lin(0, 24, L, R);
+    [0, 6, 12, 18, 24].forEach(v => {
+      E('line', { x1: sx(v), x2: sx(v), y1: top - 6, y2: top + rowH * rows.length - 14, class: 'ax' }, svg);
+      T(svg, sx(v), top - 12, String(v), 't-m', 'middle');
+    });
+    T(svg, R + 34, top - 12, 'cm/s', 't-m', 'middle');
+    const tb = document.getElementById('db-table');
+    rows.forEach(([name, m0, m1, s0, s1], i) => {
+      const y = top + i * rowH + 6, pct = (m1 - m0) / m0 * 100;
+      const pctTxt = (pct < 0 ? '−' : '+') + Math.abs(pct).toFixed(0) + '%';
+      T(svg, L - 10, y + 4, name, 't', 'end');
+      E('line', { x1: sx(m0), x2: sx(m1), y1: y, y2: y, class: 's-base', 'stroke-width': 2 }, svg);
+      E('circle', { cx: sx(m0), cy: y, r: 6, class: 'f-base', stroke: 'var(--surface)', 'stroke-width': 2 }, svg);
+      E('circle', { cx: sx(m1), cy: y, r: 6, class: 'f-clf', stroke: 'var(--surface)', 'stroke-width': 2 }, svg);
+      T(svg, R + 34, y + 4, pctTxt, pct < 0 ? 't-m t-ink' : 't-m t-warn', 'middle');
+      const hit = E('rect', { x: 0, y: y - rowH / 2, width: 460, height: rowH, fill: 'transparent', tabindex: 0 }, svg);
+      tip(hit, `${name}\nTracking only: ${m0} ± ${s0}\nCLF: ${m1} ± ${s1}\nChange: ${pctTxt}`);
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${name}</td><td class="num">${m0} ± ${s0}</td><td class="num">${m1} ± ${s1}</td><td class="num">${pctTxt}</td>`;
+      tb.appendChild(tr);
+    });
+  })();
+})();
+</script>

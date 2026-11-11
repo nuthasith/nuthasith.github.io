@@ -1,0 +1,1286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TOA-CBF Reproduction Manual</title>
+<style>
+/* Layout: a technical manual - sticky contents rail beside one ~70ch reading column;
+   on phones the rail becomes a collapsible block above the text. */
+:root {
+  --ground: #f5f7fa;
+  --panel: #ffffff;
+  --ink: #141820;
+  --ink-2: #4a5462;
+  --muted: #6d7785;
+  --rule: #dbe0e7;
+  --accent: #1f5fbf;          /* the TOA-field blue of Fig. 3 */
+  --accent-soft: #e5eefb;
+  --signal: #a65f00;          /* deviations from the paper, warnings */
+  --signal-soft: #fcf0de;
+  --ok: #1d7a3c;
+  --code-bg: #edf0f5;
+  --display: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --body: "Source Sans 3", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --step--1: 0.875rem;
+  --step-0: 1.0625rem;
+  --step-1: 1.25rem;
+  --step-2: 1.6rem;
+  --step-3: 2.3rem;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #0e1116; --panel: #151a21; --ink: #e8ebf0; --ink-2: #a9b2be; --muted: #8a94a1;
+    --rule: #29313c; --accent: #71a6f0; --accent-soft: #16243a; --signal: #e6a452;
+    --signal-soft: #2b2115; --ok: #52c47f; --code-bg: #1b212a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #0e1116; --panel: #151a21; --ink: #e8ebf0; --ink-2: #a9b2be; --muted: #8a94a1;
+  --rule: #29313c; --accent: #71a6f0; --accent-soft: #16243a; --signal: #e6a452;
+  --signal-soft: #2b2115; --ok: #52c47f; --code-bg: #1b212a; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 1rem; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0; background: var(--ground); color: var(--ink);
+  font: 400 var(--step-0)/1.6 var(--body);
+  padding-inline: 16px; padding-block: 0 4rem;
+}
+.shell {
+  max-width: 1180px; margin: 0 auto;
+  display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 3rem;
+}
+@media (max-width: 900px) { .shell { grid-template-columns: minmax(0, 1fr); gap: 0; } }
+
+/* masthead */
+.masthead { grid-column: 1 / -1; padding-block: 3rem 1.6rem; border-bottom: 1px solid var(--rule); }
+.kicker { font: 600 var(--step--1)/1.3 var(--mono); color: var(--accent); letter-spacing: 0.04em; }
+h1 {
+  font: 800 var(--step-3)/1.08 var(--display); font-stretch: 85%; letter-spacing: -0.01em;
+  margin: 0.6rem 0 0.8rem; max-width: 24ch; text-wrap: balance;
+}
+.lede { max-width: 68ch; color: var(--ink-2); margin: 0; }
+.cite { margin-top: 1rem; font-size: var(--step--1); color: var(--muted); max-width: 80ch; }
+
+/* contents rail */
+nav.toc { padding-top: 1.6rem; }
+nav.toc .inner { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 1rem); }
+nav.toc h2 { font: 700 var(--step--1)/1.2 var(--display); text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--muted); margin: 0 0 0.75rem; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.15rem; counter-reset: toc; }
+nav.toc li { counter-increment: toc; }
+nav.toc a { display: grid; grid-template-columns: 1.8rem 1fr; padding: 0.25rem 0.4rem; border-radius: 4px;
+  color: var(--ink-2); text-decoration: none; font-size: 0.95rem; line-height: 1.35; }
+nav.toc a::before { content: counter(toc, decimal-leading-zero); font: 500 0.78rem/1.6 var(--mono); color: var(--muted); }
+nav.toc a:hover, nav.toc a:focus-visible { background: var(--accent-soft); color: var(--ink); outline: none; }
+@media (max-width: 900px) {
+  nav.toc { padding-top: 1rem; }
+  nav.toc h2 { display: none; }
+  nav.toc details[open] summary { margin-bottom: 0.6rem; }
+  nav.toc .inner { position: static; }
+  nav.toc details { border: 1px solid var(--rule); border-radius: 6px; padding: 0.6rem 0.8rem; background: var(--panel); }
+}
+nav.toc summary { cursor: pointer; font: 700 var(--step--1)/1.2 var(--display); text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--muted); }
+nav.toc summary::-webkit-details-marker { display: none; }
+@media (min-width: 901px) { nav.toc summary { display: none; } }
+
+/* reading column */
+main { min-width: 0; padding-top: 0.2rem; }
+section { padding-block: 1.5rem 0.5rem; border-bottom: 1px solid var(--rule); }
+section:last-child { border-bottom: 0; }
+h2 { font: 700 var(--step-2)/1.2 var(--display); font-stretch: 90%; margin: 0.8rem 0 0.8rem; text-wrap: balance; }
+h2 .num { font: 500 var(--step--1)/1 var(--mono); color: var(--accent); display: block; margin-bottom: 0.4rem;
+  letter-spacing: 0.04em; }
+h3 { font: 700 var(--step-1)/1.3 var(--display); font-stretch: 95%; margin: 1.8rem 0 0.5rem; text-wrap: balance; }
+h4 { font: 700 var(--step-0)/1.3 var(--body); margin: 1.3rem 0 0.3rem; }
+p, li { max-width: 72ch; }
+p { margin: 0.6rem 0; }
+ul, ol { padding-left: 1.3rem; }
+li { margin: 0.25rem 0; }
+a { color: var(--accent); text-underline-offset: 2px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+strong { font-weight: 700; }
+code, kbd { font-family: var(--mono); font-size: 0.86em; background: var(--code-bg); padding: 0.08em 0.35em;
+  border-radius: 4px; overflow-wrap: anywhere; }
+.eq { font-family: var(--mono); font-size: 0.9em; }
+
+/* code blocks with copy */
+.code { position: relative; margin: 0.9rem 0; max-width: 100%; }
+.code pre { margin: 0; background: var(--code-bg); border: 1px solid var(--rule); border-radius: 6px;
+  padding: 0.9rem 1rem; overflow-x: auto; font: 400 0.84rem/1.55 var(--mono); color: var(--ink); tab-size: 4; }
+.code pre .c { color: var(--muted); }
+.code button { position: absolute; top: 0.45rem; right: 0.45rem; font: 600 0.72rem/1 var(--body);
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-2); background: var(--panel);
+  border: 1px solid var(--rule); border-radius: 4px; padding: 0.35rem 0.55rem; cursor: pointer; }
+.code button:hover { color: var(--ink); border-color: var(--muted); }
+
+/* numbered install steps: a real sequence */
+ol.steps { list-style: none; padding: 0; counter-reset: step; display: grid; gap: 1.2rem; margin: 1rem 0; }
+ol.steps > li { counter-increment: step; display: grid; grid-template-columns: 2.4rem minmax(0, 1fr); gap: 0.6rem;
+  max-width: none; }
+ol.steps > li::before { content: counter(step); font: 700 1rem/2.1rem var(--display); text-align: center;
+  width: 2.1rem; height: 2.1rem; border-radius: 50%; border: 1.5px solid var(--accent); color: var(--accent); }
+ol.steps > li > div { min-width: 0; }
+ol.steps h4 { margin-top: 0.3rem; }
+
+/* callouts */
+.note, .dev { border-radius: 6px; padding: 0.8rem 1rem; margin: 1rem 0; max-width: 72ch; }
+.note { background: var(--accent-soft); }
+.dev { background: var(--signal-soft); }
+.note > :first-child, .dev > :first-child { margin-top: 0; }
+.note > :last-child, .dev > :last-child { margin-bottom: 0; }
+.tag { font: 700 0.72rem/1 var(--display); text-transform: uppercase; letter-spacing: 0.08em; margin-right: 0.4rem; }
+.note .tag { color: var(--accent); }
+.dev .tag { color: var(--signal); }
+
+/* tables */
+.table { overflow-x: auto; margin: 0.9rem 0; max-width: 100%; }
+table { border-collapse: collapse; font-size: 0.93rem; min-width: 100%; }
+th, td { text-align: left; padding: 0.45rem 0.75rem 0.45rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font: 700 0.78rem/1.3 var(--display); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted);
+  border-bottom-color: var(--ink-2); }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; padding-right: 1rem; }
+td code { white-space: nowrap; }
+#troubleshooting td code { white-space: normal; }   /* long error messages wrap */
+tr.best td { font-weight: 700; }
+
+/* pipeline strip */
+.pipeline { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: stretch; margin: 1rem 0; }
+.pipeline div { flex: 1 1 9rem; min-width: 0; background: var(--panel); border: 1px solid var(--rule);
+  border-radius: 6px; padding: 0.6rem 0.7rem; font-size: 0.88rem; line-height: 1.35; }
+.pipeline b { display: block; font: 700 0.78rem/1.2 var(--display); text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--accent); margin-bottom: 0.25rem; }
+
+figure { margin: 1.2rem 0; }
+figure img { max-width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 6px; background: #fcfcfb; }
+figcaption { font-size: var(--step--1); color: var(--ink-2); margin-top: 0.4rem; max-width: 72ch; }
+
+.status { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.8rem; margin: 1rem 0; }
+.status div { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 0.8rem 0.9rem; min-width: 0; }
+.status .k { font: 700 0.75rem/1.2 var(--display); text-transform: uppercase; letter-spacing: 0.07em; }
+.status .done .k { color: var(--ok); }
+.status .todo .k { color: var(--signal); }
+.status p { margin: 0.35rem 0 0; font-size: 0.95rem; }
+.status.quad { grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); }
+footer { color: var(--muted); font-size: var(--step--1); padding-top: 2rem; }
+.docnav { display: flex; flex-wrap: wrap; gap: 0.4rem 0.6rem; margin-top: 1.2rem; }
+.docnav a { font: 600 0.82rem/1 var(--body); color: var(--ink-2); text-decoration: none; padding: 0.45rem 0.75rem;
+  border: 1px solid var(--rule); border-radius: 999px; background: var(--panel); }
+.docnav a:hover { color: var(--ink); border-color: var(--muted); }
+.docnav a[aria-current="page"] { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+</style>
+<link rel="stylesheet" href="readability.css">
+</head>
+<body id="top">
+<a class="skip-link" href="#content">Skip to content</a>
+<div class="shell">
+
+<header class="masthead">
+  <div class="kicker">IEEE RA-L 11(10), Oct. 2026 · pp. 12008–12015 · DOI 10.1109/LRA.2026.3728382</div>
+  <h1>TOA-CBF Reproduction Manual</h1>
+  <p class="lede">Use this manual to set up the simulator, read the finished experiments, or train a drone policy.
+  It covers our simulated reproduction of a paper in IEEE Robotics and Automation Letters (RA-L). The paper's method,
+  which we call TOA-CBF, adds training losses that steer a drone around obstacles and make it brake in time.
+  We also train it on charpi, a model of our own drone.</p>
+  <p class="cite">Liu, Yang, Li, Guo, Wang (Harbin Institute of Technology). Built on DiffPhysDrone: Zhang, Hu, Song,
+  Zou, Lin, “Learning vision-based agile flight via differentiable physics”, <em>Nat. Mach. Intell.</em> 7, 954–966 (2025).</p>
+  <nav class="docnav" aria-label="Documents">
+    <a href="manual.html" aria-current="page">Reproduction manual</a>
+    <a href="paper.html">Paper guide</a>
+    <a href="code.html">Code guide</a>
+  </nav>
+</header>
+
+<nav class="toc" aria-label="Contents">
+  <div class="inner">
+    <details open>
+      <summary>Contents</summary>
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#overview">What this repository reproduces</a></li>
+        <li><a href="#requirements">Check your workstation</a></li>
+        <li><a href="#install">Install and check the setup</a></li>
+        <li><a href="#layout">Find the scripts and modules</a></li>
+        <li><a href="#mapping">Match paper equations to code</a></li>
+        <li><a href="#training">Train or resume a policy</a></li>
+        <li><a href="#evaluation">Evaluate a policy and read the results</a></li>
+        <li><a href="#figures">Plot results and export a policy</a></li>
+        <li><a href="#choices">Where this code differs from the paper</a></li>
+        <li><a href="#reference">Compare with the paper’s reported results</a></li>
+        <li><a href="#troubleshooting">Fix common problems</a></li>
+      </ol>
+    </details>
+  </div>
+</nav>
+
+<main id="content" tabindex="-1">
+
+<section class="reading-start" aria-label="Start here">
+  <p class="eyebrow">Start here</p>
+  <h2>Choose what you want to do</h2>
+  <p><strong>The experiments are finished, so start with the results.</strong> Five full training runs, their evaluations
+  and ONNX exports (a portable file format for running the network outside PyTorch) are saved.
+  Train again only for a new experiment. Everything is simulation only: no policy from this repository has flown on a physical drone.
+The charpi policy has also flown in PX4 SITL with Gazebo (<a href="#sitl">results</a>).</p>
+  <nav class="reading-paths" aria-label="Suggested reading">
+    <a href="#install"><strong>Set up the workstation</strong><span>Install the software and check that the simulator runs.</span></a>
+    <a href="#local-results"><strong>Read the local results</strong><span>See the finished comparison and its saved tables and checkpoints.</span></a>
+    <a href="#train-charpi"><strong>Train on the charpi drone model</strong><span>Use the calibrated simulated drone and its controller.</span></a>
+    <a href="#sitl"><strong>Fly the policy in PX4 SITL</strong><span>Run it through PX4 and Gazebo, the way the real drone would.</span></a>
+  </nav>
+  <dl class="term-list">
+    <dt>Policy</dt><dd>The neural network that turns a depth image and the drone's state into a flight command.</dd>
+    <dt>TOA field (time-of-arrival field)</dt><dd>A 3-D grid storing each point's shortest obstacle-free route length to
+    the goal. TOA guidance, a training loss, pulls the drone down this field toward the goal.</dd>
+    <dt>CBF (control barrier function) loss</dt><dd>A training penalty when the speed toward an obstacle exceeds a fixed gain k
+    times the remaining clearance h (<a href="#overview">example</a>), so the drone learns to brake.</dd>
+    <dt>Plant</dt><dd>The model that predicts how the vehicle moves: the point mass or charpi.</dd>
+    <dt>Point mass</dt><dd>The paper's simple vehicle model (Eq. (2)), taken from DiffPhysDrone: the code and
+    simulator of Zhang et al. 2025 that this repository builds on.</dd>
+    <dt>charpi</dt><dd>A simulated model of our own drone, calibrated from its flight logs and ported from
+    <code>qpg-quad-jax</code>, our team's JAX simulator.</dd>
+    <dt>Rollout</dt><dd>One simulated flight of 150 policy steps (10 s at 15 Hz) for 64 scenes at once.
+    A training iteration is one rollout, a backward pass and one weight update.</dd>
+  </dl>
+</section>
+
+<!-- ============================================================ -->
+<section id="overview">
+<h2><span class="num">01</span>What this repository reproduces</h2>
+<p class="section-lead">All three parts of the paper's method are built and fully trained in simulation, on the point mass and on charpi.</p>
+<div class="status quad">
+  <div class="done"><div class="k">Verified on the RTX 5080</div><p>The setup script ran unchanged and all 41 tests pass,
+  GPU tests included (<a href="#install">installation</a>). The CUDA ops (DiffPhysDrone's GPU kernels for depth rendering,
+  nearest-obstacle search and physics steps) match the PyTorch fallback. That fallback is a plain-PyTorch copy, used when
+  the compiled code is missing.</p>
+  <p>On the GPU, <code>train.py</code> ran 300 iterations of each config (the saved flag file for one method, such as
+  <code>configs/toa_cbf.args</code>). The other scripts ran there too: <code>evaluate.py</code>, <code>compare.py</code>,
+  <code>viz_toa.py</code>, <code>export_onnx.py</code> and DiffPhysDrone's <code>main_cuda.py</code>.</p></div>
+  <div class="done"><div class="k">Experiment queue complete</div><p>The experiment queue (<code>scripts/experiments/run_experiments.sh</code>)
+  trains five runs for 50,000 iterations each: four methods on the point mass, plus TOA + CBF on charpi.
+  It then evaluates, tabulates and exports them. It finished on 2026-10-03 at 11:39 Singapore time, about 47 h after
+  launch. Its evaluations, three comparison tables, figures and five ONNX exports are verified.
+  Logs: <code>runs/experiment.log</code> and <code>runs/experiment_status.txt</code>.</p>
+  <p>The point-mass results did not reproduce the paper's advantage (<a href="#local-results">local results</a>).</p></div>
+  <div class="done"><div class="k">Charpi simulation complete</div><p><code>--dynamics charpi</code> runs a port of our
+  calibrated drone model. It matches the JAX original to within 0.0001 plus 0.01 % of each value. It takes the 4-D throttle + body-rate action that
+  our real drone uses: four numbers in [−1, 1], total thrust, then roll, pitch and yaw rates. Training and simulated evaluation are done.</p></div>
+  <div class="todo"><div class="k">Not covered</div><p>No policy from this repository has flown on a physical drone.
+  Charpi results are simulated flights, and the ONNX exports passed only numerical checks.
+  Also not reproduced (<a href="#choices-eval">details</a>):</p>
+  <ul>
+    <li>Flightmare, the Unity-based photorealistic simulator of the paper's tests</li>
+    <li>the EGO-Planner (optimization-based planner) and Agile (learned high-speed flight, Loquercio et al.) baselines</li>
+    <li>the F250, the authors' 250 mm quadrotor, and its real flights</li>
+  </ul>
+  <p>Our evaluator re-creates the paper's evaluation protocol in Python: its scenes, target speeds, trial counts and
+  success rule. A trial is one flight in one test scene at one target speed.</p></div>
+</div>
+
+<h3>How the method works</h3>
+<p>This repository adds the paper's three changes to DiffPhysDrone's differentiable simulator. In that simulator every
+step can be differentiated, so a loss on the flight reaches the policy as a gradient. A gradient is how much the loss
+would change for a small change in a weight or input. The <a href="paper.html">paper guide</a> explains each equation.</p>
+<ul>
+  <li><strong>TOA guidance: learn a route around obstacles.</strong> Each episode (one scene's flight) gets a new TOA
+  field. JFA, the jump flooding algorithm, builds it on the GPU by copying distances over long, then shorter, jumps.
+  The loss uses a straight-through gradient: the forward pass reads the field value, the backward pass its stored slope
+  (Eq. (3)–(5) define the field and this loss). Only training uses the field.</li>
+  <li><strong>Velocity-aligned yaw: look where the drone is going.</strong> The nose turns toward the direction of travel,
+  so the forward depth camera looks ahead. A first-order low-pass filter smooths the turn: each step, the heading moves
+  part of the way to its target.</li>
+  <li><strong>CBF loss: brake before reaching an obstacle.</strong> The rule <span class="eq">v_close ≤ k·h</span> caps
+  v_close, the speed toward the nearest obstacle along its surface normal. The cap is the CBF gain k (s⁻¹) times the
+  clearance h: the distance to that obstacle minus a safety margin <span class="eq">m</span>, in meters.
+  With the default k = 2.5 s⁻¹ (<code>--cbf_k</code>), 1.2 m of clearance allows up to 3 m/s. A softplus penalty, a smooth max(0, x), teaches the rule (the paper's Eq. (6)–(7) and Algorithm 1).</li>
+</ul>
+<p>After training, the policy needs only the depth image, velocity, goal direction, attitude and the margin
+<span class="eq">m</span>, which is sampled per training episode. It uses no map and no solver.</p>
+
+<div class="pipeline" aria-label="One training iteration">
+  <div><b>Reset</b>64 random scenes: spheres, vertical and horizontal cylinders, boxes</div>
+  <div><b>TOA field</b>grid ≤ 128³ cells of 0.2 m (<a href="#choices-grid">larger for long routes</a>), JFA from the goal, slope from neighbor cells (central differences)</div>
+  <div><b>Rollout</b>150 steps at 15 Hz: ray-cast depth (one ray per pixel) → CNN-GRU policy → acceleration command (Eq. (1) control law) → dynamics</div>
+  <div><b>Losses</b>L<sub>v</sub>, L<sub>toa</sub>, L<sub>cbf</sub>, L<sub>collide</sub>, L<sub>acc</sub>, L<sub>jerk</sub>: velocity tracking, TOA, CBF, collision, acceleration, jerk (sum in Eq. (8), weights in Table I)</div>
+  <div><b>Update</b>BPTT (back-propagation through time): gradients back through the whole rollout; AdamW optimizer, cosine learning-rate decay</div>
+</div>
+
+<p>The default plant is the point mass. <code>--dynamics charpi</code> trains on charpi instead. A 100 Hz attitude
+controller then turns each acceleration command into the throttle + body-rate action. The policy and losses stay the same;
+<a href="#train-charpi">the charpi training section</a> explains the new dynamics.</p>
+
+
+</section>
+
+<!-- ============================================================ -->
+<section id="requirements">
+<h2><span class="num">02</span>Check your workstation</h2>
+<p class="section-lead">The verified setup is Ubuntu 22.04, an RTX 5080 and NVIDIA driver 580 or newer.
+With driver 570–579, use the optional CUDA 12.8 route in <a href="#install">installation</a>.</p>
+<div class="table"><table>
+  <thead><tr><th>Item</th><th>Needed</th><th>Why</th></tr></thead>
+  <tbody>
+    <tr><td>OS</td><td>Ubuntu 22.04 (x86_64)</td><td>Verified. 24.04 should work the same way; not tested.</td></tr>
+    <tr><td>GPU</td><td>RTX 5080, 16 GB (Blackwell, compute capability 12.0)</td><td>Kernels must be compiled for <code>sm_120</code>, NVIDIA's code for RTX 50-series GPUs. A full training iteration peaks at 2.6 GiB.</td></tr>
+    <tr><td>NVIDIA driver</td><td>≥ 580, open kernel modules</td><td>CUDA 13 wheels need ≥ 580. Blackwell needs the open kernel modules, NVIDIA's open-source driver.</td></tr>
+    <tr><td>System packages</td><td><code>git</code>, <code>build-essential</code>, <code>python3-venv</code>, <code>python3-dev</code></td><td>Compiler and <code>Python.h</code> to build the CUDA extension (GPU code loaded into Python)</td></tr>
+    <tr><td>Python</td><td>3.10 (Ubuntu default) to 3.13</td><td>torch 2.11 wheels</td></tr>
+    <tr><td>Disk</td><td>about 10 GB</td><td>PyTorch and CUDA libraries from PyPI (about 5.5 GB), plus runs and results</td></tr>
+    <tr><td>Network</td><td>PyPI and github.com</td><td>No system CUDA toolkit: <code>nvcc</code>, NVIDIA's CUDA compiler, comes from PyPI</td></tr>
+    <tr><td>Optional</td><td>A JAX environment with Python ≥ 3.10 and <code>~/apg/qpg-quad-jax</code></td><td>Only to regenerate the charpi test fixtures, the JAX reference flights the tests compare against (<code>scripts/charpi/charpi_reference.py</code>). Training and tests do not need it.</td></tr>
+  </tbody>
+</table></div>
+<div class="note"><span class="tag">Verified</span>On 2026-09-30 the documented route ran end to end on this workstation:
+Ubuntu 22.04, Python 3.10.12, GeForce RTX 5080 16 GB (<code>sm_120</code>), driver 580.95.05 (CUDA 13.0).
+<a href="#install">Installation</a> lists the torch and <code>nvcc</code> versions. The CUDA 12.8 route was not tried here.</div>
+</section>
+
+<!-- ============================================================ -->
+<section id="install">
+<h2><span class="num">03</span>Install and check the setup</h2>
+<p>Five steps set up and check the workstation. It works when the check reports <code>backend cuda</code> and the tests report
+<code>41 passed</code>. Already in this repository? Do steps 1–2, then run the setup script here.</p>
+<ol class="steps">
+<li><div>
+  <h4>Check the driver</h4>
+  <div class="code"><pre>nvidia-smi</pre></div>
+  <p>The header must show <strong>Driver Version ≥ 580</strong> and <strong>CUDA Version ≥ 13.0</strong>.
+  If not, install the open driver, reboot and check again:</p>
+  <div class="code"><pre>sudo apt update
+sudo ubuntu-drivers list            <span class="c"># shows e.g. nvidia-driver-580-open</span>
+sudo apt install nvidia-driver-580-open
+sudo reboot</pre></div>
+</div></li>
+<li><div>
+  <h4>Install the build tools</h4>
+  <div class="code"><pre>sudo apt install git build-essential python3-venv python3-dev</pre></div>
+</div></li>
+<li><div>
+  <h4>Clone the repository and run the setup script</h4>
+  <div class="code"><pre>git clone https://github.com/nat9dai/diff_nav_toa_cbf.git
+cd diff_nav_toa_cbf
+bash scripts/setup/setup_workstation.sh</pre></div>
+  <p>The script creates the Python environment, builds the simulator and checks the install. Re-running it is safe.</p>
+  <div class="note"><span class="tag">Verified</span>On the RTX 5080 it ran unchanged in <strong>3 min 28 s</strong>.
+  It installed torch 2.11.0+cu130 (arch list includes <code>sm_120</code>), <code>nvcc</code> 13.0.88 and DiffPhysDrone at
+  <code>2719361</code>. It built <code>quadsim_cuda</code> (DiffPhysDrone's CUDA extension holding its simulator ops) with
+  <code>TORCH_CUDA_ARCH_LIST=12.0</code> (which GPU architectures to compile for).</div>
+  <details class="technical-detail">
+  <summary>What the setup script installs and changes</summary>
+  <ul>
+    <li>Creates <code>.venv</code> and installs from PyPI <code>torch==2.11.0</code> (built with CUDA 13.0) and
+    <code>cuda-toolkit[nvcc,crt,nvvm,cccl,cudart]==13.0.2</code>, which supplies a matching <code>nvcc</code>.</li>
+    <li>Installs <code>requirements.txt</code>: numpy, scipy, matplotlib, tensorboard, tqdm, onnx, pytest.</li>
+    <li>Clones DiffPhysDrone into <code>third_party/DiffPhysDrone</code> at commit <code>2719361</code>
+    (<code>scripts/setup/fetch_diffphysdrone.sh</code>).</li>
+    <li>Builds <code>quadsim_cuda</code> for your GPU (<code>scripts/setup/build_quadsim.sh</code>; fixes below).</li>
+    <li>Runs <code>scripts/setup/check_install.py</code>.</li>
+  </ul>
+  <div class="note"><span class="tag">Build fixes</span><code>build_quadsim.sh</code> makes two fixes in the DiffPhysDrone
+  clone that recent PyTorch needs. It changes <code>AT_DISPATCH_FLOATING_TYPES(t.type(), …)</code> to
+  <code>t.scalar_type()</code> in the two <code>.cu</code> files, and adds the <code>libcudart.so</code> symlink missing
+  from the pip CUDA runtime. It sets <code>TORCH_CUDA_ARCH_LIST</code> from your GPU (<code>12.0</code> on an RTX 5080).
+  With these fixes the extension compiles, imports and runs on the verified workstation.</div>
+  </details>
+</div></li>
+<li><div>
+  <h4>Read the check output</h4>
+  <div class="code"><pre>source .venv/bin/activate
+python scripts/setup/check_install.py</pre></div>
+  <p><strong>Confirm three lines:</strong> the GPU arch list includes <code>sm_120</code>,
+  <code>quadsim_cuda extension importable: True</code>, and <code>backend cuda</code>.
+  The other lines compare each CUDA op with the PyTorch fallback and time the code.
+  RTX 5080 values (B: batch size, 64 scenes; T: rollout length, 150 steps):</p>
+  <div class="table"><table>
+    <thead><tr><th>Line</th><th>Measured</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>render</code></td><td>2 of 196,608 pixels &gt; 1 % apart (depths clamped to the policy's 0.3–24 m; the line itself does not clamp, so it may count more)</td><td>Median relative CUDA-vs-fallback depth gap, and pixels more than 1 % apart. A few are normal: a ray tangent to a primitive (one obstacle shape: sphere, cylinder or box) can flip between hit and miss in float32.</td></tr>
+      <tr><td><code>find_nearest_pt</code></td><td>0</td><td rowspan="4">Largest |CUDA − fallback| per op: float32 rounding</td></tr>
+      <tr><td><code>update_state_vec</code></td><td>1.2e-7</td></tr>
+      <tr><td><code>run_forward</code></td><td>6.7e-5</td></tr>
+      <tr><td><code>run_backward</code></td><td>3.6e-7</td></tr>
+      <tr><td><code>TOA field</code></td><td>~1 s (B = 64; grid e.g. 128 × 128 × 28)</td><td>First (cold) call; about 0.9 s per iteration in training</td></tr>
+      <tr><td><code>one training iteration</code></td><td>1.02–1.09 s, peak 2.6 GiB</td><td>Full method, B = 64, T = 150: about 14–15 h per 50,000 iterations, the training time for each TOA variant (<a href="#timings">run times</a>)</td></tr>
+      <tr><td><code>charpi plant</code></td><td><code>finite gradient: True</code></td><td>1 s of charpi flight, run eagerly (op by op, not fused first by torch.compile), gives a finite gradient: <code>--dynamics charpi</code> works</td></tr>
+    </tbody>
+  </table></div>
+</div></li>
+<li><div>
+  <h4>Run the tests</h4>
+  <div class="code"><pre>python -m pytest -q tests</pre></div>
+  <p>Expect <code>41 passed</code> on the GPU machine. On 2026-10-01 the suite took 16.6 s with
+  <code>OMP_NUM_THREADS=4 MKL_NUM_THREADS=4</code>, ROS's <code>PYTHONPATH</code> cleared and the Inductor cache warm
+  (Inductor: torch.compile's code generator, which keeps compiled kernels on disk).</p>
+  <p>Without a GPU, the two GPU-only parity tests are skipped. A parity test checks that two versions give matching
+  numbers: here CUDA vs. fallback, and the compiled vs. eager charpi loop. The first, <code>test_matches_cuda_extension</code>, checks each
+  primitive family separately and compares relative differences. At most 8 of 98,304 pixels may differ by more than 0.1 % (0–2 measured), nearest
+  points by at most 0.0001 m.</p>
+  <details class="technical-detail">
+  <summary>Why the depth parity test changed</summary>
+  <p>The original GPU suite failed 1 of 19 tests: its absolute 0.001 m depth tolerance was too strict. Rays that graze
+  the ground can hit 100,000 m or more away, where float32 round-off alone exceeds it. They also made an older check
+  line, <code>max |cuda - torch| = 3.59e+03 m</code>, look alarming. The test and the check line now compare relative differences.</p>
+  <p>A later review found that a module alias from <code>toanav/backend.py</code> made the full suite compare the
+  fallback with itself. Fixed: the test now asserts that it uses the real extension.</p>
+  </details>
+</div></li>
+</ol>
+
+<details class="technical-detail">
+<summary>Other setups: CUDA 12.8, or no GPU</summary>
+<h3>CUDA 12.8 route (driver 570–579)</h3>
+<p>torch 2.10.0 on PyPI is built with CUDA 12.8, which also supports Blackwell. PyPI has no CUDA 12 <code>nvcc</code>,
+so install NVIDIA's toolkit system-wide. Not tried on the verified workstation.</p>
+<div class="code"><pre>wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+sudo dpkg -i cuda-keyring_1.1-1_all.deb &amp;&amp; sudo apt update
+sudo apt install cuda-toolkit-12-8
+TORCH_VERSION=2.10.0 bash scripts/setup/setup_workstation.sh   <span class="c"># build_quadsim.sh finds /usr/local/cuda-12.8</span></pre></div>
+
+<h3>Without a GPU</h3>
+<p><code>--backend auto</code>, the default, uses the PyTorch fallback when the CUDA extension or GPU is missing.
+<code>toanav/quadsim_torch.py</code> ports the four CUDA kernels to PyTorch line by line.
+On a 4-core CPU, one iteration with 8 scenes and 80 steps takes about 5 s:
+fine for tests and debugging, too slow for 50,000 full-size iterations.</p>
+</details>
+</section>
+
+<!-- ============================================================ -->
+<section id="layout">
+<h2><span class="num">04</span>Find the scripts and modules</h2>
+<p>Train with <code>train.py</code>, test a checkpoint with <code>evaluate.py</code>, and put results side by side with
+<code>compare.py</code>. The <a href="code.html">code guide</a> explains how the modules fit together.</p>
+<div class="table"><table>
+  <thead><tr><th>Path</th><th>Content</th></tr></thead>
+  <tbody>
+    <tr><td><code>train.py</code></td><td>Trains the three variants, the methods compared: Distance (<code>distance</code>, straight-line guidance), TOA (<code>toa</code>, TOA guidance) and TOA + CBF (<code>toa_cbf</code>, plus the CBF loss). Point mass by default, charpi with <code>--dynamics charpi</code>.</td></tr>
+    <tr><td><code>evaluate.py</code></td><td>Flies a checkpoint in test scenes under the paper's evaluation protocol (Sec. IV-A1 / IV-B2), on either plant</td></tr>
+    <tr><td><code>compare.py</code></td><td>Success-rate tables like the paper's Tables II and III, with two-sided Fisher exact tests (exact test of whether two success rates differ; valid for small samples). Plots SR (success rate: share of trials reaching the goal without a collision) against speed.</td></tr>
+    <tr><td><code>viz_toa.py</code></td><td>TOA field plot like the paper's Fig. 3; checks JFA versions against BFS (breadth-first search: exact but slow)</td></tr>
+    <tr><td><code>export_onnx.py</code></td><td>ONNX export plus a JSON spec of the policy inputs and outputs (for charpi checkpoints also the 100 Hz low-level recipe)</td></tr>
+    <tr><td><code>toanav/charpi.py</code></td><td>Our drone: PyTorch port of the charpi plant; the 100 Hz CTBR (collective thrust and body rates) controller; <code>CharpiDynamics</code>, a drop-in for <code>env.run</code> (DiffPhysDrone's point-mass physics step). Charpi forward, point-mass gradient, joined straight-through (<a href="#train-charpi">how</a>).</td></tr>
+    <tr><td><code>toanav/toa.py</code></td><td>Grid; rasterization (marking the voxels, or grid cells, an obstacle occupies); JFA propagation; trilinear sampling (blending the eight nearest cells); straight-through gradient</td></tr>
+    <tr><td><code>toanav/losses.py</code></td><td>L<sub>v</sub>, L<sub>toa</sub>, L<sub>cbf</sub>, L<sub>collide</sub>, L<sub>acc</sub>, L<sub>jerk</sub></td></tr>
+    <tr><td><code>toanav/geometry.py</code></td><td>Exact signed distance (to the nearest surface; negative inside) and normals of the obstacle primitives</td></tr>
+    <tr><td><code>toanav/policy.py</code></td><td>Observation, Eq. (1) control law, yaw modes (goal-facing: nose toward the goal; velocity-aligned), checkpoint loading</td></tr>
+    <tr><td><code>toanav/scenes.py</code></td><td>Evaluation forests and large-obstacle corridors; stereo depth noise (stereo-camera-like error that grows with distance squared)</td></tr>
+    <tr><td><code>toanav/quadsim_torch.py</code></td><td>PyTorch fallback of DiffPhysDrone's CUDA ops</td></tr>
+    <tr><td><code>toanav/backend.py</code></td><td>Loads DiffPhysDrone's <code>Env</code>/<code>Model</code> with the CUDA or fallback ops</td></tr>
+    <tr><td><code>configs/*.args</code></td><td>Argument files: <code>python train.py @configs/toa_cbf.args</code>; <code>toa_cbf_charpi.args</code> is the same method on charpi</td></tr>
+    <tr><td><code>scripts/setup/</code></td><td>Install: <code>setup_workstation.sh</code>, <code>fetch_diffphysdrone.sh</code>, <code>build_quadsim.sh</code>, <code>check_install.py</code></td></tr>
+    <tr><td><code>scripts/experiments/</code></td><td>Batch jobs: <code>train_all.sh</code>, <code>eval_all.sh</code>, <code>run_experiments.sh</code> (the full queue)</td></tr>
+    <tr><td><code>scripts/charpi/charpi_reference.py</code></td><td>Records reference flights of the original JAX charpi plant into <code>tests/data/</code> (needs a JAX environment with Python ≥ 3.10)</td></tr>
+    <tr><td><code>scripts/charpi/fit_charpi_surrogate.py</code></td><td>Fits the lag (response rate; higher = faster) of the surrogate, the point-mass model that supplies charpi's gradient: <code>SURROGATE_LAG</code> = 5 s⁻¹ (<a href="#choices-charpi">why</a>)</td></tr>
+    <tr><td><code>sitl/</code></td><td>PX4 SITL + Gazebo tests: Gazebo worlds, the trial driver and batch harness, scoring, videos (<a href="../sitl/README.md">sitl/README.md</a>)</td></tr>
+    <tr><td><code>tests/</code></td><td>pytest suite (41 tests); <code>test_charpi.py</code> checks the port, controller and gradient; <code>test_scripts.py</code> checks fresh-run logs and failure propagation</td></tr>
+    <tr><td><code>tests/data/</code></td><td>JAX fixtures: <code>charpi_reference.npz</code> (real fit, narrow DR band), <code>_sitl.npz</code> (sitl fit, real DR band), <code>_adv.npz</code> (adversarial states and actions).
+      The real fit is charpi's body-rate response fitted to real flight logs. The sitl fit is the same response fitted to flights in SITL (software-in-the-loop: real PX4 flight software flying a simulated drone in Gazebo).
+      The DR band (narrow, real or off) sets how widely DR (domain randomization) rescales charpi's parameters each episode.</td></tr>
+    <tr><td><code>third_party/DiffPhysDrone</code></td><td>Fetched at setup, git-ignored (no license file upstream, so it is not redistributed)</td></tr>
+  </tbody>
+</table></div>
+</section>
+
+<!-- ============================================================ -->
+<section id="mapping">
+<h2><span class="num">05</span>Match paper equations to code</h2>
+<p class="section-lead">Each paper equation and setting maps to a function, flag or default below. Only the last row,
+charpi, is not from the paper.</p>
+<p>The <a href="paper.html">paper guide</a> explains the method. <a href="#choices">Where this code differs from the
+paper</a> lists the choices made here.</p>
+<details class="technical-detail">
+<summary>Symbols, then the paper-to-code table</summary>
+<dl class="term-list">
+  <dt><span class="eq">D̃, v<sub>body</sub>, v<sub>tgt</sub>, e<sub>z</sub><sup>body</sup></span></dt><dd>Processed depth, body-frame velocity, target velocity, body-frame “up” vector</dd>
+  <dt><span class="eq">u, R, f<sub>body</sub>, κ</span></dt><dd>Acceleration command, body-to-world rotation, 3-D policy output, randomized thrust-error factor</dd>
+  <dt><span class="eq">α</span> in Eq. (2)</dt><dd>Share of the last step's acceleration kept (motor lag). DiffPhysDrone's mean lag, 12 s⁻¹ at 15 Hz, gives α = e<sup>−12/15</sup> ≈ 0.45.</dd>
+  <dt><span class="eq">λ<sub>g</sub></span></dt><dd>Gradient decay, 0.4 per second: shrinks gradients flowing back in time so BPTT stays stable</dd>
+  <dt><span class="eq">G, δ, k, N</span></dt><dd>Distance grid; voxel edge length; JFA jump length in voxels (not the CBF gain); voxels on the longest axis minus 1. With 128 voxels, k = 64, 32, …, 1.</dd>
+  <dt><span class="eq">Φ, ∇Φ</span></dt><dd>TOA field value (route length to the goal) and its slope; −∇Φ points along the route</dd>
+  <dt><span class="eq">sg(·)</span></dt><dd>Stop-gradient: treated as a constant for gradients (<code>.detach()</code>)</dd>
+  <dt><span class="eq">β, n̂</span></dt><dd>CBF softplus sharpness (default 2); the nearest obstacle's unit surface normal</dd>
+  <dt><span class="eq">M</span></dt><dd>Sub-positions checked within each policy step: 10 (DiffPhysDrone's <code>sub_div</code>)</dd>
+  <dt><span class="eq">d<sub>act</sub></span></dt><dd>Activation distance, 1.5 m: the CBF loss applies only where h is below it</dd>
+  <dt><span class="eq">d, v<sub>approach</sub></span></dt><dd>Distance to the nearest obstacle surface minus the drone's radius; how fast d shrinks</dd>
+  <dt><span class="eq">α</span> in Eq. (9)</dt><dd>Collision-penalty sharpness, 32 (not the α of Eq. (2))</dd>
+  <dt>OU</dt><dd>Ornstein–Uhlenbeck process: random drift that keeps pulling back toward its mean</dd>
+</dl>
+<div class="table"><table>
+  <thead><tr><th>Paper</th><th>What it says</th><th>Where</th></tr></thead>
+  <tbody>
+    <tr><td>Sec. III-A1 (observation)</td><td><span class="eq">[D̃, v<sub>body</sub>, v<sub>tgt</sub>, e<sub>z</sub><sup>body</sup>, m]</span>; clearance margin <span class="eq">m</span> sampled per episode</td><td><code>policy.build_state</code>, <code>policy.preprocess_depth</code></td></tr>
+    <tr><td>Eq. (1) (control law)</td><td><span class="eq">u = (R f<sub>body</sub> − v − g)·κ + g</span></td><td><code>policy.action_to_accel(..., "paper")</code></td></tr>
+    <tr><td>Eq. (2), Fig. 2 (dynamics, network)</td><td>Motor lag α, drag, gradient decay λ<sub>g</sub>; CNN + state projection + GRU</td><td>DiffPhysDrone <code>env_cuda.Env.run</code>, <code>model.Model</code></td></tr>
+    <tr><td>Sec. III-B (yaw)</td><td>Velocity-aligned yaw via a first-order low-pass filter</td><td><code>policy.yaw_reference("velocity")</code> → <code>update_state_vec</code></td></tr>
+    <tr><td>Eq. (3)–(4) (JFA)</td><td><span class="eq">G ← min(G, −MaxPool3D(−G, 3, dil=k) + kδ)</span>, k = 2<sup>⌊log₂N⌋</sup>…1, plus cleanup at k = 1</td><td><code>toa.propagate</code> (see <a href="#choices-jfa">choices</a>)</td></tr>
+    <tr><td>Sec. III-B1 (TOA grid)</td><td>Grid spanning start and goal, δ = 0.2 m (larger for long routes, see <a href="#choices-grid">choices</a>), ≤ 128 voxels per axis. Obstacles inflated by one voxel (grown so routes keep clearance).</td><td><code>toa.make_grid</code>, <code>toa.rasterize</code></td></tr>
+    <tr><td>Eq. (5) (TOA gradient)</td><td><span class="eq">Φ̃(p) = Φ(p̄) + ∇Φ(p̄)ᵀ(p − p̄)</span>, <span class="eq">p̄ = sg(p)</span>, trilinear sampling</td><td><code>TOAField.straight_through</code></td></tr>
+    <tr><td>Eq. (6)–(7), Alg. 1 (CBF loss)</td><td><span class="eq">softplus(β(v·n̂ − k h))</span> over M sub-positions, only where <span class="eq">h &lt; d<sub>act</sub></span>; h, n̂ stop-gradient</td><td><code>losses.cbf_loss</code></td></tr>
+    <tr><td>Eq. (9) (collision loss)</td><td><span class="eq">E[v<sub>approach</sub>·softplus(−α d)]</span></td><td><code>losses.collision_loss</code></td></tr>
+    <tr><td>Eq. (8), Table I (loss weights)</td><td>λ<sub>v</sub> 2.0, λ<sub>toa</sub> 0.2, λ<sub>cbf</sub> 5.0, λ<sub>collide</sub> 7.0, λ<sub>acc</sub> 0.03, λ<sub>jerk</sub> 0.001</td><td><code>train.py</code> defaults, <code>configs/*.args</code></td></tr>
+    <tr><td>Sec. IV-A1 (training setup)</td><td>64 scenes, 15 Hz, T = 150, AdamW 1e-3 cosine to 1e-5, 50,000 iterations</td><td><code>train.py</code> defaults</td></tr>
+    <tr><td>Sec. IV-C1 (randomization)</td><td>Randomized delays, thrust error, drag, OU gravity and wind, camera pitch, field of view, drone radius, yaw drift, rotation</td><td>DiffPhysDrone <code>Env.reset</code> + <code>--wind_ou</code> in <code>train.py</code></td></tr>
+    <tr><td>Sec. IV-A2 (ablation variants)</td><td>Distance (goal-facing yaw, no TOA, no CBF) / TOA / TOA + CBF</td><td><code>--variant distance | toa | toa_cbf</code></td></tr>
+    <tr><td>Not in the paper</td><td>Our drone's model, charpi, as the plant: 100 Hz CTBR controller + charpi forward, point-mass gradient</td><td><code>--dynamics charpi</code>, <code>toanav/charpi.py</code></td></tr>
+  </tbody>
+</table></div>
+</details>
+</section>
+
+<!-- ============================================================ -->
+<section id="training">
+<h2><span class="num">06</span>Train or resume a policy</h2>
+<p class="section-lead">Training is done: the experiment queue trained, evaluated and exported all five policies
+(<a href="#local-results">local results</a>). Retrain only to change or repeat an experiment. Retraining all of them
+takes about two days on the RTX 5080 workstation.</p>
+<p>Work from the repository root after <code>source .venv/bin/activate</code>. If your shell loads ROS or custom
+CUDA/cuDNN libraries, clear those overrides before running Python directly:</p>
+<div class="code"><pre>unset PYTHONPATH PYTHONHOME LD_LIBRARY_PATH LD_PRELOAD</pre></div>
+
+<h3>Run the full experiment queue</h3>
+<p>Run <code>bash scripts/experiments/run_experiments.sh</code> inside <code>tmux</code>. It trains five policies for 50,000 iterations
+each, evaluates them, builds tables and figures, and exports ONNX files. <code>runs/experiment_status.txt</code> shows the phase.</p>
+<p>Training order: charpi, TOA + CBF on the point mass, Distance, TOA, DiffPhys baseline. DiffPhys is Zhang et al.’s 2025 method, the one
+DiffPhysDrone implements. The script uses <code>.venv</code> and clears ROS Python paths and CUDA library
+overrides itself.</p>
+<div class="dev"><span class="tag">Existing runs</span>The queue refuses existing run directories and duplicate queues.
+The completed experiment already has these directories. To finish an interrupted run, use <code>train.py --resume</code>, then run
+the rest of the queue.</div>
+
+<h3>Run only the training stage</h3>
+<p><code>train_all.sh</code> trains without evaluation or export. Runs go one after another into <code>runs/&lt;name&gt;/</code>,
+named after the <code>.args</code> file. Use <code>tmux</code> or <code>nohup</code> for long runs.</p>
+<div class="code"><pre>bash scripts/experiments/train_all.sh                        <span class="c"># distance, toa, toa_cbf, then the DiffPhys baseline</span>
+ONLY="toa_cbf" bash scripts/experiments/train_all.sh         <span class="c"># just ours</span>
+ONLY="toa_cbf_charpi" bash scripts/experiments/train_all.sh  <span class="c"># ours on our drone (not in the default list)</span>
+ITERS=2000 ONLY="toa_cbf" bash scripts/experiments/train_all.sh   <span class="c"># short trial run</span></pre></div>
+
+<h3>Choose one policy or resume a checkpoint</h3>
+<p>Pass a config with <code>@</code>; flags after the <code>@file</code> override it. <code>python train.py --help</code>
+lists all flags and defaults.</p>
+<div class="code"><pre>python train.py @configs/toa_cbf.args     <span class="c"># (iii) Ours: TOA + CBF + velocity-aligned yaw</span>
+python train.py @configs/toa.args         <span class="c"># (ii)  TOA + velocity-aligned yaw, no CBF</span>
+python train.py @configs/distance.args    <span class="c"># (i)   Euclidean guidance, goal-facing yaw</span>
+python train.py @configs/toa_cbf_charpi.args   <span class="c"># (iii) on our drone, see below</span>
+python train.py @configs/toa_cbf.args --resume runs/toa_cbf/ckpt_025000.pt   <span class="c"># continue a run</span></pre></div>
+
+<h3>The DiffPhys baseline</h3>
+<p>The baseline runs the authors’ unmodified code and hyperparameters. <code>train_all.sh</code> runs DiffPhysDrone’s
+<code>main_cuda.py</code> with <code>configs/single_agent.args</code> in <code>runs/diffphys/</code>. <code>evaluate.py</code>
+reads its raw checkpoints directly.</p>
+<div class="note"><span class="tag">Baseline checkpoints</span>The baseline script saves only <code>checkpoint0000.pth</code> …
+<code>checkpoint0004.pth</code>, one per 10,000 iterations, so a shorter trial run saves nothing.</div>
+
+<h3 id="timings">Measured run times (RTX 5080)</h3>
+<p>With the default JFA settings (<a href="#train-flags">training flags</a>), a TOA config takes about 1.05–1.09 s per
+iteration (s/it). The TOA field takes 83 % of that, about 0.9 s. That makes about 15 h per 50,000 iterations
+(1.08 s × 50,000 = 54,000 s).</p>
+<p>Rates come from 300-iteration runs of the shipped configs (B = 64, T = 150); the last column extrapolates them.
+The finished runs logged slightly different times, for example 13.69 h for <code>toa_cbf</code> and 15.47 h for charpi
+(<a href="#local-results">local results</a>).</p>
+<div class="table"><table>
+  <thead><tr><th>Config</th><th class="n">s/it</th><th class="n">of which TOA field</th><th class="n">50,000 iterations (estimate)</th></tr></thead>
+  <tbody>
+    <tr><td><code>distance</code></td><td class="n">0.17</td><td class="n">0</td><td class="n">~2.4 h</td></tr>
+    <tr><td><code>toa</code></td><td class="n">1.05</td><td class="n">0.87</td><td class="n">~15 h</td></tr>
+    <tr><td><code>toa_cbf</code></td><td class="n">1.08</td><td class="n">0.90</td><td class="n">~15 h</td></tr>
+    <tr><td><code>toa_cbf_literal_jfa</code></td><td class="n">0.27</td><td class="n">0.09</td><td class="n">~3.8 h</td></tr>
+    <tr><td><code>toa_cbf_charpi</code></td><td class="n">1.09 (first 25: 3.2)</td><td class="n">~0.9</td><td class="n">~15 h</td></tr>
+    <tr><td>DiffPhys baseline (<code>main_cuda.py</code>)</td><td class="n">~0.18 (5.5 it/s)</td><td class="n">–</td><td class="n">~2.5 h</td></tr>
+  </tbody>
+</table></div>
+<p>The paper-literal JFA uses the <a href="paper.html#toa">paper’s propagation rule</a>, Eq. (3)–(4), exactly as printed.
+Its TOA field is about 10× cheaper (0.09 vs. 0.90 s), so a whole iteration runs about 4× faster, but it is much
+less accurate (<a href="#choices-jfa">why</a>).</p>
+<p>Once compiled, charpi adds little (1.09 vs. 1.08 s/it), because the TOA field dominates. Compiling the 100 Hz loop on the first iteration takes about a
+minute, or seconds with a warm Inductor on-disk cache. So the first log line, after 25 iterations, may show about 3.2 s/it:
+a one-time compile, not a hang.</p>
+<details class="technical-detail">
+<summary>Why compiling matters: compiled and eager rollout timings</summary>
+<p>One 150-step rollout plus backward pass (B = 64): compiled charpi 0.105 s, eager charpi 3.6 s, plain
+<code>env.run</code> 0.015 s. Uncompiled, kernel launches dominate, adding about 4 s per rollout.</p>
+</details>
+
+<h3>Outputs and what to watch</h3>
+<ul>
+  <li><code>runs/&lt;variant&gt;/metrics.csv</code> and TensorBoard logs (<code>tensorboard --logdir runs</code>), every 25 iterations;</li>
+  <li><code>ckpt_005000.pt</code>, … every 5,000 iterations (the experiment queue uses 1,000), and <code>final.pt</code> at the end;</li>
+  <li><code>args.json</code> with the exact configuration.</li>
+</ul>
+<div class="table"><table>
+  <thead><tr><th>Metric</th><th>Meaning</th><th>Healthy trend</th></tr></thead>
+  <tbody>
+    <tr><td><code>success</code></td><td>Share of training episodes with no contact (d &gt; 0 at every sub-position); unlike in evaluation, reaching the goal is not required</td><td>Stays high as speed rises</td></tr>
+    <tr><td><code>avg_speed</code></td><td>Mean rollout speed; targets drawn from 3–13 m/s</td><td>Rises from ~0.3 m/s (near hover), then levels off</td></tr>
+    <tr><td><code>loss_v</code></td><td>Velocity tracking</td><td>Falls steadily</td></tr>
+    <tr><td><code>loss_toa</code></td><td>Mean geodesic distance to the goal along the rollout, m (geodesic: length of the shortest route around obstacles, not the straight line)</td><td>Noisy, scales with scene size; judge by <code>loss_v</code> and speed</td></tr>
+    <tr><td><code>cbf_active</code></td><td>Share of sub-positions with h &lt; d<sub>act</sub> (activation distance)</td><td>High (~0.87 at iteration 300 of <code>toa_cbf</code>), mainly because the ground counts as an obstacle (<a href="#choices-ground">why</a>)</td></tr>
+    <tr><td><code>toa_start_reachable</code></td><td>Share of scenes whose start connects to the goal on the grid</td><td>Close to 1; unconnected scenes get no TOA loss</td></tr>
+    <tr><td><code>time_toa</code>, <code>sec_per_iter</code></td><td>Seconds for the TOA field and a full iteration</td><td>Near the <a href="#timings">run times</a> above</td></tr>
+  </tbody>
+</table></div>
+<details class="technical-detail">
+<summary>Early CPU check (200 iterations)</summary>
+<p>A 200-iteration CPU run of the full method used 8 environments and 80 steps. Mean speed went 0.4 → 2.6 m/s,
+<code>loss_v</code> 7.0 → 4.8 and <code>loss_collide</code> 1.1 → about 0.3–0.4. About 90 % of episodes stayed
+collision-free throughout. Real runs are 64 × 150 × 50,000.</p>
+</details>
+<div class="note" id="gpu-memory"><span class="tag">GPU memory</span>If memory runs out, lower <code>--toa_max_voxels</code>
+(e.g. 96) before <code>--batch_size</code>. A full iteration peaks at 2.6 GiB on the RTX 5080 (<code>check_install.py</code>
+reports it). The TOA volume holds <span class="eq">64 × 5 × N<sub>x</sub>N<sub>y</sub>N<sub>z</sub></span> floats, about
+0.6 GB for an example 128 × 128 × 30 grid. Building it needs several times that.</div>
+
+<details class="technical-detail" id="train-flags">
+<summary>Training flags and defaults</summary>
+<div class="table"><table>
+  <thead><tr><th>Flag</th><th class="n">Default</th><th>Note</th></tr></thead>
+  <tbody>
+    <tr><td><code>--cbf_k</code>, <code>--cbf_beta</code>, <code>--cbf_dact</code></td><td class="n">2.5, 2.0, 1.5</td><td>Not given in the paper (<a href="#choices-cbf">choices</a>)</td></tr>
+    <tr><td><code>--coef_cbf</code></td><td class="n">5.0</td><td>The paper’s safety–agility knob; try 2–10</td></tr>
+    <tr><td><code>--toa_mode</code>, <code>--toa_metric</code></td><td class="n">jfa_safe, octile</td><td><code>jfa_safe</code> refuses jumps through obstacles. Octile steps cost δ, √2δ, √3δ (straight, face-, corner-diagonal). <code>jfa</code> + <code>chebyshev</code> (diagonals cost as much as straight steps) is the paper-literal JFA</td></tr>
+    <tr><td><code>--toa_passes</code>, <code>--toa_cleanup</code></td><td class="n">3, 8</td><td>Passes repeat the jump schedule; cleanups are final rounds with jump 1</td></tr>
+    <tr><td><code>--speed_mtp</code></td><td class="n">4</td><td>Training max speed drawn from 3–13 m/s</td></tr>
+    <tr><td><code>--action_mode</code></td><td class="n">paper</td><td><code>diffphys</code>: DiffPhysDrone’s 6-D output with a v<sub>pred</sub> head (extra velocity-prediction output; off by default)</td></tr>
+    <tr><td><code>--collide_use_margin</code></td><td class="n">on</td><td>Subtract m in L<sub>collide</sub>, as DiffPhysDrone does</td></tr>
+    <tr><td><code>--wind_ou</code></td><td class="n">on</td><td>OU wind instead of a constant per-episode wind</td></tr>
+    <tr><td><code>--backend</code></td><td class="n">auto</td><td><code>cuda</code> or <code>torch</code> to force one</td></tr>
+  </tbody>
+</table></div>
+</details>
+
+<h3 id="train-charpi">Train with the charpi drone model</h3>
+<p><code>configs/toa_cbf_charpi.args</code> trains TOA + CBF on charpi. The charpi plant and a 100 Hz controller fly
+each step, with no gradient. DiffPhysDrone’s point mass (<code>env.run</code>) supplies the gradient instead, driven by
+<code>feasible_accel(u)</code>: the command u clipped to what charpi can deliver in level flight. This is a
+straight-through split. The full run and its <a href="#local-results">simulated evaluation</a> are done.</p>
+<p>The policy is still the CNN-GRU at 15 Hz that outputs the Eq. (1) acceleration command. Its observation, losses,
+TOA field, CBF weights and evaluation protocol match <code>toa_cbf</code>. The plant ports
+<code>envs/charpi_physics.py</code> from <code>~/apg/qpg-quad-jax</code>, calibrated on real flights. The controller turns
+the command into the same 4-D throttle + body-rate action that our gate policies use (our team’s deployed policies
+for flying through gates).</p>
+<div class="code"><pre>python train.py @configs/toa_cbf_charpi.args        <span class="c"># writes runs/toa_cbf_charpi/</span>
+ONLY="toa_cbf_charpi" bash scripts/experiments/train_all.sh     <span class="c"># the same through the script</span>
+python train.py @configs/toa_cbf_charpi.args --charpi_br_fit sitl \
+                --out runs/toa_cbf_charpi_sitl      <span class="c"># PX4-SITL fit instead of the real one</span></pre></div>
+<div class="pipeline" aria-label="One policy step with --dynamics charpi">
+  <div><b>Policy · 15 Hz</b>Acceleration command u (Eq. (1)), held for the step; heading from DiffPhysDrone’s yaw filter</div>
+  <div><b>Controller · 100 Hz</b>PX4 tilt-prioritized attitude law → action in [−1, 1]: throttle, roll / pitch / yaw rate</div>
+  <div><b>Plant · 6–7 ticks</b>20 ms delay, slew limiter, rate envelope, 2nd-order rate response, thrust curve, motor lag, drag</div>
+  <div><b>Gradient</b>Straight-through: DiffPhysDrone’s point mass on <code>feasible_accel(u)</code></div>
+</div>
+<ul>
+  <li><strong>Ticks:</strong> a tick is one 10 ms controller + plant step. Policy steps take 7, 6, 7, … ticks
+  (carrying the remainder), so three steps last 0.2 s.</li>
+  <li><strong>Controller:</strong> it copies PX4’s tilt-prioritized attitude control, which gets the thrust direction
+  right first and the yaw second. PX4 is the open-source flight-control software on our drone and on the paper’s.</li>
+  <li><strong>Plant:</strong> the slew limiter caps how fast the commanded body rate changes (rad/s²). The rate
+  envelope is the highest body rate the drone can deliver per axis. The thrust curve is T = 47.3 η² + 9.31 N at throttle η.</li>
+  <li><strong>Forward values, no gradient:</strong> position, velocity and acceleration (<code>env.p</code>,
+  <code>env.v</code>, <code>env.a</code>) and attitude (<code>env.R</code>) come from the plant. So depth images and
+  observations show the simulated roll and pitch.</li>
+  <li><strong>Backward derivatives:</strong> the gradients of <code>env.p</code>, <code>env.v</code> and <code>env.a</code>
+  come from the surrogate, <code>env.run</code> on <code>feasible_accel(u)</code>, for the same step. It uses the fitted
+  lag (5 s⁻¹, 10 % standard deviation per episode) and charpi’s lateral drag (<a href="#choices-charpi">charpi choices</a>).</li>
+  <li><strong>Randomization:</strong> per episode, the plant draws thrust, natural-frequency, damping and motor-lag scales
+  from the DR band. Wind and DiffPhysDrone’s gravity disturbance (a small, slowly drifting random change to gravity) act on it too.</li>
+  <li><strong>Checkpoints</strong> store <code>config["dynamics"] = "charpi"</code> and the plant and controller settings
+  (<code>config["charpi"]</code>) for <code>evaluate.py</code> and <code>export_onnx.py</code>.</li>
+</ul>
+<details class="technical-detail">
+<summary>Charpi flags, controller settings and environment-variable defaults</summary>
+<div class="table"><table>
+  <thead><tr><th>Flag</th><th class="n">Default</th><th>Note</th></tr></thead>
+  <tbody>
+    <tr><td><code>--dynamics</code></td><td class="n">diffphys</td><td><code>charpi</code> enables everything below</td></tr>
+    <tr><td><code>--charpi_br_fit</code></td><td class="n"><code>$GZ_BR_FIT</code>, else real</td><td>Closed-loop body-rate response: <code>real</code> (the real fit, from real CTBR flight logs) or <code>sitl</code> (PX4-SITL + Gazebo)</td></tr>
+    <tr><td><code>--charpi_dr_band</code></td><td class="n"><code>$GZ_DR_BAND</code>, else narrow</td><td>Per-episode randomization band: <code>narrow</code>, <code>real</code> (the real DR band) or <code>off</code></td></tr>
+    <tr><td><code>--charpi_rate_scale</code></td><td class="n">4.0 2.5 3.0</td><td>Body rate at action 1.0, rad/s (roll, pitch, yaw); defaults from <code>$GATE_MAX_RATE_ROLL</code>, <code>_PITCH</code>, <code>_YAW</code></td></tr>
+    <tr><td><code>--charpi_att_gain</code></td><td class="n">6.5 6.5 2.8</td><td>Attitude P gains: PX4 <code>MC_ROLL_P</code>, <code>MC_PITCH_P</code>, <code>MC_YAW_P</code></td></tr>
+    <tr><td><code>--charpi_yaw_weight</code></td><td class="n">0.4</td><td>PX4 <code>MC_YAW_WEIGHT</code></td></tr>
+    <tr><td><code>--charpi_max_tilt</code></td><td class="n">60</td><td>Thrust tilt limit, degrees; must be within (0, 90)</td></tr>
+    <tr><td><code>--charpi_surrogate_lag</code></td><td class="n">5.0</td><td>Surrogate lag, s⁻¹, from <code>scripts/charpi/fit_charpi_surrogate.py</code></td></tr>
+    <tr><td><code>--charpi_disturbances</code></td><td class="n">on</td><td>Training wind (OU, <code>--wind_ou</code>) and gravity disturbance also act on the plant</td></tr>
+    <tr><td><code>--charpi_compile</code></td><td class="n">on</td><td>100 Hz loop as one CUDA graph (GPU calls recorded once, replayed as one launch), CUDA only; <code>--no-charpi_compile</code> runs it eagerly</td></tr>
+  </tbody>
+</table></div>
+<div class="note"><span class="tag">Env-var defaults</span><code>GZ_BR_FIT</code>, <code>GZ_DR_BAND</code> and
+<code>GATE_MAX_RATE_*</code> are environment variables from our qpg-quad-jax and deployment setup. Here they only change
+flag defaults. <code>configs/toa_cbf_charpi.args</code> sets <code>--charpi_br_fit real --charpi_dr_band narrow</code>
+explicitly, so with that file the two <code>GZ_*</code> variables have no effect. To change the fit or band, pass the
+flag after the <code>@file</code>. When a <code>GZ_*</code> value is used as a default, an invalid value stops
+<code>train.py</code> with an error.</div>
+</details>
+<h4 id="charpi-speed">Expect slower acceleration than the point mass</h4>
+<p>Charpi’s acceleration response is about 2.4× slower than the paper’s point mass: fitted lag 5 s⁻¹ against 12 s⁻¹
+(higher = faster; <a href="#choices-charpi">why</a>). Its limits, with formulas in <a href="#export-charpi">export</a>:</p>
+<ul>
+  <li>Hover throttle is about 0.26. Thrust spans 10.4–39.6 N, or 0.83–3.15 g of specific force (thrust divided by mass).</li>
+  <li>In level flight, downward acceleration is at most about 1.7 m/s². At the 0.15 throttle floor, thrust still gives
+  8.1 m/s² upward against gravity’s 9.81 m/s².</li>
+  <li>Pitch rate is at most 2.5 rad/s; angular acceleration at most 50–60 rad/s².</li>
+</ul>
+<p>Early training is slower too. After 300 full-size iterations on the RTX 5080, charpi reached training success 0.84
+at 1.8 m/s mean speed. <code>toa_cbf</code> on the point mass reached 0.92 at 3.9 m/s. Do not draw conclusions from
+these early checks; read the <a href="#local-results">local results</a> first.</p>
+</section>
+
+<!-- ============================================================ -->
+<section id="evaluation">
+<h2><span class="num">07</span>Evaluate a policy and read the results</h2>
+<p class="section-lead"><code>evaluate.py</code> flies a policy through test scenes that copy the paper's protocol;
+<code>compare.py</code> turns the outcomes into tables. The finished results are below
+(<a href="#local-results">local results</a>): on the point mass, they did not reproduce the paper's advantage.</p>
+<p>The paper's simulation tests used Flightmare, with its Hummingbird quadrotor model and SGM depth (semi-global
+matching: a stereo algorithm that turns two camera images into a depth map). This repository re-creates the test
+protocol in the Python simulator used for training (<a href="#choices-eval">what differs</a>):</p>
+<ul>
+  <li><strong>Scenario 1, forest corridor:</strong> vertical cylinder trunks (radius 0.25–0.5 m) placed by a Poisson
+  process: independently at random, at a fixed average density. Mean spacing s = 5, 4 or 3 m gives on average one
+  tree per s × s square meters (9 m² at s = 3 m).</li>
+  <li><strong>Scenario 2, large obstacles:</strong> spheres (radius 1–2.5 m), columns (radius 0.5–2 m), boxes
+  (half-sizes 0.5–2.5 m).</li>
+  <li><strong>Route:</strong> 35 m straight, 1 m above the ground; 40 trials at each target speed: 3, 5, 7 and 9 m/s.</li>
+  <li><strong>Success</strong> (in evaluation): within 5 m of the end, no contact, before time-out.
+  <strong>Failure:</strong> contact (collision radius 0.15 m) or time-out at 3 × 35 m / v + 5 s (26 s at 5 m/s).</li>
+  <li><strong>Paired comparison:</strong> trial <em>i</em> uses the same scene for every speed and method.</li>
+  <li><strong>Depth noise:</strong> 0.25 px on the disparity (pixel shift between the two images) of a 640-px camera
+  pair with a 0.1 m stereo baseline (camera spacing). Error grows with distance squared: about 0.16 m at 5 m, 0.64 m
+  at 10 m. <code>--depth_noise none</code> turns it off.</li>
+</ul>
+<p>The commands below fly checkpoints through these scenes and build tables shaped like the paper's <a href="paper.html#experiments">Table II</a> (ablation: Distance vs. TOA
+vs. TOA + CBF) and Table III (benchmark: TOA + CBF vs. the DiffPhys baseline):</p>
+<div class="code"><pre>bash scripts/experiments/eval_all.sh     <span class="c"># all runs, forest 5/4/3 m + large obstacles, then the tables</span>
+
+<span class="c"># or individually</span>
+python evaluate.py --ckpt runs/toa_cbf/final.pt --name toa_cbf --scenario forest --spacing 3 \
+                   --plot results/toa_cbf_forest_s3.png
+python evaluate.py --ckpt runs/diffphys/checkpoint0004.pth --name diffphys --scenario large
+
+<span class="c"># Table II: ablation, one block per forest density, p-values vs. ours</span>
+python compare.py results/{distance,toa,toa_cbf}_forest_s{5,4,3}.json --ours toa_cbf
+<span class="c"># Table III: pooled over forest (3 m) + large obstacles = 80 trials per cell</span>
+python compare.py results/{diffphys,toa_cbf}_{forest_s3,large}.json --pool --ours toa_cbf \
+                  --plot results/sr_vs_speed.png</pre></div>
+<p>Each JSON in <code>results/</code> stores every trial's outcome, time, path length, mean and peak speed and minimum
+clearance, plus the first three trajectories and scenes. <strong>Vel</strong> is the mean over trials of path length
+÷ flight time.</p>
+<p>By default, evaluation uses nominal dynamics (no random parameter scaling). <code>--randomize_dynamics</code>
+randomizes drag, delay and thrust error as in training; for charpi, within the checkpoint’s DR band.</p>
+
+<h3 id="local-results">Local results (2026-10-03)</h3>
+<p><strong>The paper's ordering is not reproduced: on the point mass, TOA + CBF did not beat the DiffPhys baseline.
+In the charpi simulation, training on charpi raised SR.</strong> The paper's TOA + CBF advantage was a claim to test
+here, not a given. Our simulator, trees, depth and vehicle differ from Flightmare.</p>
+<p>All five methods trained for 50,000 iterations on the RTX 5080, one seed each. Training times from the logged
+per-iteration averages: charpi 15.47 h, TOA + CBF 13.69 h, TOA 13.33 h, Distance 2.23 h. The whole queue, with the
+DiffPhys baseline, evaluation and export, took about 47 h (<a href="#overview">status</a>).</p>
+<p>Output: 21 result JSONs (3,360 trials), three tables, figures and five ONNX exports. Evaluation used the protocol
+above with seed 0, stereo depth noise and nominal dynamics (<code>--randomize_dynamics</code> off). These are local
+Python simulations, not the paper's Flightmare results.</p>
+<div class="table"><table>
+  <thead><tr><th>Point mass: forest (3 m) + large, SR</th><th class="n">3 m/s</th><th class="n">5 m/s</th><th class="n">7 m/s</th><th class="n">9 m/s</th></tr></thead>
+  <tbody>
+    <tr><td>DiffPhys baseline</td><td class="n">92.5 %</td><td class="n">91.25 %</td><td class="n">92.5 %</td><td class="n">91.25 %</td></tr>
+    <tr><td>TOA + CBF</td><td class="n">78.75 %</td><td class="n">83.75 %</td><td class="n">87.5 %</td><td class="n">92.5 %</td></tr>
+    <tr><td>p</td><td class="n">0.023</td><td class="n">0.231</td><td class="n">0.430</td><td class="n">1.000</td></tr>
+  </tbody>
+</table></div>
+<p>Each cell pools 80 trials, 40 per scenario. The p row gives unadjusted p-values from a two-sided Fisher exact test.
+A p-value is the chance of a difference this large if the methods were equal. Unadjusted means no correction for
+running many tests.</p>
+<p>DiffPhys is significantly better only at 3 m/s (p = 0.023); the other differences are not significant. In the dense forest (3 m spacing),
+Distance also scores higher than TOA + CBF at every speed, though not significantly.</p>
+<div class="table"><table>
+  <thead><tr><th>Simulated charpi, forest (3 m), SR</th><th class="n">3 m/s</th><th class="n">5 m/s</th><th class="n">7 m/s</th><th class="n">9 m/s</th></tr></thead>
+  <tbody>
+    <tr><td>TOA + CBF trained on point mass</td><td class="n">75 %</td><td class="n">85 %</td><td class="n">72.5 %</td><td class="n">60 %</td></tr>
+    <tr><td>TOA + CBF trained on charpi</td><td class="n">95 %</td><td class="n">95 %</td><td class="n">100 %</td><td class="n">95 %</td></tr>
+    <tr><td>p</td><td class="n">0.025</td><td class="n">0.263</td><td class="n">&lt;0.001</td><td class="n">&lt;0.001</td></tr>
+    <tr><td>Vel, charpi-trained (m/s)</td><td class="n">2.36</td><td class="n">3.61</td><td class="n">4.50</td><td class="n">4.86</td></tr>
+  </tbody>
+</table></div>
+<p>Each cell has 40 trials. Headers are requested speeds; the Vel row is the actual mean speed. The SR gain is
+significant at 3, 7 and 9 m/s, not at 5 m/s. These results support training on the calibrated charpi model, in
+simulation only.</p>
+<p>All p-values in this section are unadjusted and come from one training seed.</p>
+<h4>Open the saved experiment</h4>
+<ul>
+  <li><strong>Comparisons:</strong> <a href="../results/table2_ablation.md"><code>results/table2_ablation.md</code></a>, <a href="../results/table3_benchmark.md"><code>results/table3_benchmark.md</code></a>
+  and <a href="../results/table_charpi.md"><code>results/table_charpi.md</code></a>.</li>
+  <li><strong>Policies:</strong> each <code>runs/&lt;name&gt;/</code> holds its checkpoint, ONNX graph and
+  <code>policy.json</code>. The baseline checkpoint is <code>checkpoint0004.pth</code>; the others are <code>final.pt</code>.</li>
+  <li><strong>Source:</strong> <code>runs/experiment_source.tar.gz</code>, frozen before the run.</li>
+  <li><strong>ONNX checks:</strong> all five graphs pass validation and a recurrent parity check: ONNX vs. PyTorch
+  outputs over several steps, with the GRU memory state fed back. Largest absolute error on the checked inputs:
+  0.0000034.</li>
+</ul>
+
+<h3 id="eval-charpi">Evaluate a policy on the charpi model</h3>
+<p class="section-lead">By default, <code>evaluate.py</code> flies a checkpoint on the plant it was trained on. To test
+transfer between simulated vehicles, fly a point-mass checkpoint on charpi with <code>--dynamics charpi</code>.</p>
+<ul>
+  <li><code>--dynamics auto | diffphys | charpi</code> picks the plant; the default, <code>auto</code>, is the training plant.</li>
+  <li>Plant and controller settings come from the checkpoint. A point-mass checkpoint gets the defaults: the
+  <code>real</code> fit, the <code>narrow</code> DR band and PX4 gains.</li>
+  <li><code>--charpi_br_fit real | sitl</code> overrides the body-rate fit. <code>--randomize_dynamics</code> samples
+  the DR band (otherwise off). <code>--charpi_compile</code> is on by default, as in training.</li>
+  <li>Both plants fly without wind. The gravity disturbance starts at zero, then drifts as in DiffPhysDrone’s
+  <code>env.run</code>.</li>
+</ul>
+<div class="code"><pre>python evaluate.py --ckpt runs/toa_cbf_charpi/final.pt --scenario forest --spacing 3
+<span class="c">#   trained on charpi, flown on charpi       -&gt; results/toa_cbf_charpi_forest_s3.json</span>
+python evaluate.py --ckpt runs/toa_cbf/final.pt --dynamics charpi --scenario forest --spacing 3
+<span class="c">#   the paper's policy flown on our drone    -&gt; results/toa_cbf_on_charpi_forest_s3.json</span>
+<span class="c"># the same policy on the PX4-SITL fit; give --name, the default name does not record the fit</span>
+python evaluate.py --ckpt runs/toa_cbf_charpi/final.pt --charpi_br_fit sitl --name toa_cbf_charpi_sitl \
+                   --scenario forest --spacing 3
+python compare.py results/toa_cbf_on_charpi_forest_s3.json results/toa_cbf_charpi_forest_s3.json \
+                  --ours toa_cbf_charpi</pre></div>
+<div class="table"><table>
+  <thead><tr><th>Checkpoint trained on</th><th><code>--dynamics</code></th><th>Default <code>--name</code> (variant <code>toa_cbf</code>)</th></tr></thead>
+  <tbody>
+    <tr><td>point mass</td><td>auto, diffphys</td><td><code>toa_cbf</code></td></tr>
+    <tr><td>charpi</td><td>auto, charpi</td><td><code>toa_cbf_charpi</code></td></tr>
+    <tr><td>point mass</td><td>charpi</td><td><code>toa_cbf_on_charpi</code></td></tr>
+    <tr><td>charpi</td><td>diffphys</td><td><code>toa_cbf_charpi_on_diffphys</code></td></tr>
+  </tbody>
+</table></div>
+<p>Default names include the plant, so charpi runs do not overwrite <code>results/toa_cbf_*.json</code>. They omit the
+body-rate fit, so give each alternate fit its own <code>--name</code>, as in the SITL example.</p>
+<p><code>eval_all.sh</code> evaluates <code>runs/toa_cbf_charpi/final.pt</code>, if present, in 5, 4 and 3 m forests
+and among large obstacles. If <code>runs/toa_cbf/final.pt</code> also exists, it flies that policy on charpi
+(<code>toa_cbf_on_charpi</code>, forest 3 m). Output:
+<a href="../results/table_charpi.md"><code>results/table_charpi.md</code></a>.</p>
+
+<details class="technical-detail">
+<summary>Old 300-iteration smoke test (superseded)</summary>
+<p>A smoke test is a quick early check that something runs and behaves plausibly, not a final result. Here,
+<code>toa_cbf</code> weights after 300 iterations on DiffPhysDrone's point mass flew the same 40 forest scenes (3 m
+spacing) on each plant:</p>
+<div class="table"><table>
+  <thead><tr><th>Plant flown</th><th class="n">3 m/s</th><th class="n">5 m/s</th><th class="n">7 m/s</th><th class="n">9 m/s</th></tr></thead>
+  <tbody>
+    <tr><td>Point mass (trained on)</td><td class="n">47.5 % / 10</td><td class="n">60 % / 9</td><td class="n">60 % / 8</td><td class="n">60 % / 11</td></tr>
+    <tr><td>charpi (<code>--dynamics charpi</code>)</td><td class="n">27.5 % / 25</td><td class="n">30 % / 25</td><td class="n">12.5 % / 35</td><td class="n">15 % / 32</td></tr>
+  </tbody>
+</table></div>
+<p>Cells: SR / collisions out of 40. Collisions roughly tripled on the slower charpi model, which motivated training on
+charpi.</p>
+<div class="dev"><span class="tag">Caveat</span>Not a result about trained policies. These policies had only 300
+iterations (far from trained) and one seed, and were measured before the final review fixes to the charpi code. A 300-iteration charpi-trained policy (final
+code) scores 0 % SR at 3–9 m/s, almost all time-outs at about 1 m/s, as expected this early. The final-code, 50,000-iteration
+<a href="#local-results">local results</a> supersede these numbers.</div>
+</details>
+</section>
+
+<!-- ============================================================ -->
+<section id="figures">
+<h2><span class="num">08</span>Plot results and export a policy</h2>
+<p class="section-lead">The experiment queue already made the figures and exported all five policies. Use these
+commands to redraw a figure or export another checkpoint.</p>
+<h3>Plot the TOA field (paper Fig. 3)</h3>
+<div class="code"><pre>python viz_toa.py --scene fig3  --out results/toa_fig3.png     <span class="c"># 2-D layout like Fig. 3</span>
+python viz_toa.py --scene train --env 3 --out results/toa_train.png   <span class="c"># a random training scene</span></pre></div>
+<figure>
+  <img src="figures/toa_fig3.png" alt="Three heat maps of geodesic distance to the goal around circular and rectangular obstacles: the paper-literal JFA shows blocky artifacts; the default JFA and the BFS reference look alike." width="2037" height="606">
+  <figcaption>Geodesic distance to the goal (star) and descent direction −∇Φ, on the
+  <a href="paper.html#toa">paper's Fig. 3</a> layout. Left: paper-literal JFA (Eq. (3)–(4)), 13.3 % mean error
+  against BFS, blocky axis-aligned gradients. Middle: default JFA (<code>jfa_safe</code>, octile costs, 3 passes),
+  0.5 % mean error in 32 iterations. Right: BFS reference (<a href="#choices-jfa">why they differ</a>).</figcaption>
+</figure>
+<h3>Plot trajectories (paper Fig. 4) and success rate</h3>
+<p><code>evaluate.py --plot</code> draws each stored scene from above, x forward as in the paper, one panel per speed.
+Trajectories are shaded by speed; ends are marked reached (○), collision (×) or time-out (□).
+<code>compare.py --plot</code> draws success rate against speed for all methods.</p>
+<h3>Export a policy to ONNX</h3>
+<div class="code"><pre>python export_onnx.py --ckpt runs/toa_cbf/final.pt      <span class="c"># writes policy.onnx + policy.json</span></pre></div>
+<p>The export writes <code>policy.onnx</code> and <code>policy.json</code> next to the checkpoint. The JSON tells an
+onboard node how to prepare inputs and read outputs:</p>
+<ul>
+  <li><strong>Depth:</strong> 48×64, normalized as <span class="eq">3 / clamp(D, 0.3, 24) − 0.6</span> (5 m maps to 0),
+  then max-pooled to 12×16.</li>
+  <li><strong>State:</strong> 10 numbers in the gravity-aligned heading frame: axes that turn with the drone's heading
+  but keep z vertical.</li>
+  <li><strong>Memory:</strong> a 192-number GRU state, fed back each step.</li>
+  <li><strong>Output:</strong> converted to a world-frame acceleration command at 15 Hz.</li>
+</ul>
+<p>No ROS node is included.</p>
+
+<h3 id="export-charpi">Export a charpi checkpoint</h3>
+<p class="section-lead">A charpi export adds a recipe for the 100 Hz controller that runs between 15 Hz policy outputs.</p>
+<div class="dev"><span class="tag">Validation scope</span>The export and recurrent parity checks passed. The exported
+policy has not been validated on a physical drone (<a href="#overview">scope</a>).</div>
+<div class="code"><pre>python export_onnx.py --ckpt runs/toa_cbf_charpi/final.pt</pre></div>
+<p>For a charpi checkpoint, <code>policy.json</code> sets <code>"dynamics": "charpi"</code> and adds a
+<code>"low_level"</code> block. A point-mass checkpoint sets <code>"diffphys"</code> and has no such block. The reference controller is <code>ctbr_controller</code> in
+<code>toanav/charpi.py</code>. The heading filter is DiffPhysDrone’s <code>update_state_vec</code>, called by
+<code>env.run</code>.</p>
+<p><strong>Implement the full heading recipe and use the checkpoint’s settings.</strong> A shortened heading filter
+caused errors up to 82° on braking reversals. <code>policy.json</code> holds the checkpoint's gains, tilt limit and
+rate scale. The defaults are in the <a href="#train-charpi">charpi flag table</a>.</p>
+<details class="technical-detail">
+<summary>Low-level JSON keys and the 100 Hz controller recipe</summary>
+<dl class="term-list">
+  <dt>EKF</dt><dd>Extended Kalman filter: PX4's estimate of position and attitude.</dd>
+  <dt>ENU / FLU</dt><dd>World axes east-north-up; body axes forward-left-up.</dd>
+  <dt>Quaternion [x, y, z, w]</dt><dd>Four-number rotation, scalar w last.</dd>
+  <dt>f, f<sub>lim</sub>, z<sub>body</sub></dt><dd>Desired specific force (u + gravity), its tilt-limited version, the body's up axis.</dd>
+</dl>
+<div class="table"><table>
+  <thead><tr><th>Key</th><th>Content</th></tr></thead>
+  <tbody>
+    <tr><td><code>rate_hz</code>, <code>inputs</code></td><td>100 Hz. Inputs: the held u of the latest policy step, the heading setpoint and attitude q from the EKF (world ENU, body FLU, quaternion [x, y, z, w])</td></tr>
+    <tr><td><code>heading</code></td><td>DiffPhysDrone's yaw filter, once per policy step, on its own unit state. Include the renormalization and the step that makes it perpendicular to the thrust direction</td></tr>
+    <tr><td><code>thrust_direction</code></td><td><span class="eq">f = u + (0, 0, 9.81)</span>, f<sub>z</sub> ≥ 0.1 g, tilt limited to 60° by scaling f<sub>xy</sub></td></tr>
+    <tr><td><code>attitude</code>, <code>att_gain</code>, <code>yaw_weight</code></td><td>PX4 <code>bodyzToAttitude</code>, then <code>AttitudeControl::update</code>, with the checkpoint's gains and yaw weight</td></tr>
+    <tr><td><code>collective_thrust</code></td><td><span class="eq">T = 1.279 · max(f<sub>lim</sub> · z<sub>body</sub>, f<sub>z</sub> / max(z<sub>body,z</sub>, 0.3))</span> N (mass 1.279 kg). Normalized throttle η inverts <span class="eq">T = 47.3 η² + 9.31</span> and is clamped to the deployed range [0.15, 0.8]. Hover: 1.279 × 9.81 ≈ 12.5 N, so η ≈ 0.26</td></tr>
+    <tr><td><code>vertical_envelope</code></td><td>The vertical acceleration charpi can reach in level flight: u<sub>z</sub> ∈ [−1.70, +21.1] m/s² at nominal thrust. With the DR thrust scale up to 1.2, the floor rises to about 0: the vehicle can barely descend. The training gradient ignores command parts outside the envelope</td></tr>
+    <tr><td><code>action</code>, <code>rate_scale</code></td><td><span class="eq">a[0] = 2 (η − 0.15) / 0.65 − 1</span> (hover: about −0.66); <span class="eq">a[1:4] = clamp(rate_sp / rate_scale, −1, 1)</span>. Default rate scale: 4.0 / 2.5 / 3.0 rad/s, the same as <code>GATE_MAX_RATE_*</code></td></tr>
+    <tr><td><code>trained_plant</code></td><td>The body-rate fit and DR band the policy was trained on</td></tr>
+  </tbody>
+</table></div>
+<p>On the companion computer (the onboard computer that runs the policy and sends commands to PX4):</p>
+<ol>
+  <li>At 15 Hz, run <code>policy.onnx</code> exactly as for the paper's policy to get the world acceleration command u.
+  Advance the heading filter.</li>
+  <li>At 100 Hz, turn the held u, heading setpoint and current attitude into the 4-D action with the
+  <code>low_level</code> recipe.</li>
+  <li>Publish it exactly like <code>rl_infer</code>, our onboard node that runs gate policies and publishes throttle and
+  body-rate setpoints. Throttle: <span class="eq">throttle_norm = 0.15 + (a[0] + 1) / 2 · 0.65</span> ∈ [0.15, 0.8].
+  Body rates (body FLU): <span class="eq">br_setpoint = a[1:4] · GATE_MAX_RATE_*</span> (4.0 / 2.5 / 3.0 rad/s).</li>
+</ol>
+</details>
+
+<h3 id="sitl">Fly the charpi policy in PX4 SITL + Gazebo</h3>
+<p class="section-lead">The charpi policy also flies in PX4 SITL (software-in-the-loop: the real PX4 firmware
+on a simulated drone) with Gazebo Harmonic, through the same software path as our real drone. On the same
+trials it succeeds as often as in the Python simulation, 3–4 % slower.</p>
+<div class="dev"><span class="tag">Validation scope</span>This is a second simulator, not a flight test.
+The policy still has not flown on the physical drone.</div>
+<p>A C++ node, <code>toa_nav_node</code> in <code>realflight_ws/src/rl_infer_cpp</code>, runs
+<code>policy.onnx</code> at 15 Hz and the charpi 100 Hz controller, and sends throttle and body rates to PX4
+while the offboard state machine is in body-rate mode, the same way as our gate policies. Its state comes
+from the PX4 EKF. Gazebo renders the 64 × 48 depth image from a camera at the vehicle position, pitched up
+20°, at 100 Hz; the node adds the evaluation's stereo noise. Each <code>evaluate.py</code> trial becomes a
+Gazebo world with the same obstacles (<code>sitl/make_gz_world.py</code>, ground at z = 0, so gz z = training
+z + 1). Each flight is scored with the <code>evaluate.py</code> rules on Gazebo's ground-truth pose, so a SITL
+trial pairs one to one with the Python trial of the same seed. <code>sitl/README.md</code> has every command.</p>
+<div class="code"><pre><span class="c"># 10 forest trials x 4 speeds, a fresh simulator per run, scored and paired with results/</span>
+sitl/run_trials.sh --scenario forest --spacing 3 --trials 10 --speeds 3 5 7 9
+python sitl/plot_compare.py sitl_runs/&lt;out&gt;     <span class="c"># paths and SR/speed, SITL vs Python</span>
+<span class="c"># by hand (sitl/README.md): MicroXRCEAgent, sitl_charpi_nav.sh &lt;world.sdf&gt;,</span>
+<span class="c"># ros2 launch offboard_state_machine interactive_test.launch.py task:=toa_nav, then type ttt, wait, nnn</span></pre></div>
+<div class="table"><table>
+  <thead><tr><th>Same 10 trials per speed (seed 0), SR Python / SITL</th><th class="n">3 m/s</th><th class="n">5 m/s</th><th class="n">7 m/s</th><th class="n">9 m/s</th><th class="n">Vel Python / SITL (m/s)</th></tr></thead>
+  <tbody>
+    <tr><td>Forest, 3 m spacing</td><td class="n">100 / 100 %</td><td class="n">100 / 100 %</td><td class="n">100 / 100 %</td><td class="n">100 / 100 %</td><td class="n">4.05 / 3.93</td></tr>
+    <tr><td>Large obstacles</td><td class="n">90 / 90 %</td><td class="n">100 / 100 %</td><td class="n">100 / 100 %</td><td class="n">90 / 100 %</td><td class="n">4.33 / 4.17</td></tr>
+  </tbody>
+</table></div>
+<p>The SITL path usually lies on top of the Python path (median distance 0.09 m on the plotted trials). In a few
+runs it passes an early tree on the other side and continues on its own route. A 30 Hz camera gave the same success
+rate, but its frames are up to 36 ms older than training's; on these 12 plotted pairs it split off 3 times
+against 2 at 100 Hz, so 100 Hz is the default. The node ends a run if its pose or depth feed goes stale;
+such runs are not counted (a loaded machine can stall Gazebo). The two large-obstacle failures are time-outs in
+trial 7: at 3 m/s both simulators time out; at 9 m/s only the Python run does.</p>
+<figure>
+  <img src="figures/sitl_forest_s3_paths.png" alt="Twelve top-down panels, rows 3, 5, 7 and 9 m/s, columns forest trials 0 to 2: the orange SITL path lies on the blue Python path in ten panels; in trial 2 at 5 and 9 m/s it passes a tree on the other side." width="1560" height="1219">
+  <figcaption>Forest (3 m spacing), trials 0–2: Python simulation (blue) and PX4 SITL + Gazebo (orange); all
+  24 flights reach the 5 m goal zone (dashed).</figcaption>
+</figure>
+<p><strong>Timing the deployment must keep.</strong> The trained loop applies each acceleration command one policy
+period (67 ms) after the state it was computed from, and feeds the depth image from one period earlier
+(<code>evaluate.py</code>, <code>act_buffer</code>). <code>policy.json</code> does not say this. <code>toa_nav_node</code>
+reproduces it by default (<code>action_delay_steps</code> and <code>obs_delay_steps</code> = 1). Replaying two
+recorded Python flights through the node's code and the ONNX graph matches within 1e-5
+(<code>sitl/make_reference.py</code>, <code>toa_validate</code>).</p>
+<details class="technical-detail">
+<summary>What still differs from the Python simulation</summary>
+<ul>
+  <li>PX4's body-rate loop in this airframe is 2–3× slower than the real-flight fit the policy trained on. The Python
+  prediction for it (<code>evaluate.py --charpi_br_fit sitl</code>, forest 3 m): SR 97.5 / 97.5 / 95 / 90 % at
+  3 / 5 / 7 / 9 m/s.</li>
+  <li>Gazebo's thrust curve differs from the trained one: about 2 % at hover, 45 % steeper slope around it.</li>
+  <li>The state is the PX4 EKF estimate, not the true state. Gazebo depth is clean planar depth; noise comes only
+  from the node's stereo model.</li>
+  <li>Obstacles in batch worlds are visual only, as in <code>evaluate.py</code>: contact with Gazebo's collision
+  shapes near large obstacles slowed the simulator to a real-time factor of 0.3–0.6, and the node's timers run on
+  wall time.</li>
+  <li>The camera sits at the vehicle position like in training; the real cameras are about 0.1 m ahead.</li>
+</ul>
+</details>
+</section>
+
+<!-- ============================================================ -->
+<section id="choices">
+<h2><span class="num">09</span>Where this code differs from the paper</h2>
+<p class="section-lead">Where the <a href="paper.html">paper</a> leaves a detail open, or a printed equation misbehaves,
+this code makes its own choice. Flags restore the paper’s or DiffPhysDrone’s behavior where noted.
+Read these before comparing results with the paper or changing loss weights.</p>
+<ul>
+  <li><strong>TOA field:</strong> the default JFA (<code>jfa_safe</code>) checks for walls and stays within 0.2–0.3 % of BFS on average. The paper-literal JFA builds the field about 10× faster but much less accurately.</li>
+  <li><strong>CBF loss:</strong> constants chosen here; the ground counts as an obstacle.</li>
+  <li><strong>Evaluation:</strong> a Python re-creation of the paper’s Flightmare tests, with simpler obstacles and depth sensor.</li>
+  <li><strong>Charpi:</strong> a simulated model of our own drone, outside the paper’s reproduction.</li>
+</ul>
+
+<details class="technical-detail" id="choices-jfa">
+<summary>Default JFA versus the paper-literal JFA</summary>
+<p>The paper-literal JFA applies Eq. (3), the paper’s JFA update, as printed. Its TOA field is about 10× cheaper to
+compute (<a href="#timings">run times</a>), but it can leak through thin walls.</p>
+<p>The default JFA (<code>jfa_safe</code>) splits each jump into axis-aligned legs and accepts a leg only if every voxel on
+it is free, so it never crosses a wall. A step to a neighbor voxel costs δ, √2δ or √3δ (octile costs). Three passes
+plus 8 cleanups take 29–32 iterations; BFS needs about 130.</p>
+<p>Eq. (3) takes the minimum over a dilated 3×3×3 window (neighbors k voxels apart) and adds <span class="eq">k·δ</span>.
+Here k is the jump length in voxels, not the CBF gain. Diagonal steps then cost the same as axis steps (Chebyshev metric).
+At δ = 0.2 m, a diagonal step in a plane costs 0.2 m, not about 0.28 m. So ∇Φ points along the dominant axis.
+A k-voxel jump can also skip obstacles thinner than k voxels: in a U-shaped trap the start distance is over 20 % too
+short. Cleanups only lower values, so they cannot repair such a leak.</p>
+<div class="table"><table>
+  <thead><tr><th>Error vs. BFS</th><th>Default JFA</th><th>Paper-literal JFA</th></tr></thead>
+  <tbody>
+    <tr><td>Mean, 24 DiffPhysDrone training scenes</td><td>0.2–0.3 %, no unreached voxels</td><td>6–8 %</td></tr>
+    <tr><td>Worst single voxel</td><td>~20 % too short, where a diagonal cuts an obstacle corner</td><td>50–64 % too short</td></tr>
+    <tr><td>Mean, Fig. 3 layout (our 2-D scene modeled on the paper’s TOA-field figure)</td><td>0.5 %</td><td>13.3 %</td></tr>
+  </tbody>
+</table></div>
+<p>Select the paper-literal JFA with <code>--toa_mode jfa --toa_metric chebyshev --toa_passes 1 --toa_cleanup 4</code>
+or <code>configs/toa_cbf_literal_jfa.args</code>.</p>
+</details>
+
+<details class="technical-detail" id="choices-grid">
+<summary>How the grid covers long routes and inflates obstacles</summary>
+<p>Voxels grow beyond δ = 0.2 m on long routes. At 0.2 m, at most 128 voxels per axis span only 25.6 m, but
+DiffPhysDrone’s high-speed training scenes put start and goal up to about 120 m apart. Over 24 scenes at the default
+<code>--speed_mtp 4</code>, the median voxel is 0.58 m, the largest 0.9 m. At <code>--speed_mtp 1</code> it stays 0.2 m.</p>
+<p>So obstacles are inflated by 0.2 m (one voxel at the paper’s δ), not one voxel of any size. At the coarse voxel
+sizes, one-voxel inflation cut the start off from the goal in 12 % of those scenes; 0.2 m inflation, in 4 %.
+A voxel is occupied within half a voxel of a primitive. The grid bottom sits half a voxel above the ground, and the grid edge acts as a wall.</p>
+</details>
+
+<details class="technical-detail" id="choices-cbf">
+<summary>CBF constants chosen here, and how to tune braking</summary>
+<p>The paper gives no values for k, β, d<sub>act</sub> or M. The defaults are k = 2.5 s⁻¹, β = 2, d<sub>act</sub> = 1.5 m
+and M = 10 sub-positions (DiffPhysDrone’s <code>sub_div</code>). Clearance is h = d − m, with d the exact distance to the
+nearest surface minus the drone’s radius. The loss penalizes closing faster than k·h
+(<a href="#overview">worked example</a>).</p>
+<p>If the policy is too timid at 9 m/s, raise <code>--cbf_k</code> or lower <code>--coef_cbf</code>. If it clips
+obstacles, do the opposite.</p>
+</details>
+
+<details class="technical-detail" id="choices-ground">
+<summary>Why the ground keeps the CBF active</summary>
+<p>The ground counts as an obstacle, so <code>cbf_active</code> is about 0.87 in training. The losses’ obstacle set
+(<code>toanav/geometry.scene_sdf</code>) holds the ground plane z = −1 m beside the primitives, and training starts
+0.4–1.5 m above it. With d<sub>act</sub> = 1.5 m, every point on the start → goal lines is within the activation distance
+(69 % without the ground). The CBF also caps descent speed near the ground at k·h.</p>
+<p>The paper does not say whether its obstacle set includes the ground. This is an observation only: no code change, no flag.</p>
+</details>
+
+<details class="technical-detail">
+<summary>Why the losses use exact signed distances</summary>
+<p>DiffPhysDrone’s <code>find_nearest_pt</code> gives the right direction but a wrong distance for spheres and cylinders
+(<span class="eq">o + dist·(c − o)</span>, not normalized). The losses here use exact signed distances from
+<code>toanav/geometry.py</code>, with a straight-through gradient along the surface normal. The PyTorch fallback copies the
+original behavior, wrong distance included, so the DiffPhys baseline is unaffected.</p>
+</details>
+
+<details class="technical-detail">
+<summary>Collision loss: speed floor and clearance margin</summary>
+<p>The collision loss, Eq. (9), follows DiffPhysDrone: sharpness α = 32 (not Eq. (2)’s α), and approach speed from the
+M sub-positions, floored at 1 m/s instead of 0. So a drone near a wall is penalized even while moving away.
+<code>--collide_vmin 0</code> gives the strict (·)⁺, the positive part max(0, ·).</p>
+<p>The clearance margin m is also subtracted from d (<code>--no-collide_use_margin</code> turns this off). Without it, m
+would do nothing in the Distance and TOA variants, though the paper says all variants share one observation.</p>
+</details>
+
+<details class="technical-detail">
+<summary>Paper action output versus DiffPhysDrone’s</summary>
+<p>The paper’s control law, Eq. (1), uses the measured velocity v<sub>t</sub> and a 3-D output. DiffPhysDrone instead
+predicts a velocity with a second head. The default follows the paper; <code>--action_mode diffphys</code> restores
+DiffPhysDrone’s version.</p>
+</details>
+
+<details class="technical-detail">
+<summary>Goal guidance, scene randomization and wind</summary>
+<p>L<sub>v</sub> and the observed target velocity keep the straight-line (Euclidean) goal direction, as the paper’s loss
+section (Sec. III-D) says. The geodesic distance enters only through L<sub>toa</sub>.</p>
+<p>Scenes and randomization are DiffPhysDrone’s single-agent settings: max speed 3–13 m/s, ground hills, random yaw
+rotation, yaw drift, camera pitch 20°, FOV tan 0.82. The paper lists these but gives no values. Wind is an OU process
+with a 2 s time constant, not a constant per episode.</p>
+</details>
+
+<details class="technical-detail" id="choices-eval">
+<summary>What the local evaluation does and does not reproduce</summary>
+<p>The <a href="#evaluation">local evaluation</a> re-creates the paper’s protocol in Python, without:</p>
+<ul>
+  <li>Flightmare/Unity or the Hummingbird model;</li>
+  <li>SGM stereo from a 640×480 camera at 15 Hz (a stereo error model stands in);</li>
+  <li>the EGO-Planner and Agile baselines;</li>
+  <li>the F250 quadrotor, or any real flight.</li>
+</ul>
+<p>Trees are bare cylinders, without branches or foliage. Large-obstacle sizes are our guesses from Fig. 4(a), the paper’s
+trajectory plot in the large-obstacle corridor. Evaluation uses nominal dynamics (on the charpi plant: DR off),
+collision radius 0.15 m and clearance margin m = 0.2 m.</p>
+</details>
+
+<h3 id="choices-charpi">Choices for the charpi simulation</h3>
+<p>Charpi goes beyond the paper. The paper’s point mass follows an acceleration command through a first-order lag.
+Charpi takes throttle + body-rate commands, so an attitude controller sits between policy and plant.
+The plant flies the drone; a simpler surrogate supplies the gradient (<a href="#train-charpi">how training uses them</a>).</p>
+
+<details class="technical-detail">
+<summary>Charpi dynamics, delays, limits and reference checks</summary>
+<p><code>toanav/charpi.py</code> is a line-by-line PyTorch port of <code>charpi_physics.py</code>. It models:</p>
+<ul>
+  <li>a 2-step (20 ms) command delay;</li>
+  <li>a per-axis 2nd-order closed-loop rate response, fitted to real CTBR flight logs (<code>real</code>) or PX4-SITL (<code>sitl</code>);</li>
+  <li>the <a href="#export-charpi">thrust curve</a> with 30 ms motor lag;</li>
+  <li>rotor inflow (air through the rotors, which changes thrust as airspeed changes) and lateral drag;</li>
+  <li>1.279 kg mass, a 10 ms control step and a 2 ms physics step.</li>
+</ul>
+<div class="table"><table>
+  <thead><tr><th>Limit</th><th class="n">Roll</th><th class="n">Pitch</th><th class="n">Yaw</th></tr></thead>
+  <tbody>
+    <tr><td>Command slew limit, deploy side (rad/s²)</td><td class="n">110</td><td class="n">50</td><td class="n">25</td></tr>
+    <tr><td>Deliverable rate ceiling, plus a shared motor budget (rad/s)</td><td class="n">4.5</td><td class="n">2.5</td><td class="n">3.0</td></tr>
+    <tr><td>Angular-acceleration ceiling (rad/s²)</td><td class="n">120</td><td class="n">60</td><td class="n">30</td></tr>
+  </tbody>
+</table></div>
+<p><code>tests/test_charpi.py</code> replays three fixtures from the JAX original (smooth <code>real</code>, smooth
+<code>sitl</code>, adversarial). Every state matches within 0.0001 plus 0.01 % of its value, over up to 60 ticks.</p>
+<p>Two additions act on the plant: the simulator’s wind (drag and inflow see the airspeed) and DiffPhysDrone’s gravity
+disturbance. <code>--no-charpi_disturbances</code> removes them.</p>
+</details>
+
+<details class="technical-detail">
+<summary>Attitude controller and thrust calculation</summary>
+<p>The controller is PX4’s tilt-prioritized attitude controller (<code>AttitudeControl::update</code> +
+<code>bodyzToAttitude</code>), in ENU / FLU with [x, y, z, w] quaternions. It uses PX4’s default <code>MC_ROLL_P</code>,
+<code>MC_PITCH_P</code>, <code>MC_YAW_P</code> and <code>MC_YAW_WEIGHT</code> (values in the
+<a href="#train-charpi">charpi flag table</a>).</p>
+<p>Thrust points along u + g, tilted at most 60°. Collective thrust is the larger of PX4’s projection and a vertical-hold
+floor (<a href="#export-charpi">formula</a>). Projection alone sank 0.1–0.9 m per maneuver while the attitude loop settles
+(0.3–0.45 s), and PX4’s mass·|f| climbs as much. The floor holds the height.</p>
+<p>Throttle comes from inverting the nominal thrust curve. Like the real vehicle, the controller does not know the
+randomized thrust scale.</p>
+</details>
+
+<details class="technical-detail">
+<summary>How the surrogate is fitted and what it receives</summary>
+<p>The surrogate is DiffPhysDrone’s <code>env.run</code> point mass, used straight-through as in
+<code>ctbr_dynamics_pm</code> of qpg-quad-jax. Its lag is 5 s⁻¹ (10 % standard deviation per episode), not
+DiffPhysDrone’s 12 s⁻¹ (standard deviation 1.2): charpi responds about 2.4× slower. It also takes charpi’s lateral drag at hover (about
+0.24 s⁻¹) and no z drag.</p>
+<p><code>scripts/charpi/fit_charpi_surrogate.py</code> fitted the lag on random 15 Hz commands flown through controller and
+plant. For the real fit, lag 5.0 leaves an RMS error of 1.66 m/s² on an RMS acceleration of 4.78 m/s².
+That explains about 88 % of the variance. Lag 12 leaves 2.80 m/s². Other best fits: 5.0 with the narrow DR band,
+4.0 for the sitl fit, 3.5 with twice as aggressive commands.</p>
+<p>The surrogate gets <code>charpi.feasible_accel(u)</code>: u clamped to the tilt limit and to what controller and
+nominal plant deliver in level flight. That is f<sub>z</sub> from 8.1 to 30.9 m/s², or u<sub>z</sub> from −1.70 to +21.1 m/s².
+Command parts the plant ignores get zero gradient; the plant itself gets the raw u.</p>
+</details>
+
+<details class="technical-detail">
+<summary>Heading lag, episode start and command timing</summary>
+<p>The heading setpoint comes from DiffPhysDrone’s yaw filter, whose state (its own virtual attitude) persists across
+steps. So the plant is asked to turn exactly as DiffPhysDrone would; its nose trails by about the yaw loop’s time
+constant, 1/<code>MC_YAW_P</code> ≈ 0.36 s.</p>
+<p>Episodes use a trimmed start: steady flight for the current command, not rest, with lagged thrust and delay buffer
+pre-filled. Charpi’s zero state would drop a flying vehicle for 30 ms.</p>
+<p>DiffPhysDrone’s rollout latency is kept: a command acts one policy step later, plus charpi’s 20 ms command delay.
+A 15 Hz step is 6 or 7 ticks of 10 ms; step-time jitter (random step lengths in training) makes it 3–10.</p>
+</details>
+
+<details class="technical-detail" id="choices-compile">
+<summary>A CUDA-graph pitfall in the compiled charpi loop</summary>
+<p>A tensor created or cached inside the compiled region and kept past one call can be overwritten by a later CUDA-graph
+replay. A constant-tensor cache filled there once broke this way; the fix is in <code>toanav/charpi.py</code>.
+The error reads <code>accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run</code>.</p>
+<p>If the error returns after a local change, use <code>--no-charpi_compile</code> while debugging. Look in
+<code>_charpi_ticks_masked</code> for tensors that outlive one call. Build them outside the compiled region, or as graph
+constants as <code>_vec</code> does.</p>
+</details>
+</section>
+
+<!-- ============================================================ -->
+<section id="reference">
+<h2><span class="num">10</span>Compare with the paper’s reported results</h2>
+<p class="section-lead">At 9 m/s the paper reports 58.75 % success for TOA + CBF against 41.25 % for the DiffPhys baseline
+(p = 0.040). Its real flights succeeded in 18 of 20 trials.</p>
+<p>Tables II and III were measured in Flightmare; the real flights used the paper’s own system
+(<a href="paper.html#experiments">paper guide</a>). Keep these results apart from the <a href="#local-results">local
+results</a>, which did not reproduce this advantage on the point mass.</p>
+<details class="technical-detail">
+<summary>Reported tables and real-flight outcomes</summary>
+<h3>Table II: the three variants, 40 trials per cell (SR / mean speed, m/s)</h3>
+<div class="table"><table>
+  <thead><tr><th>Configuration</th><th class="n">3 m/s</th><th class="n">5 m/s</th><th class="n">7 m/s</th><th class="n">9 m/s</th></tr></thead>
+  <tbody>
+    <tr><td>Distance</td><td class="n">72.5 % / 2.98</td><td class="n">85 % / 4.66</td><td class="n">67.5 % / 6.37</td><td class="n">57.5 % / 8.02</td></tr>
+    <tr><td>TOA</td><td class="n">90 % / 3.23</td><td class="n">90 % / 5.17</td><td class="n">80 % / 7.15</td><td class="n">75 % / 8.58</td></tr>
+    <tr class="best"><td>TOA + CBF (ours)</td><td class="n">87.5 % / 3.43</td><td class="n">87.5 % / 5.21</td><td class="n">85 % / 6.98</td><td class="n">90 % / 8.77</td></tr>
+    <tr><td>p vs. Distance</td><td class="n">0.16</td><td class="n">1.00</td><td class="n">0.11</td><td class="n">0.002</td></tr>
+  </tbody>
+</table></div>
+<h3>Table III: SR (%) against other methods, 80 trials per cell</h3>
+<div class="table"><table>
+  <thead><tr><th>Method</th><th class="n">3 m/s</th><th class="n">5 m/s</th><th class="n">7 m/s</th><th class="n">9 m/s</th></tr></thead>
+  <tbody>
+    <tr><td>EGO-Planner</td><td class="n">51.25</td><td class="n">27.5</td><td class="n">11.25</td><td class="n">5</td></tr>
+    <tr><td>Agile</td><td class="n">48.75</td><td class="n">32.5</td><td class="n">16.25</td><td class="n">2.5</td></tr>
+    <tr><td>DiffPhys</td><td class="n">62.5</td><td class="n">53.75</td><td class="n">52.5</td><td class="n">41.25</td></tr>
+    <tr class="best"><td>Ours</td><td class="n">67.5</td><td class="n">63.75</td><td class="n">65</td><td class="n">58.75</td></tr>
+    <tr><td>p vs. DiffPhys</td><td class="n">0.62</td><td class="n">0.26</td><td class="n">0.15</td><td class="n">0.040</td></tr>
+  </tbody>
+</table></div>
+<p>Real flights (Table IV, 5 per speed) succeeded in 5/5, 5/5, 4/5 and 4/5 trials at 3, 5, 7 and 9 m/s, with peak speed
+7.80 m/s. Both failures came from VIO drift (visual-inertial odometry: position estimated from camera and IMU).</p>
+</details>
+</section>
+
+<!-- ============================================================ -->
+<section id="troubleshooting">
+<h2><span class="num">11</span>Fix common problems</h2>
+<p>Find the error message or symptom, apply its fix, then rerun the command that failed.</p>
+<div class="table"><table>
+  <thead><tr><th>Symptom</th><th>Fix</th></tr></thead>
+  <tbody>
+    <tr><td><code>no suitable conversion function from "const at::DeprecatedTypeProperties"</code></td><td>The <code>.type()</code> patch is missing. <code>bash scripts/setup/build_quadsim.sh</code> applies it.</td></tr>
+    <tr><td><code>cannot find -lcudart</code></td><td>The <code>libcudart.so</code> symlink is missing. <code>build_quadsim.sh</code> creates it in <code>$CUDA_HOME/lib</code>.</td></tr>
+    <tr><td><code>Python.h: No such file or directory</code></td><td><code>sudo apt install python3-dev</code></td></tr>
+    <tr><td><code>The detected CUDA version (12.x) mismatches the version that was used to compile PyTorch (13.0)</code></td><td>The build found a system <code>nvcc</code>. <code>unset CUDA_HOME</code> and rebuild to use the pip toolkit, or use the <a href="#install">CUDA 12.8 route</a>.</td></tr>
+    <tr><td><code>no kernel image is available for execution on the device</code></td><td>Something was built without <code>sm_120</code>. Check <code>torch.cuda.get_arch_list()</code>, then rebuild with <code>TORCH_CUDA_ARCH_LIST=12.0</code>.</td></tr>
+    <tr><td><code>CUDA driver version is insufficient</code></td><td>CUDA 13 wheels need driver 580 or newer. Upgrade, or use the CUDA 12.8 route.</td></tr>
+    <tr><td><code>DiffPhysDrone not found</code></td><td><code>bash scripts/setup/fetch_diffphysdrone.sh</code>, or set <code>DIFFPHYS_ROOT</code>.</td></tr>
+    <tr><td>CUDA out of memory</td><td><code>--toa_max_voxels 96</code>; if memory still runs out, try <code>--batch_size 32</code>.</td></tr>
+    <tr><td><code>non-finite loss</code></td><td>Resume from the last checkpoint with <code>--grad_clip 1.0</code>. Report the iteration and the printed loss terms.</td></tr>
+    <tr><td>Training is slow and the log says <code>backend=torch</code></td><td>The CUDA extension did not load. <code>python -c "import quadsim_cuda"</code> shows why.</td></tr>
+    <tr><td><code>torch.cross</code> deprecation warnings</td><td>Harmless; from DiffPhysDrone’s own code.</td></tr>
+    <tr><td><code>check_install.py</code> render line: a few pixels &gt; 1 % apart (an older version printed <code>max |cuda - torch| = 3.59e+03 m</code>)</td><td>Expected: a few rays tangent to an obstacle flip between hit and miss (<a href="#install">reference values</a>).</td></tr>
+    <tr><td><code>test_matches_cuda_extension</code>: <code>quadsim_cuda is aliased to the PyTorch fallback</code></td><td>Something pointed <code>sys.modules["quadsim_cuda"]</code> at <code>toanav.quadsim_torch</code>. <code>toanav/backend.py</code> no longer does; check local changes to <code>backend.py</code> or the tests.</td></tr>
+    <tr><td>With <code>--dynamics charpi</code> the first iteration takes about a minute (first log line ~3.2 s/it)</td><td>One-time <code>torch.compile</code> of the 100 Hz loop, not a hang (<a href="#timings">run times</a>).</td></tr>
+    <tr><td>Compile errors, or debugging the charpi loop</td><td><code>--no-charpi_compile</code> runs the loop eagerly: same trajectories within 1e-3 (a GPU test checks this), about 4 s slower per rollout. Off the GPU the loop is never compiled.</td></tr>
+    <tr><td><code>Invalid handle. Cannot load symbol cublasLtCreate</code></td><td>A custom cuDNN/CUDA folder in <code>LD_LIBRARY_PATH</code> can override this venv’s CUDA 13 libraries. Run with <code>env -u LD_LIBRARY_PATH -u LD_PRELOAD</code>; <code>run_experiments.sh</code> does this itself.</td></tr>
+    <tr><td><code>accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run</code></td><td>Use <code>--no-charpi_compile</code> while debugging. The known cause is fixed; if the error returns after a local change, see <a href="#choices-compile">what to check</a>.</td></tr>
+    <tr><td><code>GZ_BR_FIT / --charpi_br_fit='…' is not one of ['real', 'sitl']</code> (or the same for <code>GZ_DR_BAND</code>)</td><td>The environment holds an unsupported value, e.g. one exported for qpg-quad-jax. Valid here: <code>GZ_BR_FIT</code> real | sitl, <code>GZ_DR_BAND</code> narrow | off | real. <code>unset</code> it or pass the flag. Non-numeric <code>GATE_MAX_RATE_*</code> values fail when <code>toanav.charpi</code> is imported.</td></tr>
+    <tr><td><code>--charpi_max_tilt must be in (0, 90)</code></td><td>The tilt limit is in degrees and must leave some vertical thrust.</td></tr>
+    <tr><td><code>scripts/charpi/charpi_reference.py</code> fails on a <code>float | None</code> type hint</td><td>The JAX environment (e.g. <code>~/miniconda3/envs/jax_env</code>) runs Python 3.9, but <code>charpi_physics.py</code> needs Python ≥ 3.10. Use <code>~/miniconda3/envs/jax_py312</code> (jax 0.7.2) with <code>JAX_PLATFORMS=cpu</code>; the script’s docstring has the commands for the three fixtures. Only needed after a change to the JAX plant.</td></tr>
+  </tbody>
+</table></div>
+<footer>
+  <p>Manual for the <code>diff_nav_toa_cbf</code> repository. DiffPhysDrone is © its authors and is fetched, not
+  redistributed. Paper © IEEE.</p>
+</footer>
+</section>
+
+</main>
+</div>
+<script src="readability.js"></script>
+</body>
+</html>

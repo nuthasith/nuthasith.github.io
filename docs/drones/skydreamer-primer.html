@@ -1,0 +1,1198 @@
+<title>SkyDreamer Primer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..800&family=JetBrains+Mono:wght@400;600&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+/* Layout: same system as the SuperMimic primer. One reading column (68ch) inside a 900px frame; figures and equation cards use the full frame; parts split by heavy rules. Magenta added for training-only (privileged) information. */
+:root{
+  --bg:#F3F5F8; --surface:#FFFFFF; --tint:#E8ECF2; --ink:#15202C; --muted:#5A6777; --line:#D2D9E2;
+  --wm:#1D5DC0; --wm-soft:#E1EAF9; --sim:#C2531A; --sim-soft:#FBE7DA; --grad:#7A3CC6; --ok:#25804F;
+  --priv:#B3246F; --priv-soft:#F8E1EC;
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E141B; --surface:#151D27; --tint:#1B2531; --ink:#E3E9F0; --muted:#95A3B3; --line:#2A3645;
+    --wm:#72A9FF; --wm-soft:#16283F; --sim:#F28B4E; --sim-soft:#3B2417; --grad:#B690FF; --ok:#5ACB8B;
+    --priv:#F27AB5; --priv-soft:#3A1A2B;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E141B; --surface:#151D27; --tint:#1B2531; --ink:#E3E9F0; --muted:#95A3B3; --line:#2A3645;
+  --wm:#72A9FF; --wm-soft:#16283F; --sim:#F28B4E; --sim-soft:#3B2417; --grad:#B690FF; --ok:#5ACB8B;
+  --priv:#F27AB5; --priv-soft:#3A1A2B;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:var(--f-body); font-size:17px; line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:0;
+}
+main{max-width:900px; margin:0 auto; padding-block:48px 96px}
+p,li,.lede{max-width:68ch}
+p{margin:12px 0}
+a{color:var(--wm); text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--wm); outline-offset:2px; border-radius:2px}
+h1,h2,h3{font-family:var(--f-display); text-wrap:balance; margin:0; color:var(--ink)}
+h1{font-size:clamp(2.1rem,6vw,3.3rem); line-height:1.03; font-weight:780; font-variation-settings:"wdth" 112; letter-spacing:-.01em; margin-top:10px}
+h2{font-size:clamp(1.6rem,4.2vw,2.2rem); line-height:1.1; font-weight:750; font-variation-settings:"wdth" 108; margin-top:6px}
+h3{font-size:1.22rem; font-weight:700; font-variation-settings:"wdth" 104; margin-top:44px}
+.eyebrow{font-family:var(--f-mono); font-size:12px; letter-spacing:.09em; text-transform:uppercase; color:var(--wm)}
+.lede{font-size:1.12rem; color:var(--muted); margin-top:14px}
+code,.mono{font-family:var(--f-mono); font-size:.88em}
+
+/* TL;DR */
+.tldr{display:grid; grid-template-columns:150px minmax(0,1fr); gap:0; margin-top:28px; background:var(--surface); border:1px solid var(--line); border-radius:12px; overflow:hidden}
+.tldr > div{padding:14px 18px; border-top:1px solid var(--line)}
+.tldr > div:nth-child(-n+2){border-top:0}
+.tldr .k{font-family:var(--f-mono); font-size:12px; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); padding-top:17px}
+.tldr p{margin:0}
+@media (max-width:620px){
+  .tldr{grid-template-columns:minmax(0,1fr)}
+  .tldr > .k{border-top:1px solid var(--line); padding-bottom:0}
+  .tldr > .k:first-child{border-top:0}
+  .tldr > div:not(.k){border-top:0; padding-top:4px}
+}
+
+/* nav + key */
+.toc{display:flex; flex-wrap:wrap; gap:8px 10px; margin-top:22px; padding:0; list-style:none}
+.toc a{display:inline-block; font-family:var(--f-mono); font-size:13px; text-decoration:none; color:var(--ink); background:var(--tint); padding:6px 10px; border-radius:6px}
+.toc a:hover{background:var(--wm-soft); color:var(--wm)}
+.key{display:flex; flex-wrap:wrap; gap:6px 18px; margin-top:14px; font-size:14px; color:var(--muted)}
+.key span{display:inline-flex; align-items:center; gap:7px}
+.sw{display:inline-block; width:22px; height:0; border-top:3px solid}
+.sw-wm{border-color:var(--wm)} .sw-sim{border-color:var(--sim)} .sw-grad{border-top:3px dashed var(--grad)} .sw-ok{border-color:var(--ok)} .sw-priv{border-top:3px dashed var(--priv)}
+
+/* parts */
+section.part{border-top:2px solid var(--ink); margin-top:76px; padding-top:18px}
+
+/* figures */
+figure{margin:26px 0 30px}
+.scroll{overflow-x:auto; -webkit-overflow-scrolling:touch}
+figcaption{font-size:14.5px; color:var(--muted); margin-top:8px; max-width:72ch}
+.fig-no{font-family:var(--f-mono); font-size:12px; color:var(--ink); margin-right:6px; font-weight:600}
+svg.d{display:block; width:100%; height:auto; color:var(--ink)}
+.d text{font-family:var(--f-mono); font-size:12px; fill:var(--ink)}
+.d .s{font-size:11px; fill:var(--muted)}
+.d .b{font-weight:600}
+.d .h{font-family:var(--f-display); font-weight:700; font-size:13px; letter-spacing:.04em}
+.d .sub{font-size:9px}
+.d .c-wm{fill:var(--wm)} .d .c-sim{fill:var(--sim)} .d .c-grad{fill:var(--grad)} .d .c-ok{fill:var(--ok)} .d .c-mu{fill:var(--muted)} .d .c-priv{fill:var(--priv)}
+.d .box{fill:var(--surface); stroke:var(--ink); stroke-width:1.2}
+.d .box-wm{fill:var(--wm-soft); stroke:var(--wm); stroke-width:1.5}
+.d .box-sim{fill:var(--sim-soft); stroke:var(--sim); stroke-width:1.5}
+.d .box-priv{fill:var(--priv-soft); stroke:var(--priv); stroke-width:1.5}
+.d .box-mu{fill:var(--tint); stroke:var(--muted); stroke-width:1.2; stroke-dasharray:4 3}
+.d .panel{fill:none; stroke:var(--line); stroke-width:1.3}
+.d .mask{fill:var(--tint); stroke:var(--line); stroke-width:1}
+.d .mask-bg{fill:var(--tint)}
+.d .ln{fill:none; stroke:var(--ink); stroke-width:1.3}
+.d .ln-m{fill:none; stroke:var(--muted); stroke-width:1}
+.d .ln-wm{fill:none; stroke:var(--wm); stroke-width:2}
+.d .ln-sim{fill:none; stroke:var(--sim); stroke-width:2}
+.d .ln-ok{fill:none; stroke:var(--ok); stroke-width:2.2}
+.d .ln-grad{fill:none; stroke:var(--grad); stroke-width:1.7; stroke-dasharray:6 4}
+.d .ln-priv{fill:none; stroke:var(--priv); stroke-width:1.7; stroke-dasharray:6 4}
+.d .dash{stroke-dasharray:5 4}
+.d .mk{fill:var(--ink)} .d .mk-g{fill:var(--grad)} .d .mk-wm{fill:var(--wm)} .d .mk-m{fill:var(--muted)} .d .mk-p{fill:var(--priv)}
+.d .f-wm{fill:var(--wm)} .d .f-sim{fill:var(--sim)} .d .f-ok{fill:var(--ok)} .d .f-ink{fill:var(--ink)} .d .f-bg{fill:var(--surface)} .d .f-priv{fill:var(--priv)}
+.d .sh-wm{fill:var(--wm-soft)} .d .sh{fill:var(--tint)} .d .sh-sim{fill:var(--sim-soft)}
+
+/* equations */
+.eq{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:12px 18px 10px; margin:18px 0; overflow-x:auto}
+.eq-label{font-family:var(--f-mono); font-size:11.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--muted)}
+.eq-label b{color:var(--wm); font-weight:600}
+.eq .read{font-size:15px; color:var(--muted); margin:4px 0 4px; max-width:72ch}
+mjx-container[display="true"]{margin:.55em 0 !important; overflow-x:auto; overflow-y:hidden; padding:2px 0}
+
+/* worked example */
+.ex{background:var(--tint); border-radius:8px; padding:11px 16px; margin:14px 0; font-size:15.5px; max-width:74ch}
+.ex::before{content:"Example"; display:block; font-family:var(--f-mono); font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--ok); margin-bottom:2px}
+.ex.toy::before{content:"Tiny example"}
+.ex.note::before{content:"Example values, not from the paper"; color:var(--muted)}
+
+/* symbol grid */
+.syms{display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:8px; margin:16px 0; padding:0; list-style:none}
+.syms li{background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:14.5px; line-height:1.4}
+.syms li b{display:block; font-weight:600; font-size:15px}
+
+/* tables */
+.tbl{overflow-x:auto; margin:16px 0}
+table{border-collapse:collapse; width:100%; font-size:14.5px; font-variant-numeric:tabular-nums}
+th,td{text-align:left; padding:8px 12px 8px 0; border-bottom:1px solid var(--line); vertical-align:top}
+th{font-family:var(--f-mono); font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:600}
+td:first-child{white-space:nowrap; font-weight:600}
+table.vs td:first-child{white-space:normal; min-width:120px}
+table.vs td:nth-child(2), table.vs td:nth-child(3){min-width:220px}
+
+/* stats */
+.stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; margin:18px 0}
+.stat{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:14px 16px}
+.stat .n{font-family:var(--f-display); font-weight:780; font-variation-settings:"wdth" 115; font-size:1.9rem; line-height:1.05; color:var(--wm); font-variant-numeric:tabular-nums}
+.stat .t{font-size:14.5px; color:var(--muted); margin-top:6px; line-height:1.4}
+
+ul.tight{padding-left:20px; margin:10px 0}
+ul.tight li{margin:4px 0}
+.cols{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; margin-top:12px}
+.cols > div{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:12px 18px; min-width:0}
+.cols h4{font-family:var(--f-mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:6px 0 2px; font-weight:600}
+
+dl.gloss{display:grid; grid-template-columns:minmax(0,170px) minmax(0,1fr); gap:6px 18px; margin:18px 0; font-size:15.5px}
+dl.gloss dt{font-weight:600}
+dl.gloss dd{margin:0; color:var(--muted)}
+@media (max-width:560px){ dl.gloss{grid-template-columns:minmax(0,1fr)} dl.gloss dd{margin-bottom:8px} }
+
+.meta{font-size:15px; color:var(--muted)}
+footer{margin-top:64px; padding-top:16px; border-top:1px solid var(--line); font-size:14px; color:var(--muted)}
+@media (prefers-reduced-motion: reduce){ *{scroll-behavior:auto !important} }
+html{scroll-behavior:smooth}
+</style>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js"></script>
+
+<main>
+
+<header>
+  <div class="eyebrow">Primer for newcomers · vision-based drone racing</div>
+  <h1>SkyDreamer, Dreamer world models, and racing drones from pixels</h1>
+  <p class="lede">Four parts, read in order. Part 4 compares it with SuperMimic. The diagrams carry most of the explanation, and every equation has a worked number next to it.</p>
+
+  <div class="tldr">
+    <div class="k">The paper</div>
+    <div><p>SkyDreamer flies a racing drone through gates using a 64×64 gate mask from a cheap camera, the gyro and the motor speeds, and writes the four motor commands itself. It is trained in simulation with a Dreamer world model and runs entirely onboard: 75 counted real laps without a crash, up to 21 m/s and 6 g.</p></div>
+    <div class="k">World model</div>
+    <div><p>A recurrent network that remembers what it has seen and predicts what comes next. In training it must also spell out the drone's true position, speed and physical parameters, so in flight it doubles as a state estimator you can read.</p></div>
+    <div class="k">Vs SuperMimic</div>
+    <div><p>SuperMimic's world model is a fast, differentiable simulator that stays in the lab. SkyDreamer's world model flies on the drone as its memory and state estimate. Part 4 has the full comparison.</p></div>
+  </div>
+
+  <figure>
+    <div class="scroll">
+    <svg class="d" viewBox="0 0 700 262" style="min-width:600px" role="img" aria-label="Top row: the modular stack used by champion-level systems: camera, gate corner detector, PnP needing known gate size, hand-tuned EKF, controller, motors. Bottom row: SkyDreamer: camera, GateNet mask in 3 ms, one network of encoder, GRU memory and actor in 1.3 ms, motors. A decoder exposes readable position, velocity and drone parameters.">
+      <defs>
+        <marker id="m0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker>
+        <marker id="m0p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-p"/></marker>
+      </defs>
+      <text x="13" y="24" class="h c-sim">A · MODULAR STACK OF CHAMPION-LEVEL SYSTEMS</text>
+      <rect x="13" y="36" width="80" height="48" rx="8" class="box-sim"/>
+      <text x="53" y="56" text-anchor="middle" class="b">camera</text>
+      <text x="53" y="74" text-anchor="middle" class="s">RGB, 90 Hz</text>
+      <rect x="115" y="36" width="104" height="48" rx="8" class="box"/>
+      <text x="167" y="56" text-anchor="middle" class="b">corners</text>
+      <text x="167" y="74" text-anchor="middle" class="s">gate detector</text>
+      <rect x="241" y="36" width="110" height="48" rx="8" class="box"/>
+      <text x="296" y="56" text-anchor="middle" class="b">PnP</text>
+      <text x="296" y="74" text-anchor="middle" class="s">known gate size</text>
+      <rect x="373" y="36" width="86" height="48" rx="8" class="box"/>
+      <text x="416" y="56" text-anchor="middle" class="b">EKF</text>
+      <text x="416" y="74" text-anchor="middle" class="s">hand-tuned</text>
+      <rect x="481" y="36" width="104" height="48" rx="8" class="box"/>
+      <text x="533" y="56" text-anchor="middle" class="b">controller</text>
+      <text x="533" y="74" text-anchor="middle" class="s">state → cmd</text>
+      <rect x="607" y="36" width="80" height="48" rx="8" class="box-sim"/>
+      <text x="647" y="56" text-anchor="middle" class="b">motors</text>
+      <text x="647" y="74" text-anchor="middle" class="s">4 rotors</text>
+      <path d="M93,60 H113" class="ln" marker-end="url(#m0)"/>
+      <path d="M219,60 H239" class="ln" marker-end="url(#m0)"/>
+      <path d="M351,60 H371" class="ln" marker-end="url(#m0)"/>
+      <path d="M459,60 H479" class="ln" marker-end="url(#m0)"/>
+      <path d="M585,60 H605" class="ln" marker-end="url(#m0)"/>
+      <text x="350" y="106" text-anchor="middle" class="s">also needs: camera calibration, a mapped track, rectangular gates of known size</text>
+
+      <text x="13" y="146" class="h c-wm">B · SKYDREAMER: ONE NETWORK FROM MASK TO MOTORS</text>
+      <rect x="13" y="160" width="80" height="62" rx="8" class="box-sim"/>
+      <text x="53" y="186" text-anchor="middle" class="b">camera</text>
+      <text x="53" y="204" text-anchor="middle" class="s">low-cost</text>
+      <rect x="115" y="160" width="130" height="62" rx="8" class="box"/>
+      <text x="180" y="186" text-anchor="middle" class="b">GateNet</text>
+      <text x="180" y="204" text-anchor="middle" class="s">64×64 mask · 3 ms</text>
+      <rect x="267" y="160" width="318" height="62" rx="8" class="box-wm"/>
+      <text x="426" y="182" text-anchor="middle" class="b">SkyDreamer · 1.3 ms</text>
+      <text x="426" y="199" text-anchor="middle" class="s">encoder → GRU memory → actor</text>
+      <text x="426" y="214" text-anchor="middle" class="s">also reads gyro, motor RPM, gate list</text>
+      <rect x="607" y="160" width="80" height="62" rx="8" class="box-sim"/>
+      <text x="647" y="186" text-anchor="middle" class="b">motors</text>
+      <text x="647" y="204" text-anchor="middle" class="s">u₁ … u₄</text>
+      <path d="M93,191 H113" class="ln" marker-end="url(#m0)"/>
+      <path d="M245,191 H265" class="ln" marker-end="url(#m0)"/>
+      <path d="M585,191 H605" class="ln" marker-end="url(#m0)"/>
+      <path d="M426,222 V239" class="ln-priv" marker-end="url(#m0p)"/>
+      <text x="426" y="254" text-anchor="middle" class="c-priv">decoder → position, velocity, drone parameters you can read</text>
+    </svg>
+    </div>
+    <figcaption><span class="fig-no">Fig 0</span>Top: the modular pipeline behind champion-level racing drones; each box is built and tuned by hand. Bottom: SkyDreamer replaces everything after segmentation with one network that outputs motor commands. Times are onboard runtimes on a Jetson Orin NX.</figcaption>
+  </figure>
+
+  <ul class="toc">
+    <li><a href="#basics">1 · How a racing drone flies</a></li>
+    <li><a href="#world-models">2 · Dreamer world models</a></li>
+    <li><a href="#paper">3 · The SkyDreamer paper</a></li>
+    <li><a href="#versus">4 · SkyDreamer vs SuperMimic</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+  </ul>
+  <div class="key" aria-label="Color key used in every diagram">
+    <span><i class="sw sw-wm"></i>learned model</span>
+    <span><i class="sw sw-sim"></i>simulator, real hardware, real data</span>
+    <span><i class="sw sw-priv"></i>training-only (privileged) info</span>
+    <span><i class="sw sw-grad"></i>gradient, policy update</span>
+    <span><i class="sw sw-ok"></i>reward</span>
+  </div>
+</header>
+
+<!-- ============ PART 1 ============ -->
+<section class="part" id="basics">
+  <div class="eyebrow">Part 1 · Basics</div>
+  <h2>How a racing drone flies and learns</h2>
+  <p><b>Reinforcement learning (RL):</b> a policy picks actions, the world answers, and a reward says how well it went. Training adjusts the policy's weights to raise the total reward. In drone racing, faster laps through every gate earn more reward.</p>
+
+  <figure>
+    <div class="scroll">
+    <svg class="d" viewBox="0 0 640 210" style="min-width:540px" role="img" aria-label="The control loop: the flight plan and observations go into the policy, the policy sends four motor commands to the environment, the environment returns a new gate mask, gyro and RPM reading and a reward. One loop takes 11.1 milliseconds.">
+      <defs><marker id="m11" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker></defs>
+      <rect x="10" y="20" width="170" height="48" rx="8" class="box"/>
+      <text x="95" y="40" text-anchor="middle" class="b">flight plan fᵢ</text>
+      <text x="95" y="58" text-anchor="middle" class="s">the next three gates</text>
+      <rect x="210" y="80" width="150" height="60" rx="8" class="box-wm"/>
+      <text x="285" y="106" text-anchor="middle" class="b">policy π<tspan class="sub" dy="3">θ</tspan></text>
+      <text x="285" y="126" text-anchor="middle" class="s">world model + actor</text>
+      <rect x="470" y="80" width="160" height="60" rx="8" class="box-sim"/>
+      <text x="550" y="106" text-anchor="middle" class="b">environment</text>
+      <text x="550" y="126" text-anchor="middle" class="s">simulator or drone</text>
+      <path d="M95,68 V110 H208" class="ln" marker-end="url(#m11)"/>
+      <path d="M360,95 H468" class="ln" marker-end="url(#m11)"/>
+      <text x="414" y="87" text-anchor="middle">motor cmds uₜ</text>
+      <path d="M470,125 H362" class="ln" marker-end="url(#m11)"/>
+      <text x="416" y="156" text-anchor="middle" style="font-size:11.5px">mask, gyro, RPM oₜ₊₁</text>
+      <text x="416" y="172" text-anchor="middle" style="font-size:11.5px" class="c-ok">reward rₜ₊₁</text>
+      <text x="320" y="200" text-anchor="middle" class="s">one loop = 11.1 ms (90 Hz, the camera's frame rate)</text>
+    </svg>
+    </div>
+    <figcaption><span class="fig-no">Fig 1.1</span>The control loop. The policy sees the gate mask, gyro and motor speeds plus a list of upcoming gates, and outputs four motor commands.</figcaption>
+  </figure>
+
+  <div class="eq">
+    <div class="eq-label"><b>The policy and what it maximizes</b></div>
+    \[ u_t \sim \pi_\theta(\cdot \mid o_{\le t}) \qquad\qquad J(\theta) = \mathbb{E}\Big[\sum_{t\ge 0} \gamma^t\, r_t\Big] \]
+  </div>
+  <ul class="syms">
+    <li><b>\(o_t\) observation</b>gate mask, gyro, motor speeds at step \(t\)</li>
+    <li><b>\(o_{\le t}\) history</b>all observations so far; one frame is not enough</li>
+    <li><b>\(u_t\) action</b>four motor commands, each in [0, 1]</li>
+    <li><b>\(r_t\) reward</b>the score for that one step</li>
+    <li><b>\(\pi_\theta\) policy</b>a neural network with weights \(\theta\)</li>
+    <li><b>\(\gamma\) discount</b>how much later rewards count (0.997)</li>
+  </ul>
+  <div class="ex">With \(\gamma = 0.997\), a reward 300 steps (3.3 s) ahead counts \(0.997^{300} \approx 0.41\) as much as one now. That is about one lap on the paper's small tracks, so rewards a full lap ahead still matter.</div>
+
+  <h3>How a quadrotor makes force</h3>
+  <p>Each of the four propellers pushes along the drone's up axis with a force that grows with the square of its speed. To move sideways, the drone tilts so part of that push points where it wants to go. Spinning some propellers faster than others makes it rotate.</p>
+
+  <figure>
+    <div class="scroll">
+    <svg class="d" viewBox="0 0 660 250" style="min-width:580px" role="img" aria-label="Left: a drone tilted 25 degrees. Its thrust of 1.10 g splits into a vertical part that cancels gravity and a horizontal part of 4.6 meters per second squared. Right: total thrust versus motor speed, a parabola. Hover, 1 g, needs about 1,258 radians per second; the maximum 3,100 radians per second gives 6.1 g.">
+      <defs>
+        <marker id="m12" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker>
+        <marker id="m12w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-wm"/></marker>
+      </defs>
+      <!-- tilted drone -->
+      <g transform="rotate(25 150 130)">
+        <rect x="95" y="126" width="110" height="9" rx="4" class="box"/>
+        <line x1="100" y1="126" x2="100" y2="120" class="ln"/>
+        <line x1="200" y1="126" x2="200" y2="120" class="ln"/>
+        <ellipse cx="100" cy="119" rx="22" ry="3.5" class="box"/>
+        <ellipse cx="200" cy="119" rx="22" ry="3.5" class="box"/>
+      </g>
+      <path d="M150,130 L187.3,50" class="ln" style="stroke-width:2" marker-end="url(#m12)"/>
+      <text x="194" y="72" class="b">T = 1.10 g</text>
+      <path d="M150,130 V52" class="ln-m dash"/>
+      <path d="M150,50 H185" class="ln-wm" marker-end="url(#m12w)"/>
+      <text x="150" y="38" class="c-wm">T·sin 25° = 4.6 m/s²</text>
+      <text x="144" y="68" text-anchor="end" class="s">T·cos 25° = g</text>
+      <path d="M150,130 V208" class="ln" style="stroke-width:2" marker-end="url(#m12)"/>
+      <text x="144" y="192" text-anchor="end">g = 9.81 m/s²</text>
+      <text x="60" y="160" class="s">tilt 25°</text>
+      <line x1="335" y1="20" x2="335" y2="235" class="ln-m" style="stroke-dasharray:2 4"/>
+      <!-- thrust chart -->
+      <text x="394" y="30" class="s">total thrust (in g)</text>
+      <line x1="390" y1="200" x2="636" y2="200" class="ln-m"/>
+      <line x1="390" y1="40" x2="390" y2="200" class="ln-m"/>
+      <line x1="390" y1="154.29" x2="636" y2="154.29" class="ln-m" style="stroke-dasharray:2 4;opacity:.6"/>
+      <line x1="390" y1="108.57" x2="636" y2="108.57" class="ln-m" style="stroke-dasharray:2 4;opacity:.6"/>
+      <line x1="390" y1="62.86" x2="636" y2="62.86" class="ln-m" style="stroke-dasharray:2 4;opacity:.6"/>
+      <text x="382" y="204" text-anchor="end" class="s">0</text>
+      <text x="382" y="158" text-anchor="end" class="s">2 g</text>
+      <text x="382" y="112" text-anchor="end" class="s">4 g</text>
+      <text x="382" y="67" text-anchor="end" class="s">6 g</text>
+      <text x="390" y="216" text-anchor="middle" class="s">0</text>
+      <text x="465" y="216" text-anchor="middle" class="s">1000</text>
+      <text x="540" y="216" text-anchor="middle" class="s">2000</text>
+      <text x="615" y="216" text-anchor="middle" class="s">3000</text>
+      <text x="513" y="238" text-anchor="middle" class="s">speed of each motor ω (rad/s)</text>
+      <path d="M484.35,177.14 V200" class="ln-m" style="stroke-dasharray:2 3"/>
+      <polyline points="390,200 405,199.42 420,197.69 435,194.8 450,190.75 465,185.55 480,179.2 495,171.69 510,163.02 525,153.2 540,142.22 555,130.08 570,116.8 585,102.35 600,86.74 615,69.99 622.5,61.17" class="ln-wm"/>
+      <circle cx="484.35" cy="177.14" r="4" class="f-ink"/>
+      <circle cx="622.5" cy="61.17" r="4" class="f-wm"/>
+      <text x="492" y="192" class="b">hover: 1 g at 1,258</text>
+      <text x="612" y="50" text-anchor="end" class="b c-wm">6.1 g at ω<tspan class="sub" dy="3">max</tspan><tspan dy="-3"> = 3,100</tspan></text>
+    </svg>
+    </div>
+    <figcaption><span class="fig-no">Fig 1.2</span>Left: to accelerate forward the drone tilts, so part of its thrust points forward. Right: total thrust of the paper's drone model at zero airspeed, \(T = k_\omega \sum \omega_i^2\) with \(k_\omega = 1.55\times10^{-6}\), drawn to scale. Full motor speed gives 6.1 g, which matches the 6 g the real drone pulled.</figcaption>
+  </figure>
+
+  <div class="eq">
+    <div class="eq-label"><b>Thrust and motor response</b> · the paper's model</div>
+    \[ T = k_\omega \sum_{i=1}^{4}\omega_i^2 \qquad \dot\omega_i = \frac{\omega_{c,i}-\omega_i}{\tau} \qquad \omega_{c,i} = (\omega_{\max}-\omega_{\min})\sqrt{k\,u_i^2+(1-k)\,u_i}\;+\;\omega_{\min} \]
+    <p class="read">\(T\) is thrust per kilogram (an acceleration) at zero airspeed. \(\omega_{c,i}\) is the speed motor \(i\) heads toward for command \(u_i\); \(\tau\) is how fast it gets there. Paper values: \(k_\omega = 1.55\times10^{-6}\), \(\omega_{\min} = 342\) rad/s, \(\omega_{\max} = 3{,}100\) rad/s, \(k = 0.5\), \(\tau = 0.03\) s.</p>
+  </div>
+  <div class="ex">Hover needs \(4\,k_\omega\,\omega^2 = 9.81\), so \(\omega \approx 1{,}260\) rad/s per motor. Command \(u = 0.5\) gives \(\omega_c = 2{,}758\cdot\sqrt{0.375} + 342 \approx 2{,}030\) rad/s. Starting from hover, one 11.1 ms step closes \(1 - e^{-11.1/30} \approx 31\%\) of the gap, so the motor reaches about 1,500 rad/s.</div>
+
+  <div class="eq">
+    <div class="eq-label"><b>The simulator</b> · NED axes, z points down</div>
+    \[ \dot p = v \qquad \dot q = \tfrac12\, q \otimes [\,0,\ \Omega\,] \qquad \dot v = g\,e_3 + R(q)\,F + \varepsilon_a \qquad \dot\Omega = M + \varepsilon_M \]
+    <p class="read">\(q\) = attitude quaternion, \(\Omega\) = body rates (spin about the drone's own axes), \(R\) = body-to-world rotation. \(F\) adds thrust and drag; \(M\) holds the moments from the four motors plus gyroscopic terms. \(\varepsilon\) are random pushes for robustness. Written in JAX and stepped with fourth-order Runge–Kutta every 2.2 ms, about 5 sim steps per policy step.</p>
+  </div>
+
+  <h3>Who turns commands into motor power?</h3>
+  <p>Most racing policies output <b>CTBR</b> (collective thrust and body rates): one total thrust and three spin rates. A fast, hand-tuned controller (PID or INDI) then works out the motor commands. SkyDreamer skips that layer, following the guidance-and-control networks (G&amp;CNETs) introduced by ESA and earlier TU Delft work.</p>
+
+  <figure>
+    <div class="scroll">
+    <svg class="d" viewBox="0 0 680 200" style="min-width:560px" role="img" aria-label="Row A: policy outputs thrust and three body rates to an inner-loop controller, PID or INDI, which outputs four motor commands to the motors. Row B: the policy outputs four motor commands between 0 and 1 straight to the motors, with no controller in between.">
+      <defs><marker id="m13" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker></defs>
+      <text x="10" y="24" class="h">A · CTBR + INNER LOOP (MOST PRIOR WORK)</text>
+      <rect x="10" y="38" width="100" height="44" rx="8" class="box-wm"/>
+      <text x="60" y="58" text-anchor="middle" class="b">policy</text>
+      <text x="60" y="74" text-anchor="middle" class="s">learned</text>
+      <path d="M110,60 H258" class="ln" marker-end="url(#m13)"/>
+      <text x="184" y="52" text-anchor="middle">thrust + 3 rates</text>
+      <rect x="260" y="38" width="150" height="44" rx="8" class="box"/>
+      <text x="335" y="58" text-anchor="middle" class="b">inner loop</text>
+      <text x="335" y="74" text-anchor="middle" class="s">PID / INDI, tuned</text>
+      <path d="M410,60 H558" class="ln" marker-end="url(#m13)"/>
+      <text x="484" y="52" text-anchor="middle">4 motor cmds</text>
+      <rect x="560" y="38" width="110" height="44" rx="8" class="box-sim"/>
+      <text x="615" y="58" text-anchor="middle" class="b">motors</text>
+      <text x="615" y="74" text-anchor="middle" class="s">via ESC</text>
+
+      <text x="10" y="124" class="h c-wm">B · DIRECT MOTOR COMMANDS (SKYDREAMER)</text>
+      <rect x="10" y="138" width="100" height="44" rx="8" class="box-wm"/>
+      <text x="60" y="158" text-anchor="middle" class="b">policy</text>
+      <text x="60" y="174" text-anchor="middle" class="s">learned</text>
+      <path d="M110,160 H558" class="ln" marker-end="url(#m13)"/>
+      <text x="334" y="152" text-anchor="middle">4 motor cmds u ∈ [0, 1]</text>
+      <text x="334" y="176" text-anchor="middle" class="s">no controller in between</text>
+      <rect x="560" y="138" width="110" height="44" rx="8" class="box-sim"/>
+      <text x="615" y="158" text-anchor="middle" class="b">motors</text>
+      <text x="615" y="174" text-anchor="middle" class="s">via ESC</text>
+    </svg>
+    </div>
+    <figcaption><span class="fig-no">Fig 1.3</span>Top: the policy asks for a total thrust and three spin rates; a tuned controller converts them. Bottom: the policy writes the motor commands itself. The ESC (electronic speed controller) drives each motor and reports its speed back.</figcaption>
+  </figure>
+  <p>Why bother: a motor is simpler to model than a tuned controller, so the simulator matches reality better, and the policy gets full use of the motors. The cost: the policy must learn to stabilize the drone too, and a careless one can burn out motors (Part 2 shows the fix).</p>
+
+  <h3>The racing reward</h3>
+  <figure>
+    <div class="scroll">
+    <svg class="d" viewBox="0 0 680 262" style="min-width:580px" role="img" aria-label="Left: top view of a gate with an invisible pre-gate before it and post-gate after it, forming a tunnel 0.8 meters thick. The drone curves toward the pre-gate, earning progress reward, and gets a gate bonus when crossing. Right: the gate bonus versus distance from the gate center, a triangle from 1 at the center to 0 at 0.8 meters; beyond 0.8 meters is a crash. 0.2 meters off center gives 0.75.">
+      <defs><marker id="m14" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker></defs>
+      <text x="20" y="24" class="s">top view · schematic</text>
+      <rect x="225" y="86" width="50" height="128" class="sh" style="opacity:.8"/>
+      <rect x="244" y="72" width="12" height="14" class="f-sim"/>
+      <rect x="244" y="214" width="12" height="14" class="f-sim"/>
+      <text x="250" y="62" text-anchor="middle" class="b">gate</text>
+      <line x1="225" y1="86" x2="225" y2="214" class="ln-m dash"/>
+      <line x1="275" y1="86" x2="275" y2="214" class="ln-m dash"/>
+      <text x="220" y="108" text-anchor="end" class="s">pre-gate</text>
+      <text x="280" y="108" class="s">post-gate</text>
+      <path d="M225,238 H275 M225,233 V243 M275,233 V243" class="ln-m"/>
+      <text x="250" y="256" text-anchor="middle" class="s">t<tspan class="sub" dy="3">g</tspan><tspan dy="-3"> = 0.8 m</tspan></text>
+      <path d="M40,215 C100,205 170,152 225,150 L352,150" class="ln" style="stroke-width:1.8" marker-end="url(#m14)"/>
+      <circle cx="96" cy="196.9" r="4.5" class="f-ink"/>
+      <circle cx="134.4" cy="179.5" r="4.5" class="f-ink"/>
+      <text x="96" y="216" text-anchor="middle" class="s">t−1</text>
+      <text x="138" y="198" text-anchor="middle" class="s">t</text>
+      <text x="30" y="122" class="c-ok">5·r<tspan class="sub" dy="3">prog</tspan><tspan dy="-3">: distance</tspan></text>
+      <text x="30" y="138" class="c-ok">gained toward pre-gate</text>
+      <text x="300" y="140" class="c-ok b">+30·r<tspan class="sub" dy="3">gate</tspan></text>
+      <line x1="385" y1="20" x2="385" y2="245" class="ln-m" style="stroke-dasharray:2 4"/>
+      <!-- gate reward chart -->
+      <text x="420" y="24" class="s">gate bonus r<tspan class="sub" dy="3">gate</tspan></text>
+      <rect x="420" y="50" width="20" height="150" class="sh-sim"/>
+      <rect x="600" y="50" width="20" height="150" class="sh-sim"/>
+      <text x="430" y="44" text-anchor="middle" class="s c-sim">crash</text>
+      <text x="610" y="44" text-anchor="middle" class="s c-sim">crash</text>
+      <line x1="420" y1="200" x2="630" y2="200" class="ln-m"/>
+      <line x1="420" y1="50" x2="420" y2="200" class="ln-m"/>
+      <line x1="520" y1="60" x2="520" y2="200" class="ln-m" style="stroke-dasharray:2 4;opacity:.6"/>
+      <text x="412" y="204" text-anchor="end" class="s">0</text>
+      <text x="412" y="134" text-anchor="end" class="s">0.5</text>
+      <text x="412" y="64" text-anchor="end" class="s">1</text>
+      <text x="440" y="216" text-anchor="middle" class="s">−0.8</text>
+      <text x="520" y="216" text-anchor="middle" class="s">0</text>
+      <text x="600" y="216" text-anchor="middle" class="s">+0.8</text>
+      <text x="520" y="236" text-anchor="middle" class="s">offset from gate center (m)</text>
+      <polyline points="440,200 520,60 600,200" class="ln-ok"/>
+      <circle cx="540" cy="95" r="4" class="f-ok"/>
+      <text x="548" y="90" class="c-ok b">0.2 m off → 0.75</text>
+    </svg>
+    </div>
+    <figcaption><span class="fig-no">Fig 1.4</span>Left: one gate from above. Two invisible gates, before and after the real one, mark a tunnel \(t_g\) thick that the drone must stay inside. Right: the bonus for crossing, highest at the center. Farther than \(d_g = 0.8\) m from the center, the crossing counts as a crash.</figcaption>
+  </figure>
+
+  <div class="eq">
+    <div class="eq-label"><b>The reward</b></div>
+    \[ r_t = 5\,r_{\text{prog}} - r_{\text{rate}} + 30\,r_{\text{gate}} \]
+    \[ r_{\text{prog}} = \lVert p_{t-1,g}\rVert - \lVert p_{t,g}\rVert \qquad r_{\text{gate}} = 1 - \frac{\max(|y_{t,g}|,\,|z_{t,g}|)}{d_g}\ \ \text{(on crossing, else 0)} \qquad r_{\text{rate}} = \frac{e^{\min(\lVert\Omega_t\rVert_1,\,17)} - 1}{2 f_c \cdot 10^5} \]
+    <p class="read">\(p_{t,g}\) = drone position relative to the next gate; \(y, z\) = sideways and vertical offset at the crossing. \(d_g = 0.8\) m. \(\lVert\Omega_t\rVert_1\) = sum of the absolute spin rates (rad/s). \(f_c = 90\) Hz. The rate penalty limits spinning, which would saturate the gyro and blur the camera.</p>
+  </div>
+  <div class="ex">At 15 m/s the drone closes 0.17 m per step, so progress pays \(5 \times 0.17 = 0.83\) per step. Crossing 0.2 m off center pays \(30 \times 0.75 = 22.5\). The rate penalty is a wall: \(\lVert\Omega\rVert_1 = 10\) rad/s costs 0.001 per step, 15 rad/s costs 0.18, and at the 17 rad/s cap it costs 1.34, more than the progress reward.</div>
+  <p>The progress reward does not prescribe a path: summed over one approach, it equals the starting distance whatever route is flown. The discount is what makes arriving sooner worth more.</p>
+  <p><b>When an episode ends:</b></p>
+  <ul class="tight">
+    <li><b>Gate crash:</b> crossing a gate, or its pre- or post-gate, more than \(d_g\) from the center.</li>
+    <li><b>Ground crash:</b> near the floor (below 0.5 m) while sinking faster than 1 m/s or tilted past 60°. The real drone starts on a raised podium, so it learns to climb before speeding off.</li>
+    <li>After a crash, all future reward is zero. That loss is the only crash penalty; an extra collision penalty slowed learning.</li>
+    <li>There is no reward for looking at gates. The policy learns to point its camera at them anyway.</li>
+  </ul>
+</section>
+
+<!-- ============ PART 2 ============ -->
+<section class="part" id="world-models">
+  <div class="eyebrow">Part 2 · World models</div>
+  <h2>A world model that remembers</h2>
+  <p>If you read the SuperMimic primer: its world model predicted the next full state from the current one. That works when the robot knows its state. A racing drone does not. It sees a small, rough gate mask and must work out its position and speed over time.</p>
+  <p>Formally this is a <b>POMDP</b> (partially observable Markov decision process): the true state \(s_t\) exists, but the agent only gets observations \(o_t\). A good policy therefore needs memory.</p>
+  <div class="ex">Why one frame is not enough. At 64×64 the camera's focal length is 25 px, so a 1.5 m gate 5 m away is \(25 \times 1.5 / 5 = 7.5\) px wide. At 15 m/s the drone covers 0.17 m in one frame, and the gate grows to 7.76 px. The change, 0.26 px, is less than one pixel. Speed has to be pieced together over many frames, together with gyro and motor readings.</div>
+
+  <h3>Dreamer's world model: a memory plus a code</h3>
+  <p>DreamerV3 (Hafner et al.) is the most widely used world-model RL method. Its model, the <b>RSSM</b> (recurrent state-space model), keeps two things: \(h_t\), a memory vector updated by a GRU (a small recurrent network), and \(z_t\), a discrete code that summarizes the latest observation. Together they form the model state \(s_t = (h_t, z_t)\).</p>
+
+  <figure>
+    <div class="scroll">
+    <svg class="d" viewBox="0 0 700 340" style="min-width:620px" role="img" aria-label="Two steps of the world model. Step t, camera on: the observation and the memory h t go through the encoder to make the code z t. Step t plus 1, dreaming: there is no image, so the dynamics predictor guesses the code from memory alone. A GRU carries memory from step t to t plus 1 using the action from the actor. Under step t the decoder outputs the true state and parameters, and heads predict reward and continuation.">
+      <defs>
+        <marker id="m22" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker>
+      </defs>
+      <text x="240" y="22" text-anchor="middle" class="h c-sim">STEP t · CAMERA ON</text>
+      <text x="540" y="22" text-anchor="middle" class="h c-wm">STEP t+1 · DREAMING</text>
+      <rect x="220" y="36" width="130" height="40" rx="8" class="box-sim"/>
+      <text x="285" y="53" text-anchor="middle" class="b">oₜ</text>
+      <text x="285" y="69" text-anchor="middle" class="s">mask · gyro · RPM</text>
+      <rect x="520" y="36" width="130" height="40" rx="8" class="box-mu"/>
+      <text x="585" y="53" text-anchor="middle">no oₜ₊₁</text>
+      <text x="585" y="69" text-anchor="middle" class="s">no camera</text>
+
+      <rect x="140" y="112" width="200" height="84" rx="10" class="panel"/>
+      <text x="150" y="128" class="s">model state sₜ</text>
+      <rect x="150" y="138" width="70" height="48" rx="7" class="box-wm"/>
+      <text x="185" y="158" text-anchor="middle" class="b">hₜ</text>
+      <text x="185" y="176" text-anchor="middle" class="s">memory</text>
+      <rect x="250" y="138" width="80" height="48" rx="7" class="box-wm"/>
+      <text x="290" y="158" text-anchor="middle" class="b">zₜ</text>
+      <text x="290" y="176" text-anchor="middle" class="s">code</text>
+      <path d="M220,162 H248" class="ln" marker-end="url(#m22)"/>
+      <path d="M290,76 V136" class="ln" marker-end="url(#m22)"/>
+      <text x="297" y="104" class="s">encoder q</text>
+
+      <rect x="440" y="112" width="200" height="84" rx="10" class="panel"/>
+      <text x="450" y="128" class="s">model state sₜ₊₁</text>
+      <rect x="450" y="138" width="70" height="48" rx="7" class="box-wm"/>
+      <text x="485" y="158" text-anchor="middle" class="b">hₜ₊₁</text>
+      <text x="485" y="176" text-anchor="middle" class="s">memory</text>
+      <rect x="550" y="138" width="80" height="48" rx="7" class="box-wm"/>
+      <text x="590" y="158" text-anchor="middle" class="b">ẑₜ₊₁</text>
+      <text x="590" y="176" text-anchor="middle" class="s">guessed</text>
+      <path d="M520,162 H548" class="ln" marker-end="url(#m22)"/>
+      <text x="585" y="100" text-anchor="middle" class="s">predictor p guesses z</text>
+
+      <path d="M340,162 H438" class="ln" style="stroke-width:1.8" marker-end="url(#m22)"/>
+      <text x="389" y="154" text-anchor="middle" class="b">GRU f</text>
+      <rect x="349" y="222" width="80" height="36" rx="7" class="box-wm"/>
+      <text x="389" y="245" text-anchor="middle" class="b">actor π</text>
+      <path d="M330,196 V240 H347" class="ln" marker-end="url(#m22)"/>
+      <path d="M389,222 V166" class="ln" marker-end="url(#m22)"/>
+      <text x="395" y="204" class="s">uₜ</text>
+
+      <path d="M195,196 V280" class="ln" marker-end="url(#m22)"/>
+      <path d="M300,196 V280" class="ln" marker-end="url(#m22)"/>
+      <rect x="120" y="282" width="140" height="46" rx="7" class="box-priv"/>
+      <text x="190" y="301" text-anchor="middle" class="b c-priv">decoder</text>
+      <text x="190" y="318" text-anchor="middle" class="s">true state, params</text>
+      <rect x="270" y="282" width="70" height="46" rx="7" class="box"/>
+      <text x="305" y="301" text-anchor="middle" class="b c-ok">r̂ₜ, ĉₜ</text>
+      <text x="305" y="318" text-anchor="middle" class="s">heads</text>
+      <path d="M595,196 V280" class="ln" marker-end="url(#m22)"/>
+      <rect x="545" y="282" width="100" height="46" rx="7" class="box"/>
+      <text x="595" y="301" text-anchor="middle" class="b c-ok">r̂ₜ₊₁, ĉₜ₊₁</text>
+      <text x="595" y="318" text-anchor="middle" class="s">score dream</text>
+    </svg>
+    </div>
+    <figcaption><span class="fig-no">Fig 2.1</span>Two steps of the world model. At step \(t\) the camera is available: the encoder folds the new image into a code \(z_t\). At step \(t{+}1\) there is no image: the dynamics predictor guesses the code from memory alone, which is what lets the model dream. In both, the GRU carries memory forward using the action. The decoder (magenta) is trained to output the true state and drone parameters, which exist only in simulation.</figcaption>
+  </figure>
+
+  <div class="eq">
+    <div class="eq-label"><b>The RSSM</b> · six small networks</div>
+    \[ h_t = f_\phi(h_{t-1},\, z_{t-1},\, u_{t-1}) \qquad z_t \sim q_\phi(z_t \mid h_t,\, o_t) \qquad \hat z_t \sim p_\phi(\hat z_t \mid h_t) \]
+    \[ \hat\imath_t \sim p_\phi(i_t \mid h_t, z_t) \qquad \hat r_t \sim p_\phi(r_t \mid h_t, z_t) \qquad \hat c_t \sim p_\phi(c_t \mid h_t, z_t) \]
+    <p class="read">\(\phi\) = world-model weights (the paper writes \(\theta\) for everything; \(\phi\) keeps it apart from the policy). \(q\) is the encoder and sees the observation; \(p\) is the dynamics predictor and does not. \(i_t\) is the decoder's target, explained below. \(c_t = 1\) while the episode goes on and 0 after a crash.</p>
+  </div>
+  <div class="ex toy">The code \(z\) is a set of one-hot slots. With 2 slots of 4 choices, \(z = [0,1,0,0 \mid 0,0,0,1]\) is one of 16 possible codes. DreamerV2 used 32 slots of 32 choices. A discrete code lets the model say “either this or that” instead of averaging two possible futures into a blur.</div>
+
+  <div class="eq">
+    <div class="eq-label"><b>World-model loss</b> · DreamerV3</div>
+    \[ \mathcal L(\phi) = \mathbb E\sum_t\Big[\underbrace{-\ln p_\phi(i_t\mid s_t) - \ln p_\phi(r_t\mid s_t) - \ln p_\phi(c_t\mid s_t)}_{\text{prediction}} + \beta_{\text{dyn}}\underbrace{\mathrm{KL}\big[\mathrm{sg}(q_\phi)\,\Vert\,p_\phi\big]}_{\text{teach the predictor}} + \beta_{\text{rep}}\underbrace{\mathrm{KL}\big[q_\phi\,\Vert\,\mathrm{sg}(p_\phi)\big]}_{\text{keep codes guessable}}\Big] \]
+    <p class="read">sg = stop-gradient (treat as a constant). KL (Kullback–Leibler divergence) measures how far the predictor's guess is from what the encoder saw. DreamerV3 stops pushing once the KL is below 1 nat (a floor called free bits) and weights the second KL lightly (\(\beta_{\text{rep}} = 0.1\)). SkyDreamer trains on replayed sequences of 64 steps, later 256.</p>
+  </div>
+  <div class="ex">One slot, two choices. Before the image, the predictor guesses [0.6, 0.4]. After the image, the encoder says [0.95, 0.05]. \(\mathrm{KL} = 0.95\ln\frac{0.95}{0.6} + 0.05\ln\frac{0.05}{0.4} \approx 0.33\) nats. If that were the whole code, it would sit under the 1-nat floor, and the loss would leave it alone.</div>
+
+  <h3>SkyDreamer's twist: decode the true state, not the picture</h3>
+  <p>Standard Dreamer trains the decoder to rebuild the observation, which for images is often a blur. <b>Informed Dreamer</b> (Lambrechts et al., 2024) decodes <b>privileged information</b> instead: things the simulator knows but the drone never sees. SkyDreamer decodes the full state and the drone's physical parameters. The image itself is left out of the target.</p>
+
+  <figure>
+    <div class="scroll">
+    <svg class="d" viewBox="0 0 700 266" style="min-width:600px" role="img" aria-label="Row A, DreamerV3: the latent goes through a decoder that rebuilds a blurry image plus gyro and RPM; position is not written anywhere. Row B, SkyDreamer: the decoder outputs position and velocity in world and gate frames, attitude, true body rates and motor speeds, camera mounting angles, and dynamics parameters, plus measured gyro and RPM but not the image.">
+      <defs>
+        <marker id="m23" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker>
+        <filter id="blur23" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.8"/></filter>
+      </defs>
+      <text x="10" y="22" class="h">A · DREAMERV3: DECODE WHAT THE SENSORS SAW</text>
+      <rect x="10" y="38" width="100" height="48" rx="8" class="box-wm"/>
+      <text x="60" y="58" text-anchor="middle" class="b">hₜ, zₜ</text>
+      <text x="60" y="76" text-anchor="middle" class="s">latent</text>
+      <path d="M110,62 H148" class="ln" marker-end="url(#m23)"/>
+      <rect x="150" y="38" width="100" height="48" rx="8" class="box"/>
+      <text x="200" y="66" text-anchor="middle" class="b">decoder</text>
+      <path d="M250,62 H288" class="ln" marker-end="url(#m23)"/>
+      <rect x="290" y="38" width="48" height="48" class="mask"/>
+      <g filter="url(#blur23)" style="opacity:.85">
+        <path d="M300,48 L328,50 L327,77 L301,75 Z M305,53 L323,54 L322,72 L306,71 Z" class="f-sim" fill-rule="evenodd"/>
+      </g>
+      <text x="352" y="58">image (blurry), gyro, RPM</text>
+      <text x="352" y="76" class="s">a picture: position is not written anywhere</text>
+
+      <text x="10" y="124" class="h c-priv">B · SKYDREAMER: DECODE THE TRUE STATE (TRAINING TARGET)</text>
+      <rect x="10" y="150" width="100" height="48" rx="8" class="box-wm"/>
+      <text x="60" y="170" text-anchor="middle" class="b">hₜ, zₜ</text>
+      <text x="60" y="188" text-anchor="middle" class="s">latent</text>
+      <path d="M110,174 H148" class="ln" marker-end="url(#m23)"/>
+      <rect x="150" y="150" width="100" height="48" rx="8" class="box"/>
+      <text x="200" y="178" text-anchor="middle" class="b">decoder</text>
+      <path d="M250,174 H288" class="ln" marker-end="url(#m23)"/>
+      <rect x="290" y="136" width="400" height="122" rx="8" class="box-priv"/>
+      <text x="304" y="156">position p, velocity v (world + gate frame)</text>
+      <text x="304" y="176">attitude λ, true body rates Ω, motor speeds ω</text>
+      <text x="304" y="196">camera mounting angles cₑ</text>
+      <text x="304" y="216">dynamics params d: thrust, drag, motor limits, lag</text>
+      <text x="304" y="240" class="s">+ measured gyro and RPM; not the image</text>
+    </svg>
+    </div>
+    <figcaption><span class="fig-no">Fig 2.2</span>Same latent, different decoder target. In B every output is a number you can plot against the truth. These targets come from the simulator, so they exist only in training; in flight the decoder can still run to show what the model believes.</figcaption>
+  </figure>
+
+  <div class="eq">
+    <div class="eq-label"><b>Informed POMDP</b> · what the decoder must rebuild</div>
+    \[ i_t = \{\,o_t,\ o_t^+\,\} \setminus \{X\}, \qquad o_t^+ = [\,p_w,\ p_g,\ v_w,\ v_g,\ \lambda,\ \Omega,\ \omega,\ c_e,\ d\,] \]
+    \[ \pi_\theta^* = \arg\max_{\pi_\theta}\ \mathbb E\Big[\sum_t \gamma^t R(s_t, u_t)\Big], \qquad u_t \sim \pi_\theta(\cdot \mid o_{\le t},\, u_{\lt t}) \]
+    <p class="read">\(X\) = the gate mask; \(o^+\) = privileged observations, available in training only. The policy never takes \(o^+\) as input. It benefits only because the latent it reads has been forced to carry that information.</p>
+  </div>
+  <p><b>What this buys:</b></p>
+  <ul class="tight">
+    <li><b>A readable estimator.</b> In flight you can run the decoder and plot where the model thinks the drone is. In simulation its position estimates sit within 10–15 cm of the truth.</li>
+    <li><b>Offline debugging.</b> Log a real flight, change the world model, then replay the same observations through it to check a fix, with no new flight.</li>
+    <li><b>A built-in parameter estimator.</b> Because \(d\) is a target, the model learns to infer thrust gain and motor limits from how the drone responds (Part 3).</li>
+  </ul>
+  <p class="meta">SkyDreamer does not run its own comparison against plain DreamerV3. The claim that decoding privileged information speeds up learning comes from the informed-Dreamer paper.</p>
+
+  <h3>Training the actor inside the dream</h3>
+  <p>Training cycles through three phases, as in SuperMimic: collect simulator data into a replay buffer, fit the world model on replayed sequences, then train the actor and critic only on imagined rollouts. Each dream starts from a real model state and runs 16 steps ahead.</p>
+
+  <figure>
+    <div class="scroll">
+    <svg class="d" viewBox="0 0 680 232" style="min-width:600px" role="img" aria-label="One dreamed rollout: a real start state, then 16 imagined states made by the actor and the dynamics predictor, each adding a predicted reward, then the critic value at the end. Each action is updated separately by its advantage; no gradient flows back through the model.">
+      <defs>
+        <marker id="m24" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker>
+        <marker id="m24g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-g"/></marker>
+      </defs>
+      <rect x="100" y="12" width="570" height="32" rx="7" class="box"/>
+      <text x="385" y="33" text-anchor="middle" class="b">λ-return at every step = rewards + critic at the end</text>
+      <circle cx="40" cy="110" r="22" class="box-sim"/><text x="40" y="114" text-anchor="middle">s₀</text>
+      <circle cx="130" cy="110" r="22" class="box-wm"/><text x="130" y="114" text-anchor="middle">ŝ₁</text>
+      <circle cx="220" cy="110" r="22" class="box-wm"/><text x="220" y="114" text-anchor="middle">ŝ₂</text>
+      <circle cx="310" cy="110" r="22" class="box-wm"/><text x="310" y="114" text-anchor="middle">ŝ₃</text>
+      <text x="390" y="115" text-anchor="middle" class="b">· · ·</text>
+      <circle cx="470" cy="110" r="22" class="box-wm"/><text x="470" y="114" text-anchor="middle">ŝ₁₅</text>
+      <circle cx="560" cy="110" r="22" class="box-wm"/><text x="560" y="114" text-anchor="middle">ŝ₁₆</text>
+      <rect x="610" y="90" width="60" height="40" rx="7" class="box"/><text x="640" y="114" text-anchor="middle" class="b">v<tspan class="sub" dy="3">ψ</tspan></text>
+      <path d="M62,110 H106" class="ln" marker-end="url(#m24)"/>
+      <path d="M152,110 H196" class="ln" marker-end="url(#m24)"/>
+      <path d="M242,110 H286" class="ln" marker-end="url(#m24)"/>
+      <path d="M332,110 H362" class="ln" marker-end="url(#m24)"/>
+      <path d="M418,110 H446" class="ln" marker-end="url(#m24)"/>
+      <path d="M492,110 H536" class="ln" marker-end="url(#m24)"/>
+      <path d="M582,110 H608" class="ln" marker-end="url(#m24)"/>
+      <text x="85" y="102" text-anchor="middle" class="s">π, p</text>
+      <text x="175" y="102" text-anchor="middle" class="s">π, p</text>
+      <text x="265" y="102" text-anchor="middle" class="s">π, p</text>
+      <text x="515" y="102" text-anchor="middle" class="s">π, p</text>
+      <path d="M130,88 V46 M220,88 V46 M310,88 V46 M470,88 V46 M560,88 V46 M640,90 V46" class="ln-ok" style="stroke-width:1.5"/>
+      <text x="136" y="70" class="c-ok">r̂₁</text>
+      <text x="226" y="70" class="c-ok">r̂₂</text>
+      <text x="316" y="70" class="c-ok">r̂₃</text>
+      <text x="476" y="70" class="c-ok">r̂₁₅</text>
+      <text x="566" y="70" class="c-ok">r̂₁₆</text>
+      <text x="646" y="70" class="c-ok">v</text>
+      <text x="40" y="80" text-anchor="middle" class="s">real</text>
+      <path d="M85,166 V120" class="ln-grad" marker-end="url(#m24g)"/>
+      <path d="M175,166 V120" class="ln-grad" marker-end="url(#m24g)"/>
+      <path d="M265,166 V120" class="ln-grad" marker-end="url(#m24g)"/>
+      <path d="M515,166 V120" class="ln-grad" marker-end="url(#m24g)"/>
+      <rect x="20" y="168" width="650" height="30" rx="7" class="box"/>
+      <text x="345" y="188" text-anchor="middle" class="b c-grad">∇θ Σₜ log π(uₜ | sₜ) · Aₜ : each action nudged by its own score</text>
+      <text x="345" y="220" text-anchor="middle" class="s c-grad">no gradient flows back through the model · Aₜ = (λ-return − v) / S</text>
+    </svg>
+    </div>
+    <figcaption><span class="fig-no">Fig 2.3</span>One dreamed rollout. It starts from a real model state (orange) taken from a replayed sequence, runs 16 imagined steps (0.18 s at 90 Hz) with the actor \(\pi\) and the dynamics predictor \(p\), scores each step with the reward and continue heads, and adds the critic's value at the end. Each action is then pushed up or down by its advantage (dashed). In SuperMimic's version the gradient instead runs back through every model step.</figcaption>
+  </figure>
+
+  <div class="eq">
+    <div class="eq-label"><b>λ-return</b> · the critic's target</div>
+    \[ R^\lambda_t = \hat r_{t+1} + \gamma\,\hat c_{t+1}\Big[(1-\lambda)\,v_\psi(s_{t+1}) + \lambda\,R^\lambda_{t+1}\Big], \qquad R^\lambda_H = v_\psi(s_H) \]
+    <p class="read">\(H = 16\) imagined steps, \(\gamma = 0.997\), \(\lambda = 0.95\) (DreamerV3 default). The critic \(v_\psi\) is trained to match \(R^\lambda_t\). Same idea as SuperMimic's Eq. 3.</p>
+  </div>
+  <div class="eq">
+    <div class="eq-label"><b>Actor loss</b> · REINFORCE + entropy + smoothness</div>
+    \[ \mathcal L(\theta) = -\sum_t \mathrm{sg}\!\left(\frac{R^\lambda_t - v_\psi(s_t)}{\max(1,\,S)}\right)\ln\pi_\theta(u_t\mid s_t)\ -\ \eta\,\mathrm H\big[\pi_\theta(\cdot\mid s_t)\big]\ +\ \lambda_{\text{smooth}}\,\mathbb E_t\,\lVert\mu_t-\mu_{t-1}\rVert_2^2 \]
+    <p class="read">\(s_t = (h_t, z_t)\). \(S\) = spread of recent returns (95th minus 5th percentile), so the step size does not depend on the reward's scale. \(\mathrm H\) = entropy, which keeps some exploration noise; \(\eta = 3\cdot10^{-4}\), later \(1\cdot10^{-5}\). \(\mu_t\) = the policy's mean motor command; \(\lambda_{\text{smooth}} = 0.002\).</p>
+  </div>
+  <div class="ex">A dreamed action earned a λ-return of 12.0 where the critic expected 10.0, with return spread \(S = 20\). Its weight is \((12 - 10)/20 = 0.1\), so its probability is nudged up. A return of 8.0 would give −0.1 and nudge it down. Nothing is differentiated through the world model.</div>
+  <p><b>Why the smoothness term.</b> Without it, policies drifted toward bang-bang control: motors fully on or fully off. That is fine in simulation and burns motors in reality. The penalty touches only the mean, so it does not fight the entropy term, and in flight the drone uses the mean alone, with no noise.</p>
+
+  <h3>Where SkyDreamer sits among world-model methods</h3>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Method</th><th>World model</th><th>How the policy learns</th><th>Model on the robot?</th></tr></thead>
+    <tbody>
+      <tr><td>DreamerV3</td><td>RSSM, decodes observations</td><td>actor-critic on dreamed latents</td><td>yes, encoder + GRU</td></tr>
+      <tr><td>Informed Dreamer</td><td>RSSM, decodes privileged info</td><td>same as DreamerV3</td><td>yes</td></tr>
+      <tr><td>DayDreamer</td><td>Dreamer model trained on real-robot data only</td><td>same; a robot learned to walk in 1 h</td><td>yes</td></tr>
+      <tr><td>Dream to Fly</td><td>DreamerV3 on drone images</td><td>same; images rendered from MoCap in real flights</td><td>offboard</td></tr>
+      <tr><td>TD-MPC2</td><td>latent dynamics + value, no recurrence</td><td>plans online (MPC)</td><td>yes, but planning is costly</td></tr>
+      <tr><td>SkyDreamer</td><td>RSSM, decodes true state + parameters</td><td>REINFORCE on dreamed latents</td><td>yes, fully onboard</td></tr>
+      <tr><td>SuperMimic</td><td>MLP on full simulator state</td><td>backprop through 32 model steps</td><td>no, policy only</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ============ PART 3 ============ -->
+<section class="part" id="paper">
+  <div class="eyebrow">Part 3 · The paper</div>
+  <h2>SkyDreamer: from gate masks to motor commands</h2>
+  <p class="meta">Verraest, Bahnam, Ferede, de Croon, De Wagter · MAVLab, TU Delft · <a href="https://arxiv.org/abs/2510.14783">arXiv 2510.14783</a> (October 2025)</p>
+  <p><b>Problem.</b> Champion racing drones use modular pipelines tied to known gate shapes, careful camera calibration and hand-tuned filters. Earlier end-to-end vision policies ran offboard, used motion capture to render their images in real flights, and were capped well below champion speeds. <b>Idea.</b> Train an informed Dreamer whose decoder outputs the true state, let it write motor commands directly, and run the whole thing on the drone.</p>
+
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Real-world result</th><th>Geles '24</th><th>Xing '24</th><th>Romero '25</th><th>Krinner '25</th><th>SkyDreamer</th></tr></thead>
+    <tbody>
+      <tr><td>All compute onboard</td><td>no</td><td>no</td><td>no</td><td>no</td><td>yes</td></tr>
+      <tr><td>Top performance</td><td>2 g</td><td>thrust capped (TWR 2.7)</td><td>thrust capped (TWR 2.7)</td><td>not champion-level</td><td>6 g, 21 m/s</td></tr>
+      <tr><td>Real camera in flight</td><td>yes</td><td>no, MoCap-rendered</td><td>no, MoCap-rendered</td><td>no, MoCap-rendered</td><td>yes, poor masks</td></tr>
+      <tr><td>Readable internals</td><td>no</td><td>no</td><td>blurry images</td><td>decoded states</td><td>states + parameters</td></tr>
+      <tr><td>Look-alike views</td><td>not shown</td><td>not shown</td><td>not shown</td><td>not shown</td><td>handled</td></tr>
+      <tr><td>Reward for looking at gates</td><td>yes</td><td>yes</td><td>no</td><td>no</td><td>no</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="meta">From the paper's Table I. TWR = thrust-to-weight ratio. MoCap-rendered means the real drone flew, but its images were drawn from motion-capture positions instead of taken by its camera.</p>
+
+  <figure>
+    <div class="scroll">
+    <svg class="d" viewBox="0 0 700 336" style="min-width:640px" role="img" aria-label="Top row, training in simulation: JAX quadrotor simulator, renderer making ideal gate masks, augmentation with GAN, erosion and shear, then the DreamerV3 world model with actor-critic. The simulator's true state, camera angles and dynamics parameters also go straight to the world model as decoder targets. Bottom row, flight on a Jetson Orin NX at 90 hertz: camera, undistort, GateNet mask in 3 milliseconds, encoder and GRU, actor, motors. Gyro and RPM feed the encoder. A decoder reads the gate-relative position, decides when a gate is passed, and updates the flight plan input.">
+      <defs>
+        <marker id="m31" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker>
+        <marker id="m31p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-p"/></marker>
+      </defs>
+      <text x="10" y="22" class="h">TRAIN IN SIMULATION · ABOUT 50 H ON HALF AN A100</text>
+      <rect x="10" y="38" width="130" height="58" rx="8" class="box-sim"/>
+      <text x="75" y="58" text-anchor="middle" class="b">simulator</text>
+      <text x="75" y="75" text-anchor="middle" class="s">JAX quadrotor, RK4</text>
+      <text x="75" y="89" text-anchor="middle" class="s">randomized ±20–30%</text>
+      <rect x="160" y="38" width="120" height="58" rx="8" class="box-sim"/>
+      <text x="220" y="62" text-anchor="middle" class="b">renderer</text>
+      <text x="220" y="80" text-anchor="middle" class="s">ideal gate masks</text>
+      <rect x="300" y="38" width="120" height="58" rx="8" class="box"/>
+      <text x="360" y="62" text-anchor="middle" class="b">augment</text>
+      <text x="360" y="80" text-anchor="middle" class="s">GAN, erode, shear</text>
+      <rect x="440" y="38" width="250" height="58" rx="8" class="box-wm"/>
+      <text x="565" y="58" text-anchor="middle" class="b">DreamerV3 world model</text>
+      <text x="565" y="75" text-anchor="middle" class="s">+ actor-critic in dreams</text>
+      <text x="565" y="89" text-anchor="middle" class="s">12M parameters, 17M sim steps</text>
+      <path d="M140,67 H158" class="ln" marker-end="url(#m31)"/>
+      <path d="M280,67 H298" class="ln" marker-end="url(#m31)"/>
+      <path d="M420,67 H438" class="ln" marker-end="url(#m31)"/>
+      <path d="M75,96 V118 H565 V98" class="ln-priv" marker-end="url(#m31p)"/>
+      <text x="320" y="136" text-anchor="middle" class="c-priv">true state, camera angles, dynamics parameters → decoder target</text>
+
+      <text x="10" y="176" class="h c-sim">FLY ON THE DRONE · JETSON ORIN NX · 90 HZ</text>
+      <rect x="10" y="192" width="95" height="56" rx="8" class="box-sim"/>
+      <text x="57.5" y="214" text-anchor="middle" class="b">camera</text>
+      <text x="57.5" y="232" text-anchor="middle" class="s">175° lens</text>
+      <rect x="122" y="192" width="100" height="56" rx="8" class="box"/>
+      <text x="172" y="214" text-anchor="middle" class="b">undistort</text>
+      <text x="172" y="232" text-anchor="middle" class="s">standard K</text>
+      <rect x="239" y="192" width="100" height="56" rx="8" class="box"/>
+      <text x="289" y="214" text-anchor="middle" class="b">GateNet</text>
+      <text x="289" y="232" text-anchor="middle" class="s">mask · 3 ms</text>
+      <rect x="356" y="192" width="130" height="56" rx="8" class="box-wm"/>
+      <text x="421" y="214" text-anchor="middle" class="b">encoder + GRU</text>
+      <text x="421" y="232" text-anchor="middle" class="s">latent hₜ, zₜ</text>
+      <rect x="503" y="192" width="80" height="56" rx="8" class="box-wm"/>
+      <text x="543" y="214" text-anchor="middle" class="b">actor</text>
+      <text x="543" y="232" text-anchor="middle" class="s">mean only</text>
+      <rect x="600" y="192" width="90" height="56" rx="8" class="box-sim"/>
+      <text x="645" y="214" text-anchor="middle" class="b">motors</text>
+      <text x="645" y="232" text-anchor="middle" class="s">4 commands</text>
+      <path d="M105,220 H120" class="ln" marker-end="url(#m31)"/>
+      <path d="M222,220 H237" class="ln" marker-end="url(#m31)"/>
+      <path d="M339,220 H354" class="ln" marker-end="url(#m31)"/>
+      <path d="M486,220 H501" class="ln" marker-end="url(#m31)"/>
+      <path d="M583,220 H598" class="ln" marker-end="url(#m31)"/>
+      <path d="M400,312 V250" class="ln" marker-end="url(#m31)"/>
+      <text x="393" y="298" text-anchor="end" class="s">gyro, motor RPM</text>
+      <path d="M470,248 V290 H501" class="ln" marker-end="url(#m31)"/>
+      <rect x="503" y="276" width="187" height="40" rx="7" class="box-priv"/>
+      <text x="596" y="292" text-anchor="middle" class="b c-priv">decoder → x̂<tspan class="sub" dy="3">g</tspan></text>
+      <text x="596" y="309" text-anchor="middle" class="s">gate passed? next gate</text>
+      <path d="M503,304 H440 V250" class="ln" marker-end="url(#m31)"/>
+      <text x="470" y="322" text-anchor="middle" class="s">plan fᵢ</text>
+    </svg>
+    </div>
+    <figcaption><span class="fig-no">Fig 3.1</span>The full system. Top: training. The simulator's true state goes two ways: rendered into gate masks the policy sees, and straight to the decoder as a training target (magenta). Bottom: flight. Only the camera, gyro and motor-speed sensors are used; encoder, GRU and actor together take 1.3 ms. The decoder's gate-relative position decides when to move to the next gate in the flight plan.</figcaption>
+  </figure>
+
+  <h3>What goes in and out</h3>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Signal</th><th>Contents</th><th>Size</th></tr></thead>
+    <tbody>
+      <tr><td>Gate mask \(X\)</td><td>1 where a pixel is gate, else 0; from GateNet on the undistorted image</td><td>64 × 64</td></tr>
+      <tr><td>Gyro \(\hat\Omega\)</td><td>measured body rates</td><td>3</td></tr>
+      <tr><td>Motor speeds \(\hat\omega\)</td><td>measured by the ESCs</td><td>4</td></tr>
+      <tr><td>Flight plan \(f_i\)</td><td>position and yaw of the next three gates, relative and absolute</td><td>24</td></tr>
+      <tr><td>Action \(u\)</td><td>motor power fractions, no inner loop</td><td>4, each in [0, 1]</td></tr>
+      <tr><td>Privileged \(o^+\)</td><td>position and velocity (world and gate frame), attitude, true rates and motor speeds, camera angles, dynamics parameters</td><td>decoder target only</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>No accelerometer: on this drone it saturates under high g and vibration.</p>
+
+  <h3>Closing the vision gap</h3>
+  <p>Rendered masks are perfect. GateNet's real masks are thinner, blotchy, sometimes miss pieces and sometimes mark things that are not gates. The paper roughens the rendered masks in three ways before the world model sees them.</p>
+
+  <figure>
+    <div class="scroll">
+    <svg class="d" viewBox="0 0 700 186" style="min-width:600px" role="img" aria-label="Four 64 by 64 masks, schematic. One, rendered: a crisp gate frame. Two, after the StochGAN: jagged edges, a missing piece and specks. Three, eroded by one pixel: a thinner frame. Four, rolling shutter: the frame is sheared and slightly stretched.">
+      <defs><marker id="m32" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker></defs>
+      <text x="70" y="24" text-anchor="middle" class="b">1 · rendered</text>
+      <text x="240" y="24" text-anchor="middle" class="b">2 · StochGAN</text>
+      <text x="410" y="24" text-anchor="middle" class="b">3 · erode 1 px</text>
+      <text x="580" y="24" text-anchor="middle" class="b">4 · rolling shutter</text>
+      <g transform="translate(20 34)">
+        <rect width="100" height="100" class="mask"/>
+        <path d="M24,22 L80,26 L78,84 L26,80 Z M33,31 L71,34 L69,75 L35,72 Z" class="f-sim" fill-rule="evenodd"/>
+      </g>
+      <g transform="translate(190 34)">
+        <rect width="100" height="100" class="mask"/>
+        <path d="M23,23 L40,21 L52,24 L66,23 L81,27 L79,45 L80,62 L77,85 L60,82 L44,83 L25,81 L27,62 L24,44 Z M34,32 L50,33 L70,35 L68,52 L70,74 L52,73 L36,71 L35,52 Z" class="f-sim" fill-rule="evenodd"/>
+        <rect x="55" y="20" width="8" height="16" class="mask-bg"/>
+        <rect x="12" y="60" width="3" height="3" class="f-sim"/>
+        <rect x="88" y="40" width="2" height="3" class="f-sim"/>
+        <rect x="50" y="92" width="3" height="2" class="f-sim"/>
+        <rect x="15" y="14" width="2" height="2" class="f-sim"/>
+      </g>
+      <g transform="translate(360 34)">
+        <rect width="100" height="100" class="mask"/>
+        <path d="M25,23 L79,27 L77,83 L27,79 Z M31,29 L73,32 L71,77 L33,74 Z" class="f-sim" fill-rule="evenodd"/>
+      </g>
+      <g transform="translate(530 34)">
+        <rect width="100" height="100" class="mask"/>
+        <path transform="matrix(1 0 -0.18 1.06 9 -3)" d="M25,23 L79,27 L77,83 L27,79 Z M31,29 L73,32 L71,77 L33,74 Z" class="f-sim" fill-rule="evenodd"/>
+      </g>
+      <path d="M120,84 H188" class="ln" marker-end="url(#m32)"/>
+      <path d="M290,84 H358" class="ln" marker-end="url(#m32)"/>
+      <path d="M460,84 H528" class="ln" marker-end="url(#m32)"/>
+      <text x="70" y="154" text-anchor="middle" class="s">ideal mask</text>
+      <text x="70" y="170" text-anchor="middle" class="s">from PyTorch3D</text>
+      <text x="240" y="154" text-anchor="middle" class="s">learned look of</text>
+      <text x="240" y="170" text-anchor="middle" class="s">real masks</text>
+      <text x="410" y="154" text-anchor="middle" class="s">50% of the time,</text>
+      <text x="410" y="170" text-anchor="middle" class="s">held ~100 steps</text>
+      <text x="580" y="154" text-anchor="middle" class="s">shear ∝ yaw rate,</text>
+      <text x="580" y="170" text-anchor="middle" class="s">stretch ∝ pitch rate</text>
+    </svg>
+    </div>
+    <figcaption><span class="fig-no">Fig 3.2</span>Schematic of how a rendered mask is roughened (red = gate pixels). The StochGAN is a CycleGAN with an extra noise input, trained on about 4,000 unlabeled real and rendered masks. Real masks come from GateNet, a small U-Net trained on 200 labeled photos for the orange gates, or 700 photos plus 8,500 synthetic images for the harder MAVLab gates.</figcaption>
+  </figure>
+
+  <div class="eq">
+    <div class="eq-label"><b>One standard camera, and the rolling-shutter warp</b></div>
+    \[ K = \begin{bmatrix} \tfrac{25}{64}W & 0 & 0.5W \\ 0 & \tfrac{25}{64}H & 0.5H \\ 0&0&1 \end{bmatrix} \qquad A = \begin{bmatrix} 1 & -s\,r_c & \tfrac{W}{2}\,s\,r_c \\ 0 & 1+s\,q_c & -\tfrac{H}{2}\,s\,q_c \end{bmatrix}, \quad s \in [0,\ 0.02] \]
+    <p class="read">Every drone's image is undistorted onto the same pinhole camera \(K\) (intrinsics), so the policy never needs to know the lens. How the camera is mounted (extrinsics) is not calibrated: it is randomized in training and estimated in flight. \(A\) mimics a rolling shutter, which reads rows one after another; \(r_c\), \(q_c\) = yaw and pitch rate in the camera frame.</p>
+  </div>
+  <div class="ex">At 64×64 the focal length is 25 px, a field of view of \(2\arctan(32/25) \approx 104°\). With \(s = 0.01\) and a yaw rate of 5 rad/s, the shear is 0.05: the top row shifts +1.6 px and the bottom row −1.6 px. A pitch rate of 5 rad/s stretches the image 5% vertically.</div>
+
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Randomized in training</th><th>Range</th></tr></thead>
+    <tbody>
+      <tr><td>Camera roll and yaw</td><td>±5°</td></tr>
+      <tr><td>Camera up-tilt</td><td>45° to 55°</td></tr>
+      <tr><td>Motor speed limits \(\omega_{\min}, \omega_{\max}\)</td><td>±20%</td></tr>
+      <tr><td>Other dynamics parameters</td><td>±30% (±20% in evaluation)</td></tr>
+      <tr><td>Slow pushes</td><td>±3 m/s² and ±3 rad/s², changing about once a second</td></tr>
+      <tr><td>Fast disturbances</td><td>±125 rad/s² torque noise and ±0.2 motor-command noise, every step</td></tr>
+      <tr><td>Delays</td><td>image 33 ms, action 11 ms</td></tr>
+      <tr><td>Start state</td><td>70% in front of a random gate, 30% at the start gate</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Flight plan: telling look-alike views apart</h3>
+  <p>On the test tracks the drone sees nearly the same picture at different points of a lap, but must do different things. A memory alone can lose track. SkyDreamer adds a flight plan input that lists the next gates, and uses its own decoded position to know when to move down the list.</p>
+
+  <figure>
+    <div class="scroll">
+    <svg class="d" viewBox="0 0 700 312" style="min-width:600px" role="img" aria-label="Schematic side view of an inverted loop: a real gate with a virtual gate stacked 2.7 meters above it. The path crosses above the gate through the virtual gate at point 1, loops down and through the real gate at point 2, loops up and crosses above it again at point 3, then leaves for gate 1. At points 1 and 3 the camera sees the same view, but the flight plan says the next gate is gate 2 at point 1 and gate 1 at point 3.">
+      <defs><marker id="m33" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker></defs>
+      <line x1="30" y1="300" x2="430" y2="300" class="ln-m"/>
+      <rect x="244" y="20" width="12" height="31" class="ln-m dash"/>
+      <rect x="244" y="129" width="12" height="31" class="ln-m dash"/>
+      <rect x="244" y="160" width="12" height="31" class="f-sim"/>
+      <rect x="244" y="269" width="12" height="31" class="f-sim"/>
+      <text x="264" y="40" class="s">virtual gate (not real)</text>
+      <text x="264" y="290" class="s">gate 2 (real)</text>
+      <path d="M270,90 V230 M265,90 H275 M265,230 H275" class="ln-m"/>
+      <text x="279" y="164" class="s">2.7 m</text>
+      <path d="M40,90 H248" class="ln" style="stroke-width:1.8"/>
+      <path d="M250,90 A70,70 0 0 1 250,230" class="ln" style="stroke-width:1.8" marker-end="url(#m33)"/>
+      <path d="M250,230 A70,70 0 0 1 250,90" class="ln" style="stroke-width:1.8" marker-end="url(#m33)"/>
+      <path d="M252,90 H420" class="ln" style="stroke-width:1.8" marker-end="url(#m33)"/>
+      <text x="420" y="108" text-anchor="end" class="s">to gate 1</text>
+      <circle cx="150" cy="72" r="9" class="box"/><text x="150" y="76" text-anchor="middle" class="b">1</text>
+      <circle cx="350" cy="72" r="9" class="box"/><text x="350" y="76" text-anchor="middle" class="b">3</text>
+      <circle cx="292" cy="250" r="9" class="box"/><text x="292" y="254" text-anchor="middle" class="b">2</text>
+      <line x1="450" y1="20" x2="450" y2="300" class="ln-m" style="stroke-dasharray:2 4"/>
+      <g transform="translate(470 40)">
+        <rect width="70" height="70" class="mask"/>
+        <path d="M18,34 L52,36 L51,60 L19,58 Z M24,40 L46,41 L45,54 L25,53 Z" class="f-sim" fill-rule="evenodd"/>
+      </g>
+      <text x="552" y="58" class="b">at 1: same view</text>
+      <text x="552" y="76" class="s">plan: next = gate 2</text>
+      <text x="552" y="92" class="c-wm">→ loop down</text>
+      <g transform="translate(470 170)">
+        <rect width="70" height="70" class="mask"/>
+        <path d="M18,34 L52,36 L51,60 L19,58 Z M24,40 L46,41 L45,54 L25,53 Z" class="f-sim" fill-rule="evenodd"/>
+      </g>
+      <text x="552" y="188" class="b">at 3: same view</text>
+      <text x="552" y="206" class="s">plan: next = gate 1</text>
+      <text x="552" y="222" class="c-wm">→ fly on</text>
+      <text x="575" y="276" text-anchor="middle" class="s">index i moves on when</text>
+      <text x="575" y="292" text-anchor="middle" class="s c-priv">decoded x̂g &gt; −0.15 m</text>
+    </svg>
+    </div>
+    <figcaption><span class="fig-no">Fig 3.3</span>Schematic of the inverted loop at gate 2, based on the paper's description. Invisible gates added in training force the maneuver: cross above the gate, loop down through it, cross above it again. At 1 and 3 the camera sees almost the same thing, but the right next move differs. The flight plan says which gate comes next.</figcaption>
+  </figure>
+
+  <div class="eq">
+    <div class="eq-label"><b>Flight plan vector and gate counter</b></div>
+    \[ f_i = \big[\,p_{g_i}-p_{g_{i-1}},\ \psi_{g_i}-\psi_{g_{i-1}},\ \dots,\ \psi_{g_{i+2}}-\psi_{g_{i+1}},\ p_{g_i},\ \psi_{g_i},\ \dots,\ \psi_{g_{i+2}}\,\big]^\top \qquad i \leftarrow i+1\ \ \text{when}\ \ \hat x_g > -0.15\ \text{m} \]
+    <p class="read">\(p_{g_i}\), \(\psi_{g_i}\) = position and yaw of gate \(i\) in the world frame. The vector says nothing about where the drone is; the drone must work that out. \(\hat x_g\) = decoded distance past the current gate plane (negative means before it). In training the decoder is not trusted yet, so \(i\) advances at a random point between pre- and post-gate.</p>
+  </div>
+  <div class="ex">The first rule, \(\hat x_g > 0\), never fired on one real ladder flight because of a small estimation error, so that flight was aborted. The threshold was moved to −0.15 m, and that flight is excluded from the lap counts below.</div>
+
+  <h3>Training recipe</h3>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Setting</th><th>Value</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>Base code</td><td>DreamerV3 (JAX), size12m</td><td>12M-parameter model, default settings unless listed</td></tr>
+      <tr><td>Sim steps</td><td>17M (35M for the big track)</td><td>17M steps ≈ 52 h of simulated flight</td></tr>
+      <tr><td>Replay buffer</td><td>10M steps</td><td>31 h of flight</td></tr>
+      <tr><td>Train ratio</td><td>128</td><td>replayed steps trained on per new sim step</td></tr>
+      <tr><td>Dream length</td><td>16 steps</td><td>0.18 s</td></tr>
+      <tr><td>γ</td><td>0.997</td><td>rewards ≈ 3.7 s ahead still count</td></tr>
+      <tr><td>Sequence length</td><td>64 → 256 after 8M steps</td><td>longer memory, better parameter estimates</td></tr>
+      <tr><td>Entropy weight η</td><td>3·10⁻⁴ → 1·10⁻⁵ after 13M</td><td>less exploration noise for fine control</td></tr>
+      <tr><td>Learning rate</td><td>4·10⁻⁵ → 2·10⁻⁶ after 13M</td><td>fine-tuning phase</td></tr>
+      <tr><td>λ<sub>smooth</sub></td><td>0.002</td><td>penalty on jumps in the mean motor command</td></tr>
+      <tr><td>Hardware</td><td>40 GB slice of an A100 80GB</td><td>about 50 h</td></tr>
+      <tr><td>Deployment</td><td>JAX → PyTorch → ONNX → TensorRT</td><td>Jetson Orin NX 16GB, 1.3 ms per step</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Results</h3>
+  <div class="stats">
+    <div class="stat"><div class="n">75 / 75</div><div class="t">counted real laps on three small tracks without a crash (5 flights × 5 laps each)</div></div>
+    <div class="stat"><div class="n">21 m/s</div><div class="t">top estimated speed on the big track; about 6 g on every track</div></div>
+    <div class="stat"><div class="n">4.3 ms</div><div class="t">onboard compute per frame (GateNet 3 ms + policy 1.3 ms) inside an 11.1 ms frame</div></div>
+    <div class="stat"><div class="n">10–15 cm</div><div class="t">spread of position estimates in simulation, settled within 10 steps</div></div>
+  </div>
+
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Small track (real)</th><th>Success</th><th>Lap 1</th><th>Laps 2–5</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Inverted loop, orange gates</td><td>100%</td><td>3.37 ± 0.08 s</td><td>3.25 ± 0.22 s</td><td>one flight on a draining battery</td></tr>
+      <tr><td>Ladder loop, orange gates</td><td>100%</td><td>3.78 ± 0.09 s</td><td>3.62 ± 0.06 s</td><td>tight turn close to gate 1</td></tr>
+      <tr><td>Inverted loop, MAVLab gates</td><td>100%</td><td>2.99 ± 0.07 s</td><td>2.97 ± 0.08 s</td><td>poor masks; one gate-like object covered</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <figure>
+    <div class="scroll">
+    <svg class="d" viewBox="0 0 640 262" style="min-width:540px" role="img" aria-label="Sketch: the estimated maximum motor speed starts at 3,200 radians per second, falls as the battery drains, leaves the training range of 2,480 to 3,720 radians per second near the end, and ends at 2,200 radians per second, a 30 percent drop.">
+      <text x="74" y="26" class="s">decoded estimate of max motor speed (rad/s)</text>
+      <rect x="70" y="48" width="540" height="124" class="sh-wm" style="opacity:.8"/>
+      <text x="80" y="64" class="s c-wm">training range 2,480–3,720 rad/s</text>
+      <line x1="70" y1="220" x2="616" y2="220" class="ln-m"/>
+      <line x1="70" y1="36" x2="70" y2="220" class="ln-m"/>
+      <text x="62" y="224" text-anchor="end" class="s">2000</text>
+      <text x="62" y="174" text-anchor="end" class="s">2500</text>
+      <text x="62" y="124" text-anchor="end" class="s">3000</text>
+      <text x="62" y="74" text-anchor="end" class="s">3500</text>
+      <text x="70" y="236" text-anchor="middle" class="s">0</text>
+      <text x="205" y="236" text-anchor="middle" class="s">400</text>
+      <text x="340" y="236" text-anchor="middle" class="s">800</text>
+      <text x="475" y="236" text-anchor="middle" class="s">1200</text>
+      <text x="610" y="236" text-anchor="middle" class="s">1600</text>
+      <text x="340" y="254" text-anchor="middle" class="s">time step (90 per second) · five laps</text>
+      <polyline points="70,100 171.25,102 272.5,115 373.75,135 475,160 559.4,185 610,200" class="ln-sim"/>
+      <circle cx="70" cy="100" r="4" class="f-sim"/>
+      <circle cx="515.5" cy="172" r="4" class="f-sim"/>
+      <circle cx="610" cy="200" r="4" class="f-sim"/>
+      <text x="80" y="94" class="b c-sim">3,200</text>
+      <text x="507" y="194" text-anchor="end" class="s">leaves training range</text>
+      <text x="602" y="214" text-anchor="end" class="b c-sim">2,200 (−30%)</text>
+    </svg>
+    </div>
+    <figcaption><span class="fig-no">Fig 3.4</span>Sketch of the paper's battery test (its Fig 8); only the start value, end value and training range are taken from the paper. As the battery sags, the motors can no longer reach their old top speed. The world model's estimate follows the measured speeds, even below anything seen in training, and the policy flies a gentler path and still finishes all five laps.</figcaption>
+  </figure>
+
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Estimated quantity</th><th>Result in simulation (20 drones, 2,000 steps each)</th></tr></thead>
+    <tbody>
+      <tr><td>Position</td><td>10–15 cm spread, settles within 10 steps, no drift</td></tr>
+      <tr><td>Velocity</td><td>about 0.5 m/s spread, no drift</td></tr>
+      <tr><td>Thrust gain, max motor speed, motor lag</td><td>accurate; settle in 50–100 steps (0.6–1.1 s), before the first gate</td></tr>
+      <tr><td>Camera angles</td><td>about 1° spread; pitch best</td></tr>
+      <tr><td>Single-propeller roll and pitch gains</td><td>moderate; settle slowly and drift</td></tr>
+      <tr><td>Drag, yaw gains</td><td>not learned; spread equals a random guess</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>The pattern: parameters with a strong, direct effect on the drone's motion are estimated well; weak or single-motor effects are not. In real flights, motion-capture positions (never shown to the policy) match the decoded estimates closely, with a small horizontal offset.</p>
+  <p><b>Big track.</b> A longer track in a bigger, darker hall, with a split-S, a ladder, a dive and a hard braking turn. Five of six two-lap flights succeeded, at up to 21 m/s. The one crash used a drone whose camera angles were outside the training range. In three flights the drone audibly touched a gate and carried on.</p>
+  <p><b>Emergent looking.</b> With no reward for it, the policy keeps its camera pointed at the next gate, even through the loop.</p>
+  <p><b>Limits.</b> Parameter estimates drift over long flights (the model trains on 256-step sequences; flights last about 2,000 steps), and their quality varies between training runs. Decoded states jitter from step to step. False gate detections still hurt: one gate-like object in the hall had to be covered. Training takes about 50 hours, and each model is trained for one known track.</p>
+</section>
+
+<!-- ============ PART 4 ============ -->
+<section class="part" id="versus">
+  <div class="eyebrow">Part 4 · Comparison</div>
+  <h2>SkyDreamer vs SuperMimic</h2>
+  <p class="lede">Both learn a world model in simulation and train a policy inside it. They use the model for opposite jobs.</p>
+
+  <div class="tldr">
+    <div class="k">SuperMimic</div>
+    <div><p>The world model is a <b>learned simulator</b>: fast, smooth and differentiable, so the policy learns from exact gradients through it. It never leaves the lab; the robot runs the policy alone.</p></div>
+    <div class="k">SkyDreamer</div>
+    <div><p>The world model is a <b>learned memory and state estimator</b>: it turns a stream of poor images into a belief about where the drone is and how it behaves. It flies on the drone; the policy reads its latent.</p></div>
+  </div>
+
+  <figure>
+    <div class="scroll">
+    <svg class="d" viewBox="0 0 700 330" style="min-width:620px" role="img" aria-label="Left, SuperMimic. Training: policy and an MLP world model on the true state exchange actions and predicted states; the gradient flows back through the model to the policy. On the robot: G1 sensors feed the policy, which outputs 29 joint targets; the world model stays in the lab. Right, SkyDreamer. Training: actor and an RSSM world model exchange actions and latents; each action is scored by REINFORCE with no gradient through the model. On the drone: camera, gyro and RPM feed the encoder and GRU, which is the world model, then the actor outputs 4 motor commands, and a decoder shows readable state.">
+      <defs>
+        <marker id="m41" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker>
+        <marker id="m41g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-g"/></marker>
+        <marker id="m41p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-p"/></marker>
+      </defs>
+      <rect x="10" y="30" width="330" height="290" rx="10" class="panel"/>
+      <rect x="360" y="30" width="330" height="290" rx="10" class="panel"/>
+      <text x="24" y="54" class="h">SUPERMIMIC · HUMANOID</text>
+      <text x="374" y="54" class="h">SKYDREAMER · DRONE</text>
+      <text x="24" y="78" class="s">training</text>
+      <text x="374" y="78" class="s">training</text>
+      <text x="24" y="206" class="s">on the robot</text>
+      <text x="374" y="206" class="s">on the drone</text>
+
+      <!-- SuperMimic training -->
+      <rect x="30" y="88" width="110" height="40" rx="7" class="box-wm"/>
+      <text x="85" y="106" text-anchor="middle" class="b">policy π</text>
+      <text x="85" y="121" text-anchor="middle" class="s">reads obs</text>
+      <rect x="200" y="88" width="120" height="40" rx="7" class="box-wm"/>
+      <text x="260" y="106" text-anchor="middle" class="b">world model</text>
+      <text x="260" y="121" text-anchor="middle" class="s">MLP, true state</text>
+      <path d="M140,99 H198" class="ln" marker-end="url(#m41)"/>
+      <path d="M200,117 H142" class="ln" marker-end="url(#m41)"/>
+      <path d="M260,128 V150 H85 V130" class="ln-grad" marker-end="url(#m41g)"/>
+      <text x="172" y="170" text-anchor="middle" class="c-grad">exact gradient through the model</text>
+
+      <!-- SuperMimic robot -->
+      <rect x="30" y="216" width="100" height="40" rx="7" class="box-sim"/>
+      <text x="80" y="234" text-anchor="middle" class="b">G1 sensors</text>
+      <text x="80" y="249" text-anchor="middle" class="s">joints, IMU</text>
+      <rect x="180" y="216" width="140" height="40" rx="7" class="box-wm"/>
+      <text x="250" y="234" text-anchor="middle" class="b">policy π</text>
+      <text x="250" y="249" text-anchor="middle" class="s">alone</text>
+      <path d="M130,236 H178" class="ln" marker-end="url(#m41)"/>
+      <path d="M250,256 V268" class="ln" marker-end="url(#m41)"/>
+      <text x="250" y="284" text-anchor="middle" class="s">29 joint targets → PD</text>
+      <text x="175" y="306" text-anchor="middle" class="s c-mu">the world model stays in the lab</text>
+
+      <!-- SkyDreamer training -->
+      <rect x="380" y="88" width="110" height="40" rx="7" class="box-wm"/>
+      <text x="435" y="106" text-anchor="middle" class="b">actor π</text>
+      <text x="435" y="121" text-anchor="middle" class="s">reads latent</text>
+      <rect x="550" y="88" width="120" height="40" rx="7" class="box-wm"/>
+      <text x="610" y="106" text-anchor="middle" class="b">world model</text>
+      <text x="610" y="121" text-anchor="middle" class="s">RSSM latent</text>
+      <path d="M490,99 H548" class="ln" marker-end="url(#m41)"/>
+      <path d="M550,117 H492" class="ln" marker-end="url(#m41)"/>
+      <path d="M435,146 V130" class="ln-grad" marker-end="url(#m41g)"/>
+      <text x="525" y="162" text-anchor="middle" class="c-grad">each action scored (REINFORCE)</text>
+      <text x="525" y="178" text-anchor="middle" class="s c-grad">no gradient through the model</text>
+
+      <!-- SkyDreamer drone -->
+      <rect x="375" y="216" width="80" height="40" rx="7" class="box-sim"/>
+      <text x="415" y="234" text-anchor="middle" class="b">camera</text>
+      <text x="415" y="249" text-anchor="middle" class="s">+ gyro, RPM</text>
+      <rect x="470" y="216" width="110" height="40" rx="7" class="box-wm"/>
+      <text x="525" y="234" text-anchor="middle" class="b">encoder + GRU</text>
+      <text x="525" y="249" text-anchor="middle" class="s">world model</text>
+      <rect x="595" y="216" width="80" height="40" rx="7" class="box-wm"/>
+      <text x="635" y="234" text-anchor="middle" class="b">actor π</text>
+      <text x="635" y="249" text-anchor="middle" class="s">mean only</text>
+      <path d="M455,236 H468" class="ln" marker-end="url(#m41)"/>
+      <path d="M580,236 H593" class="ln" marker-end="url(#m41)"/>
+      <path d="M635,256 V268" class="ln" marker-end="url(#m41)"/>
+      <text x="635" y="284" text-anchor="middle" class="s">4 motor commands</text>
+      <path d="M525,256 V290" class="ln-priv" marker-end="url(#m41p)"/>
+      <text x="525" y="306" text-anchor="middle" class="c-priv">decoder: readable state</text>
+    </svg>
+    </div>
+    <figcaption><span class="fig-no">Fig 4.1</span>Same ingredients, opposite roles. SuperMimic's model is a training tool that never reaches the robot, and the policy learns through exact gradients. SkyDreamer's model is part of the flying policy: its memory is the drone's state estimate.</figcaption>
+  </figure>
+
+  <div class="tbl">
+  <table class="vs">
+    <thead><tr><th></th><th>SuperMimic</th><th>SkyDreamer</th></tr></thead>
+    <tbody>
+      <tr><td>Robot and task</td><td>Unitree G1 humanoid copying 129,514 human motions</td><td>racing quadrotor flying a known gate track as fast as possible</td></tr>
+      <tr><td>What the policy sees</td><td>joint angles and speeds, gyro, gravity direction, last action (10 frames) + next 10 reference frames</td><td>64×64 gate mask, gyro, motor speeds, next three gates</td></tr>
+      <tr><td>Hidden-state problem</td><td>small: joint sensors and IMU give most of the state</td><td>large: position and speed must be inferred from images over time</td></tr>
+      <tr><td>World model</td><td>MLP (3 × 2048), deterministic, on the simulator's full state</td><td>RSSM: GRU memory + discrete stochastic code, built from observations</td></tr>
+      <tr><td>Trained to predict</td><td>next true state, reward, observation, fall; 8-step chains</td><td>next code, reward, continue; decodes true state + drone parameters; 64- to 256-step sequences</td></tr>
+      <tr><td>How the policy learns</td><td>exact gradient, backprop through 32 model steps (0.64 s) + critic</td><td>REINFORCE on 16 dreamed steps (0.18 s) + critic; model is only a sampler</td></tr>
+      <tr><td>Policy input</td><td>predicted observations with noise added back</td><td>the world model's latent \((h_t, z_t)\)</td></tr>
+      <tr><td>Runs on the robot</td><td>policy only</td><td>encoder + GRU + actor; decoder optional, used for the gate counter</td></tr>
+      <tr><td>Privileged info</td><td>physics settings fed as input to world model and critic</td><td>true state and parameters used as decoder targets</td></tr>
+      <tr><td>Action</td><td>29 joint targets → PD controller, 50 Hz</td><td>4 motor commands, no inner loop, 90 Hz</td></tr>
+      <tr><td>Sim-to-real tools</td><td>randomized friction, mass center, joint offsets; sensor noise</td><td>randomized dynamics, camera angles, pushes, delays; GAN-roughened masks; rolling-shutter warp</td></tr>
+      <tr><td>Compute</td><td>3 GPU-hours on one H100 to match SONIC</td><td>about 50 h on half an A100 (17M sim steps)</td></tr>
+      <tr><td>What it scales</td><td>number of motions: one model, one policy for every clip</td><td>robustness on one track; the flight plan is a step toward any track</td></tr>
+      <tr><td>Main claim</td><td>training speed and scale</td><td>end-to-end from pixels, fully onboard, readable internals</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="meta">The compute rows are not a fair race: different tasks, robots and GPUs. They show where each paper spends its effort.</p>
+
+  <h3>Why each design fits its problem</h3>
+  <p><b>Humanoid tracking</b> has a mostly measured state, so the world model needs no memory, and the bottleneck is training cost across 129,514 clips. A smooth MLP gives exact gradients, so every imagined sample teaches more than a scored trial would.</p>
+  <p><b>Vision racing</b> has a hidden state and poor images, so the world model has to be a filter: something that accumulates evidence over time. Decoding the true state forces it to be a good filter and gives a readout for free. REINFORCE never needs the model's gradients, so it tolerates a model that is only roughly right and has discrete, random codes.</p>
+
+  <div class="cols">
+    <div>
+      <h4>Shared by both</h4>
+      <ul class="tight">
+        <li>Replay buffer; a loop of collect → fit model → train in imagination</li>
+        <li>Short dreams (16 or 32 steps) plus a critic with λ-returns (λ = 0.95)</li>
+        <li>Dreams start from real states in the buffer</li>
+        <li>Reward and fall (continue) heads so dreams can be scored</li>
+        <li>Privileged simulator info used only in training</li>
+        <li>Domain randomization for sim-to-real</li>
+      </ul>
+    </div>
+    <div>
+      <h4>Borrow for a humanoid · untested ideas</h4>
+      <ul class="tight">
+        <li>A recurrent estimator with a privileged decoder for what the G1 measures poorly (base velocity, foot friction, payload), readable on hardware</li>
+        <li>Track slow drifts outside the training range, like SkyDreamer's 30% motor-speed drop: battery sag or hot motors losing torque</li>
+        <li>Replay logged real runs through an updated estimator to debug sim-to-real without new hardware runs</li>
+        <li>Smooth only the policy mean when entropy keeps exploration alive</li>
+      </ul>
+    </div>
+    <div>
+      <h4>Read next</h4>
+      <ul class="tight">
+        <li>DreamerV3 (Hafner et al., Nature 2025)</li>
+        <li>Informed POMDP (Lambrechts et al., RLJ 2024)</li>
+        <li>Dream to Fly (Romero et al., 2025)</li>
+        <li>Champion-level drone racing (Kaufmann et al., Nature 2023)</li>
+        <li>One Net to Rule Them All (Ferede et al., 2025)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="part" id="glossary">
+  <div class="eyebrow">Reference</div>
+  <h2>Glossary</h2>
+  <dl class="gloss">
+    <dt>ADR</dt><dd>autonomous drone racing.</dd>
+    <dt>CTBR</dt><dd>collective thrust and body rates: a command of total thrust plus three spin rates.</dd>
+    <dt>PID / INDI</dt><dd>inner-loop controllers that turn a CTBR command into motor commands.</dd>
+    <dt>ESC</dt><dd>electronic speed controller: drives one motor and reports its speed.</dd>
+    <dt>G&amp;CNET</dt><dd>guidance and control network: a network that maps state straight to motor commands.</dd>
+    <dt>TWR</dt><dd>thrust-to-weight ratio; SkyDreamer's drone model tops out near 6.</dd>
+    <dt>POMDP</dt><dd>the RL setup where the agent sees observations, not the true state.</dd>
+    <dt>Informed POMDP</dt><dd>a POMDP with extra (privileged) information available during training only.</dd>
+    <dt>RSSM</dt><dd>recurrent state-space model: Dreamer's world model, a GRU memory plus a discrete code.</dd>
+    <dt>GRU</dt><dd>gated recurrent unit: a small recurrent network that keeps a memory vector.</dd>
+    <dt>Latent</dt><dd>the model's internal, compressed state.</dd>
+    <dt>KL divergence</dt><dd>how different two probability distributions are, in nats.</dd>
+    <dt>Free bits</dt><dd>a floor (1 nat in DreamerV3) below which the KL loss stops pushing.</dd>
+    <dt>REINFORCE</dt><dd>likelihood-ratio policy gradient: raise the probability of actions that beat expectations.</dd>
+    <dt>λ-return</dt><dd>a critic target that mixes short and long lookahead.</dd>
+    <dt>Segmentation mask</dt><dd>an image where each pixel says gate (1) or not (0).</dd>
+    <dt>U-Net</dt><dd>an image network with shortcut links between its down and up paths, common for segmentation.</dd>
+    <dt>CycleGAN / StochGAN</dt><dd>networks that translate images between two styles without paired examples; StochGAN adds input noise for variety.</dd>
+    <dt>Rolling shutter</dt><dd>a camera that reads rows one after another, so fast rotation skews the image.</dd>
+    <dt>Intrinsics / extrinsics</dt><dd>the lens and pixel geometry / how the camera is mounted on the body.</dd>
+    <dt>NED</dt><dd>north-east-down axes: z points down, so height is negative z.</dd>
+    <dt>Split-S</dt><dd>half roll, then half loop downward: reverses direction while losing height.</dd>
+    <dt>MoCap</dt><dd>motion capture: external cameras that measure the drone's true position; used here only to check results.</dd>
+  </dl>
+</section>
+
+<footer>
+  Source: A. Verraest, S. Bahnam, R. Ferede, G. de Croon, C. De Wagter, “SkyDreamer: Interpretable End-to-End Vision-Based Drone Racing with Model-Based Reinforcement Learning”, arXiv 2510.14783, 2025. SuperMimic figures from Liao et al., arXiv 2610.28480. The KL weights, free bits and return scaling are DreamerV3 defaults (Hafner et al.). Numbers come from the SkyDreamer paper unless a box says example, sketch, schematic or DreamerV3 default.
+</footer>
+
+</main>

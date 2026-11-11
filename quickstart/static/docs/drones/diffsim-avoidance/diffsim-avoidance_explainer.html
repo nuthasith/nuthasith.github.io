@@ -1,0 +1,758 @@
+<title>Simple but Stable, Fast and Safe</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..800&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..650;1,8..60,400&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']], packages: { '[+]': ['html'] } },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg-full.js" defer></script>
+<style>
+/* Layout: one ~68ch reading column; diagrams, tables and paper figures widen to 1120px.
+   Color = what a thing is, same coding as the paper's Fig. 2 legend:
+   blue = actor network, teal = quadrotor dynamics, amber = reward (objective), red = gradient flowing backward. */
+:root {
+  --bg: #F5F6F8;
+  --surface: #FFFFFF;
+  --sunk: #EBEEF2;
+  --ink: #161A21;
+  --muted: #5C6574;
+  --line: #D6DBE2;
+  --edge: #8A93A1;
+  --net: #2361C4;
+  --net-soft: #E1EAF9;
+  --dyn: #0B7A69;
+  --dyn-soft: #DAF0EB;
+  --rew: #946200;
+  --rew-soft: #FBEFD0;
+  --grad: #C42B3A;
+  --mat: #FFFFFF;
+  --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Source Serif 4", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --f-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F1218; --surface: #171B23; --sunk: #1F2530; --ink: #E5E8EE; --muted: #9AA3B2; --line: #2C3442; --edge: #6E7889;
+    --net: #7DA9F3; --net-soft: #1A2A46; --dyn: #5BCDB7; --dyn-soft: #11322D; --rew: #EFB64C; --rew-soft: #3A2C0F;
+    --grad: #F27A86; --mat: #F3F4F6;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F1218; --surface: #171B23; --sunk: #1F2530; --ink: #E5E8EE; --muted: #9AA3B2; --line: #2C3442; --edge: #6E7889;
+  --net: #7DA9F3; --net-soft: #1A2A46; --dyn: #5BCDB7; --dyn-soft: #11322D; --rew: #EFB64C; --rew-soft: #3A2C0F;
+  --grad: #F27A86; --mat: #F3F4F6;
+  color-scheme: dark;
+}
+
+body { background: var(--bg); color: var(--ink); font: 400 17px/1.6 var(--f-body); }
+.wrap {
+  max-width: 1120px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 44px 80px;
+  display: flex; flex-direction: column; gap: 72px;
+}
+header, section { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+.prose { max-width: 68ch; display: flex; flex-direction: column; gap: 12px; }
+p { margin: 0; }
+a { color: var(--net); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--net); outline-offset: 3px; border-radius: 4px; }
+.net { color: var(--net); } .dyn { color: var(--dyn); } .rew { color: var(--rew); } .grad { color: var(--grad); }
+b.net, b.dyn, b.rew, b.grad { font-weight: 600; }
+dfn { font-style: normal; font-weight: 600; }
+
+.eyebrow { font: 500 12px/1.4 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1, h2 { font-family: var(--f-display); margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(2.3rem, 6.2vw, 4rem); font-weight: 800; font-stretch: 118%; line-height: 1.02; letter-spacing: -.01em; }
+h2 { font-size: clamp(1.6rem, 3.4vw, 2.2rem); font-weight: 700; font-stretch: 110%; line-height: 1.1; }
+h3 { font: 700 1.05rem/1.3 var(--f-display); font-stretch: 105%; margin: 0; }
+.sec-head { display: flex; flex-direction: column; gap: 6px; }
+
+/* hero */
+.subtitle { font-size: clamp(1.1rem, 2.2vw, 1.35rem); line-height: 1.4; max-width: 46ch; }
+.byline { font: 400 13px/1.5 var(--f-mono); color: var(--muted); }
+.thesis {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+}
+.thesis > div { padding: 16px 18px 18px 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.thesis > div + div { padding-left: 18px; border-left: 1px solid var(--line); }
+.thesis .k { font: 500 11px/1.3 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.thesis p { font-size: 15.5px; line-height: 1.5; }
+@media (max-width: 760px) {
+  .thesis { grid-template-columns: 1fr; }
+  .thesis > div, .thesis > div + div { padding: 14px 0; border-left: 0; }
+  .thesis > div + div { border-top: 1px solid var(--line); }
+}
+.dropped { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; font-size: 14.5px; color: var(--muted); }
+.dropped span.x { font: 500 12px/1.2 var(--f-mono); padding: 4px 8px; border-radius: 4px; border: 1px dashed var(--edge); color: var(--muted); text-decoration: line-through; text-decoration-color: var(--edge); white-space: nowrap; }
+
+/* figures from the paper sit on a white mat in both themes */
+figure { margin: 0; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.mat { background: var(--mat); border: 1px solid var(--line); border-radius: 6px; padding: 14px; }
+.mat img { display: block; width: 100%; height: auto; }
+figcaption { font-size: 14.5px; line-height: 1.5; color: var(--muted); max-width: 80ch; }
+figcaption b { color: var(--ink); font-weight: 600; }
+.figs-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; align-items: start; }
+@media (max-width: 860px) { .figs-2 { grid-template-columns: 1fr; } }
+.narrow { max-width: 620px; }
+
+/* own diagrams */
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.diagram { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.dg { display: block; width: 100%; height: auto; }
+.dg.wide { min-width: 760px; }
+.dg text { fill: var(--ink); font-family: var(--f-body); font-size: 15px; }
+.dg text .sup, .dg text .sub { font-size: 11px; }
+.dg text.mono { font-family: var(--f-mono); font-size: 11px; fill: var(--muted); }
+.dg text.lbl { font-family: var(--f-mono); font-size: 12px; fill: var(--muted); }
+.dg text.row { font-family: var(--f-display); font-size: 14px; font-weight: 700; }
+.dg text.t-net { fill: var(--net); } .dg text.t-dyn { fill: var(--dyn); } .dg text.t-rew { fill: var(--rew); } .dg text.t-grad { fill: var(--grad); }
+.dg .box { fill: var(--surface); stroke: var(--ink); stroke-width: 1.3; }
+.dg .b-net { fill: var(--net-soft); stroke: var(--net); stroke-width: 1.6; }
+.dg .b-dyn { fill: var(--dyn-soft); stroke: var(--dyn); stroke-width: 1.6; }
+.dg .b-rew { fill: var(--rew-soft); stroke: var(--rew); stroke-width: 1.4; }
+.dg .b-ghost { fill: none; stroke: var(--edge); stroke-width: 1.2; stroke-dasharray: 5 4; }
+.dg .b-bad { fill: var(--surface); stroke: var(--grad); stroke-width: 1.6; }
+.dg .e { fill: none; stroke: var(--edge); stroke-width: 1.6; marker-end: url(#ah); transition: opacity .2s; }
+.dg .e.tail { stroke-dasharray: 3 4; }
+.dg .e.plain { marker-end: none; }
+.dg .ah-p { fill: var(--edge); } .dg .ah-g-p { fill: var(--grad); } .dg .ah-i-p { fill: var(--ink); }
+.dg .guide { fill: none; stroke: var(--edge); stroke-width: 1.1; stroke-dasharray: 3 4; }
+.dg .vel { fill: none; stroke: var(--ink); stroke-width: 2; marker-end: url(#ah-i); }
+.dg .push { fill: none; stroke: var(--grad); stroke-width: 2.6; marker-end: url(#ah-g2); }
+.dg .obst { fill: var(--sunk); stroke: var(--ink); stroke-width: 1.5; }
+.dg .pt { fill: var(--surface); stroke: var(--rew); stroke-width: 2; }
+.dg .drone { fill: var(--ink); }
+.dg .ray { fill: none; stroke: var(--rew); stroke-width: 1.3; stroke-dasharray: 5 4; }
+.dg .arc { fill: none; stroke: var(--edge); stroke-width: 1.3; stroke-dasharray: 2 4; marker-end: url(#ah2); }
+.dg .wedge { fill: var(--rew-soft); stroke: var(--rew); stroke-width: 1; }
+/* gradient mode: same wires, arrowheads flip to the start, dashes travel backward */
+#bptt[data-mode="grad"] .e[data-g] { stroke: var(--grad); stroke-width: 2.6; stroke-dasharray: 7 5; marker-end: none; marker-start: url(#ah-g); animation: flow .9s linear infinite; }
+#bptt[data-mode="grad"] .e:not([data-g]) { opacity: .35; }
+@keyframes flow { to { stroke-dashoffset: 24; } }
+@media (prefers-reduced-motion: reduce) { .dg .e { animation: none !important; } }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg button {
+  font: 500 13px/1.2 var(--f-mono); padding: 8px 12px; border-radius: 6px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+}
+.seg button[aria-pressed="true"][data-mode="grad"] { border-color: var(--grad); color: var(--grad); background: var(--surface); }
+.seg button[aria-pressed="true"][data-mode="fwd"] { background: var(--sunk); border-color: var(--ink); }
+.mode-note { font-size: 15px; max-width: 80ch; min-height: 3em; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 14px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.legend svg { flex: none; }
+.sw { width: 14px; height: 14px; border-radius: 3px; border: 1.5px solid; flex: none; }
+.sw.s-net { background: var(--net-soft); border-color: var(--net); }
+.sw.s-dyn { background: var(--dyn-soft); border-color: var(--dyn); }
+.sw.s-rew { background: var(--rew-soft); border-color: var(--rew); }
+
+/* equations */
+.eqs { display: flex; flex-direction: column; gap: 18px; }
+.eq-card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+  padding: 18px 20px; display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 4px 18px;
+}
+.eq-card .tag { font: 500 12px/1.4 var(--f-mono); color: var(--muted); padding-top: 14px; }
+.eq-card .body { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.eq { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }
+.eq mjx-container[display="true"] { margin: 6px 0 !important; }
+.eq-card p { font-size: 15.5px; max-width: 72ch; }
+.eq-card p.dim, p.dim { color: var(--muted); font-size: 14.5px; }
+@media (max-width: 560px) {
+  .eq-card { grid-template-columns: 1fr; padding: 14px; }
+  .eq-card .tag { padding-top: 0; }
+}
+.example {
+  font: 400 13.5px/1.55 var(--f-mono); background: var(--sunk); border-radius: 6px; padding: 10px 12px;
+  overflow-x: auto; white-space: pre; color: var(--ink);
+}
+.example .c { color: var(--muted); }
+mjx-container .c-net { fill: var(--net); stroke: var(--net); }
+mjx-container .c-dyn { fill: var(--dyn); stroke: var(--dyn); }
+mjx-container .c-rew { fill: var(--rew); stroke: var(--rew); }
+
+/* dynamics chain: one row per stage, in signal order */
+.chain { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; counter-reset: st; }
+.chain li {
+  counter-increment: st; position: relative;
+  display: grid; grid-template-columns: 34px minmax(0, 250px) minmax(0, 1fr); gap: 6px 16px; align-items: center;
+  padding: 12px 0; border-top: 1px solid var(--line);
+}
+.chain li:last-child { border-bottom: 1px solid var(--line); }
+.chain li::before {
+  content: counter(st); font: 500 12px/26px var(--f-mono); width: 26px; height: 26px; text-align: center;
+  border-radius: 50%; background: var(--dyn-soft); color: var(--dyn); border: 1.5px solid var(--dyn);
+}
+.chain .what { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.chain .what b { font: 700 15px/1.3 var(--f-display); font-stretch: 105%; }
+.chain .what span { font-size: 14px; line-height: 1.4; color: var(--muted); }
+.chain .eq { min-width: 0; }
+.chain .io { font: 500 11.5px/1.4 var(--f-mono); color: var(--dyn); }
+@media (max-width: 760px) {
+  .chain li { grid-template-columns: 34px minmax(0, 1fr); }
+  .chain .eq { grid-column: 2; }
+}
+.vs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+@media (max-width: 700px) { .vs { grid-template-columns: 1fr; } }
+.vs > div { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.vs .k { font: 500 11px/1.3 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.vs p { font-size: 15px; line-height: 1.5; }
+
+/* tables */
+table { border-collapse: collapse; width: 100%; }
+.rtab { min-width: 680px; font-size: 15px; }
+.rtab th, .rtab td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.rtab thead th { font: 600 12px/1.3 var(--f-mono); color: var(--muted); border-bottom: 1.5px solid var(--ink); }
+.rtab tbody th { font-weight: 600; white-space: nowrap; }
+.rtab td.m { min-width: 250px; }
+.rtab td.d { font-size: 14.5px; line-height: 1.45; }
+.mini { font-size: 14px; font-variant-numeric: tabular-nums; max-width: 420px; }
+.mini th, .mini td { padding: 6px 10px; border-bottom: 1px solid var(--line); text-align: right; }
+.mini thead th { font: 600 12px/1.3 var(--f-mono); color: var(--muted); border-bottom: 1.5px solid var(--ink); }
+.mini td:last-child { font-weight: 650; }
+
+/* mini charts */
+.split { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+@media (max-width: 700px) { .split { grid-template-columns: 1fr; } }
+.split figure { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font: 400 11px var(--f-mono); }
+.chart text.t { fill: var(--ink); font: 600 13px var(--f-display); }
+.chart text.a { fill: var(--ink); }
+.chart .ax { stroke: var(--edge); stroke-width: 1; fill: none; }
+.chart .gl { stroke: var(--line); stroke-width: 1; fill: none; }
+.chart .l-cmd { stroke: var(--edge); stroke-width: 2; stroke-dasharray: 5 4; fill: none; }
+.chart .l-data { stroke: var(--ink); stroke-width: 2.6; fill: none; }
+
+/* results */
+.res { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; align-items: start; }
+@media (max-width: 900px) { .res { grid-template-columns: 1fr; } }
+.res .card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.res table { font-size: 14px; font-variant-numeric: tabular-nums; min-width: 430px; }
+.res th, .res td { padding: 7px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+.res thead th { font: 600 12px/1.3 var(--f-mono); color: var(--muted); border-bottom: 1.5px solid var(--ink); }
+.res tr.us td, .res tr.us th { font-weight: 650; }
+.res tbody th { font-weight: 500; white-space: nowrap; }
+.bar { display: flex; align-items: center; gap: 8px; }
+.bar i { display: block; height: 9px; border-radius: 2px; background: var(--edge); min-width: 1px; }
+.res tr.us .bar i { background: var(--ink); }
+.bar span { font-family: var(--f-mono); font-size: 12.5px; min-width: 2.8em; }
+.res .cap { font-size: 13.5px; color: var(--muted); }
+
+ul.tight { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 6px; max-width: 72ch; }
+footer { font: 400 13px/1.6 var(--f-mono); color: var(--muted); border-top: 1px solid var(--line); padding-top: 18px; }
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">arXiv 2604.10548 · cs.RO · Apr 2026</div>
+  <h1>Simple but Stable, Fast and Safe</h1>
+  <p class="subtitle">Achieve End-to-end Control by High-Fidelity Differentiable Simulation</p>
+  <p class="byline">F. Li, S. Wang, Y. Huang, F. Sun, S. Wu, Y. Yan, D. Zou, W. Yu · <a href="https://arxiv.org/abs/2604.10548">read the paper</a> · <a href="https://github.com/Fanxing-LI/avoidance">code</a></p>
+  <div class="thesis">
+    <div><span class="k">Problem</span><p>Most drone planners treat the drone as a dot and output a path or velocity. At high speed a second controller cannot follow that plan, and the drone crashes.</p></div>
+    <div><span class="k">Idea</span><p>One small <b class="net">network</b> maps a depth image straight to motor-level commands. It is trained by pushing <b class="grad">gradients</b> back through a <b class="dyn">full physics simulator</b>.</p></div>
+    <div><span class="k">Result</span><p>390 of 400 simulated runs succeed, with the lowest jerk of all methods. The real drone flies 7.5 m/s through a forest with no real-world training.</p></div>
+  </div>
+  <div class="dropped">Not used:
+    <span class="x">map</span><span class="x">backbone net</span><span class="x">LSTM</span><span class="x">motion primitives</span><span class="x">tracking controller</span><span class="x">curriculum</span><span class="x">expert teacher</span>
+  </div>
+</header>
+
+<section>
+  <div class="sec-head"><div class="eyebrow">§ I · The problem</div><h2>The plan is fine for a dot, not for a drone</h2></div>
+  <div class="prose">
+    <p>A <dfn>point-mass model</dfn> pretends the drone is a dot that can accelerate in any direction at once. A real quadrotor must first tilt, and its motors need time to spin up. This paper outputs <dfn>CTBR</dfn> (collective thrust and body rates: total thrust plus how fast to rotate about each of the 3 body axes). That is the low-level command sent straight to the flight controller.</p>
+  </div>
+  <div class="diagram">
+    <div class="scroll">
+<svg class="dg wide" viewBox="0 0 920 300" role="img" aria-label="Two inference chains. Typical learned planner: depth and state go into a network trained on a point-mass model, which outputs a trajectory or acceleration; an outer-loop tracking controller turns that into CTBR for the flight controller, and fails when the plan is not flyable. This paper: depth and state go into a network trained on full 6-DOF dynamics, which outputs CTBR directly to the flight controller.">
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path class="ah-p" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<text class="row" x="20" y="24">Typical learned planner</text>
+<text class="lbl" x="240" y="24">Agile, YOPOv2, Newton</text>
+<rect class="box" x="20" y="42" width="124" height="50" rx="6"/><text x="82" y="72" text-anchor="middle">Depth + state</text>
+<path class="e" d="M144 67 H189"/>
+<rect class="b-net" x="190" y="42" width="130" height="50" rx="6"/><text x="255" y="72" text-anchor="middle">Network</text>
+<text class="lbl" x="255" y="110" text-anchor="middle">trained on a point mass</text>
+<path class="e" d="M320 67 H469"/>
+<text class="lbl" x="395" y="58" text-anchor="middle">path or accel.</text>
+<rect class="b-bad" x="470" y="42" width="170" height="50" rx="6"/><text x="555" y="72" text-anchor="middle">Tracking controller</text>
+<text class="lbl t-grad" x="555" y="110" text-anchor="middle">cannot follow at high speed</text>
+<path class="e" d="M640 67 H749"/>
+<text class="lbl" x="695" y="58" text-anchor="middle">CTBR</text>
+<rect class="box" x="750" y="42" width="150" height="50" rx="6"/><text x="825" y="72" text-anchor="middle">Flight controller</text>
+
+<line class="guide" x1="20" y1="150" x2="900" y2="150"/>
+
+<text class="row" x="20" y="190">This paper</text>
+<rect class="box" x="20" y="208" width="124" height="50" rx="6"/><text x="82" y="238" text-anchor="middle">Depth + state</text>
+<path class="e" d="M144 233 H189"/>
+<rect class="b-net" x="190" y="208" width="130" height="50" rx="6"/><text x="255" y="238" text-anchor="middle">Network</text>
+<text class="lbl t-dyn" x="255" y="276" text-anchor="middle">trained on full drone physics</text>
+<path class="e" d="M320 233 H749"/>
+<rect class="b-ghost" x="470" y="208" width="170" height="50" rx="6"/>
+<text class="lbl" x="555" y="250" text-anchor="middle">no controller here</text>
+<text class="lbl" x="395" y="224" text-anchor="middle">CTBR</text>
+<text class="lbl" x="695" y="224" text-anchor="middle">CTBR</text>
+<rect class="box" x="750" y="208" width="150" height="50" rx="6"/><text x="825" y="238" text-anchor="middle">Flight controller</text>
+</svg>
+    </div>
+    <p class="dim">The top chain has two gaps: the network trained on physics it will never fly, and a controller that must chase its output. The bottom chain removes both.</p>
+  </div>
+  <figure>
+    <div class="mat"><img src="figs/train_infer_com.jpg" alt="Paper Fig. 2. Left, training pipelines of Agile, Newton, YOPOv2 and Ours. Right, inference pipelines: YOPOv2 and Agile select a trajectory then use an outer-loop and yaw controller; Newton outputs acceleration then uses the same controllers; Ours goes from actor net to bodyrate and thrust to the flight controller." loading="lazy"></div>
+    <figcaption><b>Paper Fig. 2.</b> Right side: every baseline needs green controller blocks between the network and the flight controller. The bottom row (Ours) has none.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="sec-head"><div class="eyebrow">§ III-B · Training signal</div><h2>Gradients flow back through the physics</h2></div>
+  <div class="prose">
+    <p><dfn>BPTT</dfn> (backpropagation through time) means: roll the simulator forward for a few steps, then apply the chain rule backward through every step. Because the simulator is written in PyTorch, the slope of the reward with respect to the network weights is exact inside the rollout. No critic has to guess it.</p>
+  </div>
+  <div class="diagram">
+    <div class="seg" role="group" aria-label="Choose what the diagram shows">
+      <button type="button" id="mode-grad" data-mode="grad" aria-pressed="true">Gradient, backward</button>
+      <button type="button" id="mode-fwd" data-mode="fwd" aria-pressed="false">Rollout, forward</button>
+    </div>
+    <div class="scroll">
+<svg class="dg wide" id="bptt" data-mode="grad" viewBox="0 0 930 400" role="img" aria-label="Unrolled training graph over steps t, t+1, t+2. Each step: the policy network reads the state and a depth image and outputs action a; the dynamics block F turns state and action into the next state; a reward R is computed on the next state. In gradient mode, red arrows run from each reward back into the state, through the dynamics block to the previous state and to the action, and from the action into the network. No gradient goes into the depth image.">
+<defs>
+<marker id="ah-g" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" orient="auto-start-reverse"><path class="ah-g-p" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<path class="e" d="M110 150 H224"/>
+<path class="e" data-g d="M336 150 H389"/>
+<path class="e" d="M92 171 L148 234"/>
+<path class="e" d="M170 322 V278"/>
+<path class="e" data-g d="M198 255 H280 V176"/>
+<path class="e" data-g d="M420 129 V74"/>
+<path class="e" data-g d="M450 150 H564"/>
+<path class="e" data-g d="M676 150 H729"/>
+<path class="e" data-g d="M432 171 L488 234"/>
+<path class="e" d="M510 322 V278"/>
+<path class="e" data-g d="M538 255 H620 V176"/>
+<path class="e" data-g d="M760 129 V74"/>
+<path class="e tail" d="M790 150 H850"/>
+<text x="874" y="155" text-anchor="middle">…</text>
+
+<rect class="box" x="50" y="130" width="60" height="40" rx="9"/><text x="80" y="156" text-anchor="middle"><tspan font-style="italic">s</tspan><tspan class="sub" dy="5">t</tspan></text>
+<rect class="box" x="390" y="130" width="60" height="40" rx="9"/><text x="420" y="156" text-anchor="middle"><tspan font-style="italic">s</tspan><tspan class="sub" dy="5">t+1</tspan></text>
+<rect class="box" x="730" y="130" width="60" height="40" rx="9"/><text x="760" y="156" text-anchor="middle"><tspan font-style="italic">s</tspan><tspan class="sub" dy="5">t+2</tspan></text>
+
+<rect class="b-dyn" x="225" y="126" width="110" height="48" rx="6"/><text x="280" y="147" text-anchor="middle" font-size="14">Dynamics <tspan font-style="italic">F</tspan></text><text class="mono" x="280" y="163" text-anchor="middle">6-DOF, motors</text>
+<rect class="b-dyn" x="565" y="126" width="110" height="48" rx="6"/><text x="620" y="147" text-anchor="middle" font-size="14">Dynamics <tspan font-style="italic">F</tspan></text><text class="mono" x="620" y="163" text-anchor="middle">6-DOF, motors</text>
+
+<rect class="b-net" x="142" y="235" width="56" height="42" rx="9"/><text x="170" y="262" text-anchor="middle"><tspan font-style="italic">π</tspan><tspan class="sub" dy="5">θ</tspan></text>
+<rect class="b-net" x="482" y="235" width="56" height="42" rx="9"/><text x="510" y="262" text-anchor="middle"><tspan font-style="italic">π</tspan><tspan class="sub" dy="5">θ</tspan></text>
+<text x="240" y="246" text-anchor="middle"><tspan font-style="italic">a</tspan><tspan class="sub" dy="5">t</tspan></text>
+<text x="580" y="246" text-anchor="middle"><tspan font-style="italic">a</tspan><tspan class="sub" dy="5">t+1</tspan></text>
+
+<rect class="box" x="146" y="323" width="48" height="34" rx="3"/><text class="mono" x="170" y="344" text-anchor="middle">depth</text>
+<rect class="box" x="486" y="323" width="48" height="34" rx="3"/><text class="mono" x="510" y="344" text-anchor="middle">depth</text>
+<text class="mono" x="204" y="344">12×16 image, plain input</text>
+
+<rect class="b-rew" x="386" y="40" width="68" height="32" rx="6"/><text x="420" y="61" text-anchor="middle"><tspan font-style="italic">R</tspan><tspan class="sub" dy="5">t+1</tspan></text>
+<rect class="b-rew" x="726" y="40" width="68" height="32" rx="6"/><text x="760" y="61" text-anchor="middle"><tspan font-style="italic">R</tspan><tspan class="sub" dy="5">t+2</tspan></text>
+<text class="lbl t-rew" x="806" y="60">Σ γᵗ R = J(θ)</text>
+
+<text class="mono" x="80" y="392" text-anchor="middle">t</text>
+<text class="mono" x="420" y="392" text-anchor="middle">t+1</text>
+<text class="mono" x="760" y="392" text-anchor="middle">t+2</text>
+</svg>
+    </div>
+    <p class="mode-note" id="mode-note">The slope of each reward runs back into the state, through one dynamics block per step, into the action, and ends at the network weights θ. The depth image is a plain input: no gradient enters it.</p>
+    <div class="legend">
+      <span><i class="sw s-net"></i>policy network</span>
+      <span><i class="sw s-dyn"></i>simulator step</span>
+      <span><i class="sw s-rew"></i>reward, a known formula</span>
+      <span><svg width="34" height="10" aria-hidden="true"><line x1="0" y1="5" x2="34" y2="5" stroke="var(--grad)" stroke-width="2.6" stroke-dasharray="7 5"/></svg>gradient</span>
+      <span><svg width="34" height="10" aria-hidden="true"><line x1="0" y1="5" x2="34" y2="5" stroke="var(--edge)" stroke-width="1.6"/></svg>forward data</span>
+    </div>
+  </div>
+
+  <div class="eqs">
+    <div class="eq-card">
+      <div class="tag">Eq. 4</div>
+      <div class="body">
+        <div class="eq">\[ J(\theta)=\mathbb{E}_{\tau\sim\pi_\theta}\Big[\sum_{t=1}^{T}\gamma^{t}\,\class{c-rew}{R(s_t,a_t)}\Big] \]</div>
+        <p>The goal: the discounted sum of rewards over a rollout of \(T\) steps. \(\gamma\) is the discount, between 0 and 1.</p>
+      </div>
+    </div>
+    <div class="eq-card">
+      <div class="tag">Eq. 5–6</div>
+      <div class="body">
+        <div class="eq">\[ \nabla_\theta J=\mathbb{E}\Big[\sum_{t=1}^{T}\gamma^{t}\Big(\class{c-rew}{\frac{\partial R}{\partial s_t}}\,\frac{\partial s_t}{\partial\theta}\;+\;\class{c-rew}{\frac{\partial R}{\partial a_t}}\,\class{c-net}{\frac{\partial a_t}{\partial\theta}}\Big)\Big] \]</div>
+        <p>Chain rule. The <span class="rew">reward slopes</span> come from the reward formula. \(\class{c-net}{\partial a_t/\partial\theta}\) is ordinary backprop through the <span class="net">network</span>. The hard part is \(\partial s_t/\partial\theta\).</p>
+      </div>
+    </div>
+    <div class="eq-card">
+      <div class="tag">Eq. 7</div>
+      <div class="body">
+        <div class="eq">\[ \frac{\partial s_t}{\partial\theta}=\sum_{i=1}^{t}\Big[\class{c-dyn}{\Big(\prod_{j=i+1}^{t}\frac{\partial s_j}{\partial s_{j-1}}\Big)\frac{\partial s_i}{\partial a_{i-1}}}\;\class{c-net}{\frac{\partial a_{i-1}}{\partial\theta}}\Big] \]</div>
+        <p>Every earlier action changed today's state. Each one is carried forward by one <span class="dyn">dynamics Jacobian</span> (a matrix of slopes) per step.</p>
+        <div class="example"><span class="c"># t = 2: two actions, two terms</span>
+∂s₂/∂θ = (∂s₂/∂a₁)(∂a₁/∂θ)  +  (∂s₂/∂s₁)(∂s₁/∂a₀)(∂a₀/∂θ)
+         <span class="c">last action, direct</span>    <span class="c">first action, carried through one step</span></div>
+      </div>
+    </div>
+    <div class="eq-card">
+      <div class="tag">Eq. 10–11</div>
+      <div class="body">
+        <div class="eq">\[ s_{t+1}=s_t+F(s_t,a_t)\,dt \qquad \class{c-dyn}{\frac{\partial s_{t+1}}{\partial s_t}=I+\frac{\partial F}{\partial s_t}\,dt} \qquad \class{c-dyn}{\frac{\partial s_{t+1}}{\partial a_t}=\frac{\partial F}{\partial a_t}\,dt} \]</div>
+        <p>One simulator step and its two Jacobians. PyTorch autograd computes them, however complex \(F\) is. The paper reports no exploding or vanishing gradients over its short horizons.</p>
+      </div>
+    </div>
+    <div class="eq-card">
+      <div class="tag">Eq. 2<br>for contrast</div>
+      <div class="body">
+        <div class="eq">\[ \nabla_\theta J=\mathbb{E}\Big[\sum_{t=0}^{T}\nabla_\theta\log\pi_\theta(a_t\mid s_t)\;A^{\pi_\theta}(s_t,a_t)\Big] \]</div>
+        <p>What PPO uses instead. The advantage \(A\) (how much better an action was than average) is a critic's estimate from samples. With full drone physics that estimate is too noisy, and PPO never learns the task.</p>
+      </div>
+    </div>
+  </div>
+
+  <figure class="narrow">
+    <div class="mat"><img src="figs/train_curve.jpg" alt="Paper Fig. 6. Normalized episode reward against timesteps. SHAC rises from about 0.7 to about 1.0 over 120 million steps. PPO stays noisy around 0.25 for 77 million steps." loading="lazy"></div>
+    <figcaption><b>Paper Fig. 6.</b> SHAC climbs to about 1.0. PPO stays near 0.25. <dfn>SHAC</dfn> is BPTT over short segments, with a critic used only to value what comes after each segment: \(\sum_{t=0}^{h-1}\gamma^t R_t+\gamma^h V_\phi(s_h)\) (form from the SHAC paper, not printed in this one).</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="sec-head"><div class="eyebrow">§ III-C · The simulator</div><h2>What sits inside the dynamics block</h2></div>
+  <div class="vs">
+    <div><span class="k">Earlier work, point mass</span><p>The policy's acceleration command moves a dot directly. No attitude, no motors, no delay.</p></div>
+    <div><span class="k dyn">This paper, 6-DOF</span><p>State \(s=\{\mathbf p,\mathbf q,\mathbf v,\boldsymbol\Omega\}\): position, orientation, velocity, angular velocity. Action \(a=\{\boldsymbol\Omega^d,f^d\}\): 3 desired body rates and 1 thrust. The command passes through seven stages before the drone moves.</p></div>
+  </div>
+  <ol class="chain">
+    <li>
+      <div class="what"><b>Command delay</b><span>The command arrives \(D\) steps late, to copy the real communication delay.</span><span class="io">Eq. 18</span></div>
+      <div class="eq">\[ a_t=a_{t-D} \]</div>
+    </li>
+    <li>
+      <div class="what"><b>Body-rate PD controller</b><span>Rate error becomes torque \(\boldsymbol\eta\). This copies what the flight controller does.</span><span class="io">Eq. 13</span></div>
+      <div class="eq">\[ \boldsymbol\eta=\mathbf K_p(\boldsymbol\Omega^d-\boldsymbol\Omega)+\mathbf K_d(\dot{\boldsymbol\Omega}^d-\dot{\boldsymbol\Omega}) \]</div>
+    </li>
+    <li>
+      <div class="what"><b>Thrust allocation</b><span>Total thrust and 3 torques become 4 motor thrusts. \(l\) = arm length, \(c\) = torque coefficient.</span><span class="io">Eq. 14</span></div>
+      <div class="eq">\[ \begin{bmatrix}f_1\\f_2\\f_3\\f_4\end{bmatrix}=\begin{bmatrix}1&1&1&1\\0&l&0&-l\\-l&0&l&0\\c&-c&c&-c\end{bmatrix}^{-1}\begin{bmatrix}f\\\eta_x\\\eta_y\\\eta_z\end{bmatrix} \]</div>
+    </li>
+    <li>
+      <div class="what"><b>Motor resolving</b><span>Wanted thrust becomes wanted rotor speed. \(k_0,k_1,k_2\) are measured on a thrust stand.</span><span class="io">Eq. 16</span></div>
+      <div class="eq">\[ \omega_i^d=\sqrt{\frac{f_i-k_1\dot\omega_i-k_0}{k_2}} \]</div>
+    </li>
+    <li>
+      <div class="what"><b>Motor lag</b><span>A rotor cannot change speed instantly. \(\tau\) = motor time constant. Printed as in the paper; a standard first-order lag would use \(1-e^{-dt/\tau}\).</span><span class="io">Eq. 17</span></div>
+      <div class="eq">\[ \omega_i\leftarrow\omega_i+(\omega_i^d-\omega_i)\,e^{-dt/\tau} \]</div>
+    </li>
+    <li>
+      <div class="what"><b>Actual thrust</b><span>Real rotor speeds give the real thrusts, then the real total force and torque (Eq. 14 backward).</span><span class="io">Eq. 15</span></div>
+      <div class="eq">\[ f_i=k_2\,\omega_i^2+k_1\,\dot\omega_i+k_0 \]</div>
+    </li>
+    <li>
+      <div class="what"><b>Rigid body, then integrate</b><span>Newton and Euler equations give \(\dot s=F(s,a)\). \(\mathbf d\) = disturbance, \(\mathbf J\) = inertia, \(\otimes\) = quaternion product.</span><span class="io">Eq. 12, then Eq. 10</span></div>
+      <div class="eq">\[ \dot{\mathbf p}=\mathbf v \qquad \dot{\mathbf v}=\tfrac1m\mathbf R_{WB}(\mathbf f+\mathbf d)+\mathbf g \qquad \dot{\mathbf q}=\tfrac12\,\mathbf q\otimes\boldsymbol\Omega \qquad \dot{\boldsymbol\Omega}=\mathbf J^{-1}\big(\boldsymbol\eta-\boldsymbol\Omega\times\mathbf J\boldsymbol\Omega\big) \]</div>
+    </li>
+  </ol>
+  <figure>
+    <div class="mat"><img src="figs/overview.jpg" alt="Paper Fig. 1. Top left: the quadrotor with Jetson Orin NX, Betaflight controller and Intel D435i, next to plots matching simulated and real step responses in three body rates and thrust. Top middle: parallel differentiable simulation. Top right: gradient field reshaping and sampling transformation. Middle: backpropagation through time over a chain of states, actor nets, depth images and dynamics. Bottom: the high-fidelity 6-DOF dynamics chain from bodyrate PD controller to integrator." loading="lazy"></div>
+    <figcaption><b>Paper Fig. 1.</b> Top left: before training, the simulator's response to \(\omega_x,\omega_y,\omega_z\) and thrust commands is fitted to the real drone, one channel at a time. Bottom strip: the same seven-stage chain as above. Because the simulator matches the drone, the policy is deployed <dfn>zero-shot</dfn> (with no real-world fine-tuning).</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="sec-head"><div class="eyebrow">§ III-D · Reward and observation</div><h2>Five terms, all with a known slope</h2></div>
+  <div class="eq">\[ r=c_v\,r_{\mathbf v}+c_p\,r_p+c_s\,r_s+c_a\,r_a+c_c\,r_c \qquad\text{(Eq. 19)} \]</div>
+  <div class="scroll">
+    <table class="rtab">
+      <thead><tr><th>Term</th><th>Formula</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><th>Velocity<br><span class="eyebrow">Eq. 20</span></th>
+          <td class="m">\( r_{\mathbf v}=\mathrm{SmoothL1}(\lVert\mathbf v-\mathbf v^d\rVert,0) \)</td>
+          <td class="d">Follow the commanded velocity \(\mathbf v^d\). The Huber shape goes easy on small errors, so the drone may slow down to dodge.</td></tr>
+        <tr><th>Look ahead<br><span class="eyebrow">Eq. 21</span></th>
+          <td class="m">\( r_p=\dfrac{\mathbf v\cdot\mathbf x_B}{\lVert\mathbf v\rVert\,\lVert\mathbf x_B\rVert} \)</td>
+          <td class="d">Cosine between velocity and camera axis \(\mathbf x_B\). Flying where the camera points gives 1. Flying sideways gives 0.</td></tr>
+        <tr><th>Stability<br><span class="eyebrow">Eq. 22</span></th>
+          <td class="m">\( r_s=\lVert\boldsymbol\Omega\rVert+c_{s2}\lVert\dot{\mathbf v}\rVert \)</td>
+          <td class="d">Spin rate plus acceleration. Keeps the flight smooth.</td></tr>
+        <tr><th>Keep clear<br><span class="eyebrow">Eq. 23</span></th>
+          <td class="m">\( r_a=-\,\mathrm{clip}(d_{risk}-d_{col}-r_{uav},0)^2\cdot\mathrm{detach}(v_{appr}) \)</td>
+          <td class="d">Starts when the nearest obstacle is closer than \(d_{risk}\). Scaled by closing speed \(v_{appr}\). <code>detach</code> means the speed scales the penalty but gets no gradient.</td></tr>
+        <tr><th>Collision<br><span class="eyebrow">Eq. 24</span></th>
+          <td class="m">\( r_c=-32\ln\!\big(e^{-7.5\,(d_{col}-r_{uav})}\big) \)</td>
+          <td class="d">Strong term near contact. As printed it equals \(240\,(d_{col}-r_{uav})\), a straight line. The code may use a softplus \(\ln(1+e^{\cdot})\); check the repo.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="example"><span class="c"># "Keep clear" with example numbers (mine, not the paper's)</span>
+d_risk = 1.0 m, r_uav = 0.15 m, nearest obstacle d_col = 0.5 m, closing at 4 m/s
+r_a = -(1.0 - 0.5 - 0.15)² × 4 = -(0.35)² × 4 = -0.49</div>
+  <div class="prose">
+    <p class="dim">\(r_{\mathbf v}\) and \(r_s\) are costs as written, so their weights must be negative. That is my reading; the paper does not list the weights. Only position \(\mathbf p\) carries gradient from the reward back through the simulator.</p>
+    <p><b>Observation.</b> The depth image is inverted and max-pooled to \(12\times16\), so near obstacles stand out. The state part is \(\mathbf v^d_H\), \(\mathbf v_H\), \(\boldsymbol\Omega\), \(\mathbf q\): 13 numbers. Velocities are rotated into the heading frame (world frame turned by yaw \(\psi\) only), \(\mathbf v_H=\mathbf R_{WH}\mathbf v\) (Eq. 25–26).</p>
+  </div>
+  <figure>
+    <div class="mat"><img src="figs/multimodal.jpg" alt="Paper Fig. 3. One scene is shown two ways. Top: a distance field with striped round obstacles and a drone path; red arrows carry the collision reward from the field into each step of the rollout. Bottom: a rendered view with orange pillars, from which small depth images feed the actor at each step." loading="lazy"></div>
+    <figcaption><b>Paper Fig. 3.</b> The same scene is used twice. Its depth images go <em>into</em> the network (bottom). Its obstacle distances <em>grade</em> the resulting path (top). The red arrows are the gradient chain from the diagram above.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="sec-head"><div class="eyebrow">§ III-E · Gradient field reshaping</div><h2>Teach it to steer, not to brake</h2></div>
+  <div class="prose">
+    <p>The distance reward pushes the drone straight away from the nearest obstacle point. This is the same push an <dfn>ESDF</dfn> gives (Euclidean signed distance field: a map of distance to the nearest obstacle). Head-on, that push is exactly backward, so the policy learns to brake. The fix: rotate the nearest point by an angle \(\Delta a\) before computing the reward.</p>
+  </div>
+  <div class="split">
+    <figure>
+<svg class="dg" viewBox="0 0 460 250" role="img" aria-label="Raw case. A drone flies right, head-on toward a round obstacle. The reward push points straight left, opposite the velocity: brake 1.00, steer 0.00.">
+<defs>
+<marker id="ah-i" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" orient="auto"><path class="ah-i-p" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="ah-g2" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path class="ah-g-p" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" orient="auto"><path class="ah-p" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<text class="row" x="14" y="24">Before: raw distance gradient</text>
+<g transform="translate(0,16)">
+<circle class="obst" cx="370" cy="130" r="36"/>
+<path class="ray" d="M236 130 H328"/>
+<path class="vel" d="M158 130 H230"/>
+<text x="196" y="120" text-anchor="middle" font-style="italic">v</text>
+<circle class="pt" cx="334" cy="130" r="5"/>
+<text class="lbl" x="334" y="84" text-anchor="middle">nearest point</text>
+<path class="guide" d="M334 90 V122"/>
+<path class="push" d="M142 130 H82"/>
+<text class="lbl t-grad" x="112" y="118" text-anchor="middle">push</text>
+<circle class="drone" cx="150" cy="130" r="7"/>
+<text class="lbl" x="112" y="158" text-anchor="middle">brake 1.00 · steer 0.00</text>
+</g>
+</svg>
+      <figcaption>Head-on, the push is exactly opposite to the velocity. All of it brakes.</figcaption>
+    </figure>
+    <figure>
+<svg class="dg" viewBox="0 0 460 250" role="img" aria-label="Reshaped case. The nearest point is rotated about the drone by 41 degrees. The push now points back and to the side: brake 0.75, steer 0.66.">
+<text class="row" x="14" y="24">After: nearest point shifted by Δa</text>
+<circle class="obst" cx="370" cy="170" r="36"/>
+<path class="wedge" d="M150 170 L190 170 A40 40 0 0 0 180.1 143.6 Z"/>
+<path class="ray" d="M150 170 L284 52.3"/>
+<path class="arc" d="M334 162 A184 184 0 0 0 293.6 55.6"/>
+<text class="lbl" x="336" y="100">shift Δa = 41°</text>
+<path class="vel" d="M158 170 H238"/>
+<text x="232" y="190" text-anchor="middle" font-style="italic">v</text>
+<circle class="pt" cx="334" cy="170" r="5"/>
+<circle class="pt" cx="288.2" cy="48.6" r="5"/>
+<text class="lbl" x="278" y="42" text-anchor="end">shifted point</text>
+<path class="guide" d="M142 170 H97.4 V215"/>
+<path class="push" d="M144 175.3 L97.4 216.2"/>
+<text class="lbl t-grad" x="134" y="212">push</text>
+<circle class="drone" cx="150" cy="170" r="7"/>
+<text class="lbl" x="110" y="160" text-anchor="middle">brake 0.75</text>
+<text class="lbl" x="90" y="198" text-anchor="end">steer 0.66</text>
+</svg>
+      <figcaption>Rotating the point rotates the push by the same angle. At 41° the push is 0.75 brake and 0.66 steer, so the policy learns to go around.</figcaption>
+    </figure>
+  </div>
+
+  <div class="eqs">
+    <div class="eq-card">
+      <div class="tag">Eq. 27</div>
+      <div class="body">
+        <div class="eq">\[ x=\frac{\mathrm{clip}(d,d_{\min},d_{\max})-d_{\min}}{d_{\max}-d_{\min}} \qquad \tilde a=\mathrm{clip}(a,0,a_{\max}) \qquad \Delta a=(a_{\max}-\tilde a)\;\alpha\,\big[1-e^{-3(1-x)^2}\big] \]</div>
+        <p>\(d\) = distance to the nearest point. \(a\) = incidence angle between the velocity and the direction to that point (0° is head-on). The shift is largest when the obstacle is close and dead ahead. It is zero beyond \(d_{\max}\), and zero once \(a\ge a_{\max}=90°\), because then the drone is already passing.</p>
+        <div class="scroll">
+          <table class="mini">
+            <thead><tr><th>distance d</th><th>incidence a</th><th>shift Δa</th></tr></thead>
+            <tbody>
+              <tr><td>0.3 m</td><td>0°</td><td>67°</td></tr>
+              <tr><td>2 m</td><td>0°</td><td>41°</td></tr>
+              <tr><td>2 m</td><td>45°</td><td>21°</td></tr>
+              <tr><td>3 m</td><td>0°</td><td>14°</td></tr>
+              <tr><td>4 m or more</td><td>any</td><td>0°</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="dim">Computed with \(d_{\min}=0.3\) m and \(d_{\max}=4\) m from Fig. 4B, angles in radians, and \(\alpha=\pi/4\). The paper does not state \(\alpha\); this value reproduces the 67° peak of its heatmap.</p>
+      </div>
+    </div>
+  </div>
+
+  <figure>
+    <div class="mat"><img src="figs/reshape.jpg" alt="Paper Fig. 4. A: a drone, its velocity, the nearest obstacle point and the shifted point, with incidence angle and shifting angle marked. B: heatmap of the added angle against distance and original angle, peaking near 67 degrees at short distance and zero angle. C.1 to C.4: distance gradient fields around round and rectangular obstacles with white and cyan paths; in C.2 and C.3 the orange gradient arrows point straight back along the path, in C.4 after reshaping they point sideways." loading="lazy"></div>
+    <figcaption><b>Paper Fig. 4.</b> A: the shift. B: its size by distance and angle. C.2 and C.3: head-on, the orange gradient arrows point straight back along the path. In front of a wide wall (C.3) the whole region does this; the paper calls it the “death zone”. C.4: after reshaping the arrows point sideways.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="sec-head"><div class="eyebrow">§ III-F · Training setup</div><h2>A small network and one sampling fix</h2></div>
+  <div class="diagram">
+    <div class="scroll">
+<svg class="dg wide" viewBox="0 0 900 230" role="img" aria-label="Network. The 12 by 16 depth image goes through a 3-layer CNN with 32, 64 and 128 channels. The 13-number state goes through a 2-layer MLP of width 512. The two features are concatenated. An actor head, a 2-layer MLP of width 512, outputs the 4 CTBR numbers. A critic head of the same size outputs one value and is used in training only.">
+<rect class="box" x="20" y="34" width="150" height="50" rx="6"/><text x="95" y="56" text-anchor="middle" font-size="14">Depth image</text><text class="mono" x="95" y="73" text-anchor="middle">12×16, inverted</text>
+<path class="e" d="M170 59 H219"/>
+<rect class="b-net" x="220" y="34" width="150" height="50" rx="6"/><text x="295" y="56" text-anchor="middle" font-size="14">CNN, 3 layers</text><text class="mono" x="295" y="73" text-anchor="middle">32 · 64 · 128 channels</text>
+<rect class="box" x="20" y="146" width="150" height="50" rx="6"/><text x="95" y="168" text-anchor="middle" font-size="14">State, 13 numbers</text><text class="mono" x="95" y="185" text-anchor="middle">v_d, v, Ω, q</text>
+<path class="e" d="M170 171 H219"/>
+<rect class="b-net" x="220" y="146" width="150" height="50" rx="6"/><text x="295" y="168" text-anchor="middle" font-size="14">MLP, 2 layers</text><text class="mono" x="295" y="185" text-anchor="middle">512 · 512</text>
+<path class="e" d="M370 59 H410 V100"/>
+<path class="e" d="M370 171 H410 V130"/>
+<rect class="box" x="378" y="101" width="64" height="28" rx="14"/><text class="mono" x="410" y="119" text-anchor="middle">concat</text>
+<path class="e" d="M442 115 H480 V59 H519"/>
+<path class="e" d="M442 115 H480 V171 H519"/>
+<rect class="b-net" x="520" y="34" width="150" height="50" rx="6"/><text x="595" y="56" text-anchor="middle" font-size="14">Actor MLP, 2 layers</text><text class="mono" x="595" y="73" text-anchor="middle">512 · 512</text>
+<path class="e" d="M670 59 H719"/>
+<rect class="box" x="720" y="34" width="160" height="50" rx="6"/><text x="800" y="56" text-anchor="middle" font-size="14">CTBR, 4 numbers</text><text class="mono" x="800" y="73" text-anchor="middle">thrust + 3 body rates</text>
+<rect class="b-ghost" x="520" y="146" width="150" height="50" rx="6"/><text x="595" y="168" text-anchor="middle" font-size="14">Critic MLP, 2 layers</text><text class="mono" x="595" y="185" text-anchor="middle">512 · 512</text>
+<path class="e" d="M670 171 H719"/>
+<rect class="b-ghost" x="720" y="146" width="160" height="50" rx="6"/><text x="800" y="168" text-anchor="middle" font-size="14">Value, 1 number</text><text class="mono" x="800" y="185" text-anchor="middle">training only</text>
+</svg>
+    </div>
+    <p class="dim">All layers use LeakyReLU. No memory between frames: each command comes from the current image and state alone. Trained with SHAC across three groups of random scenes (boxes and pillars, short pillars, tall pillars).</p>
+  </div>
+
+  <div class="prose">
+    <p><b>The sampling fix.</b> A slow flight stays in the scene longer, so it leaves more samples. If commanded speeds are drawn uniformly, the data is mostly slow flight. Drawing speeds in proportion to the speed itself cancels this.</p>
+  </div>
+  <div class="split">
+    <figure>
+<svg class="chart" viewBox="0 0 300 190" role="img" aria-label="Uniform commands. The command density is flat at 0.125. The density in the collected data falls from 0.31 at 2 m/s to 0.06 at 10 m/s.">
+<text class="t" x="40" y="12">Uniform commands</text>
+<path class="gl" d="M40 112.9 H285 M40 75.7 H285 M40 38.6 H285"/>
+<path class="ax" d="M40 20 V150 H285"/>
+<text x="34" y="154" text-anchor="end">0</text><text x="34" y="116.5" text-anchor="end">0.1</text><text x="34" y="79.5" text-anchor="end">0.2</text><text x="34" y="42.5" text-anchor="end">0.3</text>
+<text x="40" y="165" text-anchor="middle">2</text><text x="101.2" y="165" text-anchor="middle">4</text><text x="162.5" y="165" text-anchor="middle">6</text><text x="223.8" y="165" text-anchor="middle">8</text><text x="285" y="165" text-anchor="middle">10</text>
+<text x="162.5" y="184" text-anchor="middle">commanded speed, m/s</text>
+<path class="l-cmd" d="M40 103.6 H285"/>
+<polyline class="l-data" points="40.0,34.6 55.3,57.7 70.6,73.1 85.9,84.1 101.2,92.3 116.6,98.7 131.9,103.8 147.2,108.0 162.5,111.5 177.8,114.5 193.1,117.0 208.4,119.2 223.8,121.2 239.1,122.8 254.4,124.4 269.7,125.7 285.0,126.9"/>
+<text x="283" y="97" text-anchor="end">drawn: uniform</text>
+<text class="a" x="66" y="57">collected: ∝ 1/v</text>
+</svg>
+      <figcaption>Dashed: the speeds you draw. Solid: the share of samples collected at each speed. Draw evenly and 2 m/s gets 5 times more samples than 10 m/s.</figcaption>
+    </figure>
+    <figure>
+<svg class="chart" viewBox="0 0 300 190" role="img" aria-label="Commands proportional to speed. The command density rises linearly from 0.04 at 2 m/s to 0.21 at 10 m/s. The density in the collected data is flat at 0.125.">
+<text class="t" x="40" y="12">Commands ∝ speed, Eq. 30</text>
+<path class="gl" d="M40 112.9 H285 M40 75.7 H285 M40 38.6 H285"/>
+<path class="ax" d="M40 20 V150 H285"/>
+<text x="34" y="154" text-anchor="end">0</text><text x="34" y="116.5" text-anchor="end">0.1</text><text x="34" y="79.5" text-anchor="end">0.2</text><text x="34" y="42.5" text-anchor="end">0.3</text>
+<text x="40" y="165" text-anchor="middle">2</text><text x="101.2" y="165" text-anchor="middle">4</text><text x="162.5" y="165" text-anchor="middle">6</text><text x="223.8" y="165" text-anchor="middle">8</text><text x="285" y="165" text-anchor="middle">10</text>
+<text x="162.5" y="184" text-anchor="middle">commanded speed, m/s</text>
+<path class="l-cmd" d="M40 134.5 L285 72.6"/>
+<path class="l-data" d="M40 103.6 H285"/>
+<text x="283" y="62" text-anchor="end">drawn: ∝ v</text>
+<text class="a" x="283" y="122" text-anchor="end">collected: uniform</text>
+</svg>
+      <figcaption>Draw fast speeds more often and every speed gets equal data.</figcaption>
+    </figure>
+  </div>
+  <div class="eqs">
+    <div class="eq-card">
+      <div class="tag">Eq. 28–31</div>
+      <div class="body">
+        <div class="eq">\[ p_{\text{data}}(v^d)\propto\frac{1}{v^d}\,p_{\text{cmd}}(v^d) \;\;\Longrightarrow\;\; p_{\text{cmd}}(v^d)=\frac{2\,v^d}{v_{\max}^2-v_{\min}^2} \qquad v^d=\sqrt{v_{\min}^2+u\,(v_{\max}^2-v_{\min}^2)},\;\; u\sim\mathcal U(0,1) \]</div>
+        <p>Flight time scales as \(1/v^d\), so sample count does too. The last formula is how to draw such a speed from one uniform random number \(u\).</p>
+        <div class="example"><span class="c"># example range 2 to 10 m/s (the range in both charts; mine, not the paper's)</span>
+u = 0.5  →  v = sqrt(4 + 0.5 × 96) = sqrt(52) = 7.2 m/s     <span class="c"># uniform sampling would give 6.0</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><div class="eyebrow">§ IV · Results</div><h2>About as safe as the best baseline, far smoother</h2></div>
+  <div class="prose">
+    <p>Simulated forests, 25 runs per setting. <dfn>Jerk</dfn> is how fast acceleration changes, in m/s³; lower means smoother. Speed is forward progress toward the goal, so detours lower it.</p>
+  </div>
+  <div class="res">
+    <div class="card">
+      <h3>Hardest standard setting: 12 m/s command, 0.08 obstacles/m²</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Method</th><th>Success, of 25</th><th>Speed</th><th>Jerk, m/s³</th><th>All 16 settings</th></tr></thead>
+          <tbody>
+            <tr><th>EGO-Planner</th><td><div class="bar"><i style="width:1px"></i><span>0</span></div></td><td>6.67</td><td><div class="bar"><i style="width:29px"></i><span>80.9</span></div></td><td>215 / 400</td></tr>
+            <tr><th>Agile</th><td><div class="bar"><i style="width:5px"></i><span>2</span></div></td><td>5.46</td><td><div class="bar"><i style="width:70px"></i><span>197.8</span></div></td><td>123 / 400</td></tr>
+            <tr><th>YOPOv2</th><td><div class="bar"><i style="width:29px"></i><span>12</span></div></td><td>8.41</td><td><div class="bar"><i style="width:24px"></i><span>66.8</span></div></td><td>353 / 400</td></tr>
+            <tr><th>Newton</th><td><div class="bar"><i style="width:46px"></i><span>19</span></div></td><td>5.59</td><td><div class="bar"><i style="width:40px"></i><span>112.3</span></div></td><td>382 / 400</td></tr>
+            <tr class="us"><th>Ours</th><td><div class="bar"><i style="width:55px"></i><span>23</span></div></td><td>7.61</td><td><div class="bar"><i style="width:8px"></i><span>23.2</span></div></td><td>390 / 400</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="cap">Paper Table I. The last column is my sum over all 4 speeds × 4 densities. Newton is close on success; the gap is in jerk (112 vs 23) and speed.</p>
+    </div>
+    <div class="card">
+      <h3>Super-dense: 8 m/s command, 0.25 obstacles/m²</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Method</th><th>Success, of 5</th><th>Speed</th><th>Jerk, m/s³</th></tr></thead>
+          <tbody>
+            <tr><th>EGO-Planner</th><td><div class="bar"><i style="width:1px"></i><span>0</span></div></td><td>4.60</td><td><div class="bar"><i style="width:48px"></i><span>134.4</span></div></td></tr>
+            <tr><th>Agile</th><td><div class="bar"><i style="width:1px"></i><span>0</span></div></td><td>3.55</td><td><div class="bar"><i style="width:49px"></i><span>139.2</span></div></td></tr>
+            <tr><th>YOPOv2</th><td><div class="bar"><i style="width:1px"></i><span>0</span></div></td><td>6.03</td><td><div class="bar"><i style="width:24px"></i><span>68.6</span></div></td></tr>
+            <tr><th>Newton</th><td><div class="bar"><i style="width:60px"></i><span>5</span></div></td><td>3.15</td><td><div class="bar"><i style="width:13px"></i><span>35.9</span></div></td></tr>
+            <tr class="us"><th>Ours</th><td><div class="bar"><i style="width:60px"></i><span>5</span></div></td><td>4.39</td><td><div class="bar"><i style="width:8px"></i><span>21.9</span></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="cap">Paper Table II. Both differentiable-simulation methods survive. Newton does it by braking again and again (3.15 m/s); this method keeps moving (4.39 m/s).</p>
+    </div>
+  </div>
+  <figure>
+    <div class="mat"><img src="figs/success_jerk.jpg" alt="Paper Fig. 9. Top row: success rate against obstacle density at 3, 6, 9 and 12 m/s for EGO-Planner, Agile, Newton, YOPOv2 and Ours. Ours stays between 88 and 100 percent everywhere. Bottom row: distribution of average jerk at each speed; Ours is a narrow peak at the far left in every panel." loading="lazy"></div>
+    <figcaption><b>Paper Fig. 9.</b> Top: success rate by density, one panel per commanded speed. Bottom: jerk distributions. The green peak (Ours) stays narrow and far left at every speed.</figcaption>
+  </figure>
+  <div class="figs-2">
+    <figure>
+      <div class="mat"><img src="figs/fast.jpg" alt="Paper Fig. 11. Point cloud of a forest with the flight path, velocity plot peaking near 7.5 m/s, jerk plot mostly under 30 m/s cubed, a composite photo of the drone flying between trees, and six onboard camera views." loading="lazy"></div>
+      <figcaption><b>Paper Fig. 11.</b> Real forest, about 0.1 trees/m², goal 90 m ahead, 10 m/s commanded. Peak speed about 7.5 m/s.</figcaption>
+    </figure>
+    <figure>
+      <div class="mat"><img src="figs/dense.jpg" alt="Paper Fig. 12. Point cloud of a very dense forest with the flight path, velocity plot between 2 and 5 m/s, jerk plot, a composite photo of the drone weaving between thin trunks, and six onboard camera views that all look forward." loading="lazy"></div>
+      <figcaption><b>Paper Fig. 12.</b> Real forest, about 1 tree/m². About 5 m/s in open patches, about 3 m/s in the densest parts. The camera keeps facing forward (E.1 to E.6).</figcaption>
+    </figure>
+  </div>
+  <div class="prose">
+    <p class="dim">Hardware: Jetson Orin NX, Intel RealSense D435i depth camera, Betaflight flight controller. Everything runs onboard. Thrust is capped at twice the drone's weight.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><div class="eyebrow">§ V · Limits</div><h2>What to keep in mind</h2></div>
+  <ul class="tight">
+    <li><b>No route planning.</b> It dodges what it sees but cannot solve a maze. The authors suggest using it as a safety layer under a planner that supplies the direction.</li>
+    <li><b>Baselines ran in their own simulators.</b> All methods saw the same rendered scenes, but each baseline kept its native dynamics and controller stack. The comparison is fair to them, yet not one identical physics engine.</li>
+    <li><b>It still needs a state estimate.</b> Velocity and orientation come from visual-inertial odometry on the drone.</li>
+    <li><b>Two printed formulas look off</b> (Eq. 17 and Eq. 24, noted above). Check the released code before reimplementing.</li>
+  </ul>
+</section>
+
+<footer>Explainer of arXiv:2604.10548v2. Figures are from the paper and belong to its authors. Diagrams, worked examples and the summed success counts are mine.</footer>
+
+</div>
+
+<script>
+(function () {
+  var svg = document.getElementById('bptt');
+  var note = document.getElementById('mode-note');
+  var text = {
+    grad: 'The slope of each reward runs back into the state, through one dynamics block per step, into the action, and ends at the network weights θ. The depth image is a plain input: no gradient enters it.',
+    fwd: 'The network reads the depth image and state and outputs CTBR. The simulator steps the full drone physics. A reward is computed from each new state.'
+  };
+  var buttons = [document.getElementById('mode-grad'), document.getElementById('mode-fwd')];
+  buttons.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var m = b.getAttribute('data-mode');
+      svg.setAttribute('data-mode', m);
+      note.textContent = text[m];
+      buttons.forEach(function (o) { o.setAttribute('aria-pressed', o === b ? 'true' : 'false'); });
+    });
+  });
+})();
+</script>

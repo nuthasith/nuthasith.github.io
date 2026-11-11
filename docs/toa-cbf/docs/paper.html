@@ -1,0 +1,2222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TOA-CBF Paper Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=JetBrains+Mono:wght@400;500;600&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<style>
+/* Layout: full-width hero figure, then a sticky contents rail beside one 820px column.
+   Figures fill the column; running text stops near 66ch. Palette and faces follow the repo's docs. */
+:root {
+  --ground: #f5f7fa;
+  --panel: #ffffff;
+  --ink: #141820;
+  --ink-2: #4a5462;
+  --muted: #6d7785;
+  --rule: #dbe0e7;
+  --accent: #1f5fbf;          /* TOA-field blue */
+  --accent-soft: #e5eefb;
+  --signal: #a65f00;          /* braking, failures, deviations */
+  --signal-soft: #fcf0de;
+  --ok: #1d7a3c;
+  --ok-soft: #e2f2e7;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;   /* chart series, fixed order */
+  --seq-lo: #cde2fb; --seq-hi: #0d366b;
+  --gridline: #e4e8ee;
+  --path: #eb6834;
+  --plate: #fcfcfb;           /* matplotlib figures keep their light ground in both themes */
+  --code-bg: #edf0f5;
+  color-scheme: light;
+  --display: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --body: "Source Sans 3", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #0e1116; --panel: #151a21; --ink: #e8ebf0; --ink-2: #a9b2be; --muted: #8a94a1; --rule: #29313c;
+    --accent: #71a6f0; --accent-soft: #16243a; --signal: #e6a452; --signal-soft: #2b2115; --ok: #52c47f; --ok-soft: #13271b;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --seq-lo: #1a2a42; --seq-hi: #9ec5f4;
+    --gridline: #252c36; --path: #f08a5d; --plate: #fcfcfb; --code-bg: #1b212a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #0e1116; --panel: #151a21; --ink: #e8ebf0; --ink-2: #a9b2be; --muted: #8a94a1; --rule: #29313c;
+  --accent: #71a6f0; --accent-soft: #16243a; --signal: #e6a452; --signal-soft: #2b2115; --ok: #52c47f; --ok-soft: #13271b;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --seq-lo: #1a2a42; --seq-hi: #9ec5f4;
+  --gridline: #252c36; --path: #f08a5d; --plate: #fcfcfb; --code-bg: #1b212a; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0; background: var(--ground); color: var(--ink);
+  font: 400 1.0625rem/1.65 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 4rem;
+}
+.shell { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 0 3rem; }
+@media (max-width: 980px) { .shell { grid-template-columns: minmax(0, 1fr); } }
+
+/* hero */
+.hero { grid-column: 1 / -1; padding-block: 2.6rem 1rem; }
+.kicker { font: 500 0.8rem/1.5 var(--mono); color: var(--accent); letter-spacing: 0.02em; overflow-wrap: anywhere; }
+h1 { font: 800 clamp(2.2rem, 5vw, 3.4rem)/1.02 var(--display); font-stretch: 78%; letter-spacing: -0.015em;
+  margin: 0.5rem 0 0.8rem; text-wrap: balance; }
+.lede { font-size: 1.22rem; line-height: 1.5; color: var(--ink-2); max-width: 58ch; margin: 0; }
+.cite { font-size: 0.86rem; color: var(--muted); max-width: 90ch; margin: 0.8rem 0 0; }
+.hero-fig { margin: 1.6rem 0 0; background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 0.6rem; }
+.fixes { list-style: none; padding: 0; margin: 1rem 0 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.8rem; }
+@media (max-width: 760px) { .fixes { grid-template-columns: minmax(0, 1fr); } }
+.fixes li { display: grid; grid-template-columns: 1.9rem minmax(0, 1fr); gap: 0.15rem 0.7rem; align-content: start;
+  padding: 0.85rem 0.9rem; border-top: 3px solid var(--accent); background: var(--panel); border-radius: 0 0 8px 8px; }
+.badge { grid-row: span 3; width: 1.7rem; height: 1.7rem; border-radius: 50%; background: var(--accent); color: var(--panel);
+  font: 700 0.9rem/1.7rem var(--display); text-align: center; }
+.fixes b { font: 700 1.02rem/1.3 var(--display); font-stretch: 90%; }
+.fixes .was { font-size: 0.92rem; color: var(--ink-2); line-height: 1.4; }
+.chip { display: inline-block; font: 600 0.72rem/1 var(--mono); padding: 0.3rem 0.45rem; border-radius: 4px;
+  background: var(--accent-soft); color: var(--accent); justify-self: start; margin-top: 0.35rem; }
+.chip.sig { background: var(--signal-soft); color: var(--signal); }
+.chip.okc { background: var(--ok-soft); color: var(--ok); }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.8rem; margin: 1.4rem 0 0; }
+@media (max-width: 860px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 420px) { .stats { grid-template-columns: minmax(0, 1fr); } }
+.stats div { border-left: 2px solid var(--rule); padding: 0.1rem 0 0.1rem 0.8rem; min-width: 0; }
+.stats .big { font: 800 1.9rem/1.05 var(--display); font-stretch: 80%; font-variant-numeric: tabular-nums; color: var(--ink); }
+.stats .big small { font-size: 1.05rem; font-weight: 700; color: var(--ink-2); }
+.stats p { margin: 0.3rem 0 0; font-size: 0.88rem; line-height: 1.4; color: var(--ink-2); }
+.stats .who { font: 600 0.7rem/1 var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 0.35rem; }
+
+/* contents rail */
+nav.toc { padding-top: 2.2rem; }
+nav.toc .inner { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 1rem); }
+nav.toc .lbl { font: 600 0.72rem/1 var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0 0 0.6rem; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.05rem; }
+nav.toc a { display: grid; grid-template-columns: 1.7rem minmax(0, 1fr); padding: 0.32rem 0.45rem; border-left: 2px solid transparent;
+  color: var(--ink-2); text-decoration: none; font-size: 0.88rem; line-height: 1.35; border-radius: 0 4px 4px 0; }
+nav.toc a span { font: 500 0.72rem/1.6 var(--mono); color: var(--muted); }
+nav.toc a:hover { background: var(--accent-soft); color: var(--ink); }
+nav.toc a[aria-current="location"] { border-left-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+@media (max-width: 980px) { nav.toc { display: none; } }
+.toc-inline { display: none; margin-top: 1rem; border: 1px solid var(--rule); border-radius: 8px; background: var(--panel); padding: 0.6rem 0.9rem; }
+.toc-inline summary { cursor: pointer; font-weight: 600; color: var(--ink-2); }
+.toc-inline ol { margin: 0.5rem 0 0.2rem; padding-left: 1.4rem; columns: 2 14rem; font-size: 0.95rem; }
+.toc-inline a { color: var(--ink-2); }
+@media (max-width: 980px) { .toc-inline { display: block; } }
+
+/* reading column */
+main { min-width: 0; max-width: 820px; }
+section { padding-block: 2.6rem 0.8rem; border-bottom: 1px solid var(--rule); }
+section:last-of-type { border-bottom: 0; }
+[id] { scroll-margin-top: 1rem; }
+.sec-h { display: flex; align-items: baseline; gap: 0.8rem; }
+.num { font: 600 0.82rem/1 var(--mono); color: var(--accent); flex: none; }
+h2 { font: 780 1.85rem/1.12 var(--display); font-stretch: 82%; letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
+h3 { font: 700 1.2rem/1.3 var(--display); font-stretch: 90%; margin: 2rem 0 0.6rem; text-wrap: balance; }
+.take { font-size: 1.18rem; line-height: 1.5; color: var(--ink-2); max-width: 58ch; margin: 0.7rem 0 1.3rem; }
+p, li { max-width: 66ch; }
+p { margin: 0.6rem 0; }
+ul { padding-left: 1.2rem; margin: 0.6rem 0; }
+li { margin: 0.3rem 0; }
+li::marker { color: var(--muted); }
+a { color: var(--accent); text-underline-offset: 2px; }
+a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+code { font-family: var(--mono); font-size: 0.84em; background: var(--code-bg); padding: 0.06em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+
+/* figures */
+figure { margin: 1.2rem 0; }
+.fig { background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 0.8rem; }
+/* direct children only, so MathJax's inline SVGs in captions keep their own size */
+.fig > svg, .scroll > svg, .chart > svg { display: block; width: 100%; height: auto; color: var(--ink); }
+.scroll { overflow-x: auto; }
+.scroll > svg { min-width: 560px; }
+.scroll.wide > svg { min-width: 680px; }
+figcaption { font-size: 0.9rem; line-height: 1.5; color: var(--ink-2); margin-top: 0.6rem; max-width: 72ch; }
+.plate { background: var(--plate); border-radius: 6px; padding: 0.4rem; }
+.plate img { display: block; width: 100%; height: auto; }
+.pair { display: grid; gap: 0.9rem; }
+.pair .tag { font: 600 0.8rem/1.3 var(--body); margin-bottom: 0.35rem; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+
+/* SVG vocabulary */
+svg .t { fill: currentColor; font: 600 13px var(--body); }
+svg .ts { fill: var(--ink-2); font: 400 12px var(--body); }
+svg .tm { fill: var(--ink-2); font: 400 11px var(--mono); }
+svg .ta { fill: var(--accent); font: 600 12.5px var(--body); }
+svg .tsig { fill: var(--signal); font: 600 12.5px var(--body); }
+svg .tok { fill: var(--ok); font: 600 12.5px var(--body); }
+svg .tw { fill: var(--panel); font: 700 12px var(--display); }
+svg .box { fill: var(--panel); stroke: var(--rule); stroke-width: 1.3; }
+svg .boxa { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.3; }
+svg .boxs { fill: var(--signal-soft); stroke: var(--signal); stroke-width: 1.3; }
+svg .ln { stroke: currentColor; stroke-width: 1.5; fill: none; }
+svg .lnm { stroke: var(--muted); stroke-width: 1.3; fill: none; }
+svg .lna { stroke: var(--accent); stroke-width: 2; fill: none; }
+svg .lns { stroke: var(--signal); stroke-width: 2; fill: none; }
+svg .dash { stroke-dasharray: 5 4; }
+svg .obst { fill: var(--ink-2); }
+svg .fa { fill: var(--accent); }
+svg .fs { fill: var(--signal); }
+svg .fi { fill: currentColor; }
+svg .fm { fill: var(--muted); }
+svg .fp { fill: var(--panel); }
+svg .fok { fill: var(--ok); }
+svg .cone { fill: var(--accent); fill-opacity: 0.14; stroke: var(--accent); stroke-width: 1.2; }
+svg .gridl { stroke: var(--gridline); stroke-width: 1; }
+
+/* equations (MathJax SVG output inherits currentColor) */
+.eq { position: relative; background: var(--panel); border: 1px solid var(--rule); border-radius: 8px;
+  padding: 0.9rem 3.4rem; margin: 1rem 0; overflow-x: auto; font-size: 1.12rem; text-align: center; }
+.eq .no { position: absolute; right: 0.9rem; top: 50%; transform: translateY(-50%); font: 500 0.78rem/1 var(--mono); color: var(--muted); }
+.eq mjx-container[jax="SVG"][display="true"] { margin: 0 !important; }
+.eq.plain { background: transparent; border-style: dashed; }
+@media (max-width: 560px) { .eq { padding: 0.8rem 0.8rem 1.7rem; font-size: 1rem; } .eq .no { top: auto; bottom: 0.45rem; transform: none; } }
+mjx-container .ma { fill: var(--accent); stroke: var(--accent); }
+mjx-container .ms { fill: var(--signal); stroke: var(--signal); }
+.sym { list-style: none; padding: 0; margin: 0.6rem 0 1rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr));
+  gap: 0.35rem 1.4rem; font-size: 0.95rem; line-height: 1.45; }
+.sym li { margin: 0; color: var(--ink-2); display: grid; grid-template-columns: 4.2rem minmax(0, 1fr); gap: 0.6rem; align-items: baseline; }
+.sym li > :first-child { color: var(--ink); }
+
+/* small fact grid */
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); gap: 1px; margin: 1rem 0;
+  background: var(--rule); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
+.facts div { background: var(--panel); padding: 0.6rem 0.75rem; min-width: 0; }
+.facts .k { font: 600 0.68rem/1.2 var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.facts .v { font: 700 1.02rem/1.3 var(--display); font-stretch: 90%; margin-top: 0.25rem; font-variant-numeric: tabular-nums; }
+.facts .v small { display: block; font: 400 0.84rem/1.35 var(--body); color: var(--ink-2); margin-top: 0.15rem; }
+
+/* callouts */
+.note { border-radius: 8px; padding: 0.75rem 1rem; margin: 1rem 0; background: var(--accent-soft); max-width: 72ch; }
+.note.sig { background: var(--signal-soft); }
+.note b:first-child { color: var(--accent); }
+.note.sig b:first-child { color: var(--signal); }
+.note p { margin: 0.2rem 0 0; }
+
+/* expandable detail */
+details.more { margin: 1rem 0; border: 1px solid var(--rule); border-radius: 8px; padding: 0 1rem; background: var(--panel); }
+details.more > summary { padding-block: 0.75rem; cursor: pointer; font-weight: 600; color: var(--accent); }
+details.more[open] { padding-bottom: 0.8rem; }
+details.more[open] > summary { border-bottom: 1px solid var(--rule); margin-bottom: 0.6rem; }
+
+/* tables */
+.table { overflow-x: auto; margin: 0.9rem 0; }
+table { border-collapse: collapse; font-size: 0.92rem; min-width: 100%; }
+th, td { text-align: left; padding: 0.5rem 0.75rem 0.5rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font: 600 0.8rem/1.3 var(--body); color: var(--muted); border-bottom-color: var(--ink-2); }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+tr.best td { font-weight: 700; }
+
+/* loss-weight bars */
+.wbars { display: grid; grid-template-columns: minmax(7.5rem, auto) minmax(0, 1fr) 3.2rem; gap: 0.45rem 0.8rem; align-items: center; margin: 1rem 0; }
+.wbars .lab { font-size: 0.95rem; line-height: 1.3; }
+.wbars .lab small { display: block; color: var(--ink-2); font-size: 0.82rem; }
+.wbars .track { height: 14px; background: var(--gridline); border-radius: 3px; overflow: hidden; }
+.wbars .fill { height: 100%; background: var(--accent); border-radius: 3px; min-width: 2px; }
+.wbars .fill.hot { background: var(--signal); }
+.wbars .val { font: 600 0.88rem/1 var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+
+/* controller steps: a real sequence */
+ol.flow { list-style: none; counter-reset: f; padding: 0; margin: 1rem 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.6rem; }
+@media (max-width: 720px) { ol.flow { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 420px) { ol.flow { grid-template-columns: minmax(0, 1fr); } }
+ol.flow li { counter-increment: f; background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 0.65rem 0.75rem; margin: 0; font-size: 0.9rem; line-height: 1.4; color: var(--ink-2); min-width: 0; }
+ol.flow li::before { content: counter(f); display: inline-block; font: 700 0.78rem/1.35rem var(--display); width: 1.35rem; height: 1.35rem;
+  text-align: center; border-radius: 50%; border: 1.5px solid var(--accent); color: var(--accent); margin-right: 0.4rem; }
+ol.flow b { color: var(--ink); }
+
+/* demos */
+.demo { background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 0.9rem; margin: 1.2rem 0; }
+.demo .dh { font: 700 0.95rem/1.3 var(--display); font-stretch: 90%; margin: 0 0 0.6rem; }
+.controls { display: flex; flex-wrap: wrap; gap: 0.7rem 1.2rem; align-items: center; margin: 0.2rem 0 0.8rem; }
+#cbf-demo .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr)); align-items: end; }
+.controls label { display: grid; gap: 0.2rem; font-size: 0.88rem; color: var(--ink-2); }
+.controls input[type="range"] { width: 100%; accent-color: var(--accent); }
+.controls output, .readout { font: 500 0.84rem/1.4 var(--mono); color: var(--ink); font-variant-numeric: tabular-nums; }
+.hint { font-size: 0.86rem; color: var(--ink-2); }
+.seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; }
+.seg button { font: 600 0.88rem/1.3 var(--body); color: var(--ink-2); background: var(--panel); border: 0; padding: 0.5rem 0.8rem; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--rule); }
+.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+.readout { display: flex; flex-wrap: wrap; gap: 0.3rem 1.4rem; margin-top: 0.6rem; }
+.readout b { font-weight: 600; }
+.state-bad { color: var(--signal); font-weight: 700; }
+.state-ok { color: var(--ok); font-weight: 700; }
+canvas { display: block; width: 100%; border-radius: 4px; touch-action: manipulation; cursor: crosshair; }
+.chart { position: relative; }
+.legend { display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; font-size: 0.86rem; color: var(--ink-2); margin-bottom: 0.3rem; }
+.legend span { display: inline-flex; align-items: center; gap: 0.35rem; }
+.legend i { width: 14px; height: 4px; border-radius: 2px; display: inline-block; }
+.tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--ground); font: 500 0.8rem/1.35 var(--body);
+  padding: 0.35rem 0.55rem; border-radius: 4px; white-space: nowrap; transform: translate(-50%, -115%); }
+
+dl.gloss { display: grid; grid-template-columns: minmax(7rem, 11rem) minmax(0, 1fr); gap: 0.45rem 1.2rem; margin: 1rem 0; font-size: 0.95rem; }
+dl.gloss dt { font-weight: 700; }
+dl.gloss dd { margin: 0; color: var(--ink-2); }
+@media (max-width: 560px) { dl.gloss { grid-template-columns: minmax(0, 1fr); gap: 0.1rem; } dl.gloss dd { margin-bottom: 0.5rem; } }
+footer { color: var(--muted); font-size: 0.86rem; padding-top: 2rem; }
+/* jump flooding demos: round picker chips and plain buttons */
+.sched { display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: center; margin: 0 0 0.7rem; }
+.sched .grp { font: 600 0.68rem/1 var(--mono); text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin: 0 0.1rem 0 0.35rem; }
+.sched .grp:first-child { margin-left: 0; }
+.sched button { font: 500 0.78rem/1 var(--mono); font-variant-numeric: tabular-nums; color: var(--ink-2); background: var(--panel);
+  border: 1px solid var(--rule); border-radius: 4px; padding: 0.42rem 0.4rem; min-width: 2.1rem; cursor: pointer; }
+.sched button.cl { border-style: dashed; }
+.sched button.done { background: var(--gridline); color: var(--ink); }
+.sched button[aria-pressed="true"] { background: var(--accent); border: 1px solid var(--accent); color: var(--panel); }
+.btn { font: 600 0.88rem/1.3 var(--body); color: var(--accent); background: var(--panel); border: 1px solid var(--accent);
+  border-radius: 6px; padding: 0.45rem 0.8rem; cursor: pointer; }
+.btn:hover { background: var(--accent-soft); }
+.legend i.dot { width: 9px; height: 9px; border-radius: 50%; }
+.legend i.tile { width: 12px; height: 12px; border-radius: 2px; }
+.legend i.ramp { width: 30px; height: 10px; border-radius: 2px; background: linear-gradient(90deg, var(--seq-lo), var(--seq-hi)); }
+#j3-canvas { cursor: grab; touch-action: pan-y; }
+#j3-canvas:active { cursor: grabbing; }
+#j3-readout, #j2-readout { display: grid; gap: 0.2rem; font: 400 0.92rem/1.45 var(--body); }
+[hidden] { display: none !important; }
+.docnav { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+.docnav a { font: 600 0.86rem/1.3 var(--body); color: var(--ink-2); text-decoration: none; padding: 0.45rem 0.8rem;
+  border: 1px solid var(--rule); border-radius: 999px; background: var(--panel); }
+.docnav a:hover { color: var(--ink); border-color: var(--muted); }
+.docnav a[aria-current="page"] { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+</style>
+
+<script>
+window.MathJax = {
+  loader: { load: ["[tex]/html"] },
+  tex: { packages: { "[+]": ["html"] }, inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
+  svg: { fontCache: "global" },
+  options: { enableMenu: false }
+};
+</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+</head>
+<body>
+<div class="shell">
+
+<header class="hero">
+  <div class="kicker">IEEE RA-L 11(10) · Oct 2026 · pp. 12008–12015 · DOI 10.1109/LRA.2026.3728382</div>
+  <h1>TOA-CBF Paper Guide</h1>
+  <p class="lede">A drone learns to fly a forest from one depth camera. Training adds two signals: follow the shortest
+  route around obstacles, and approach an obstacle only as fast as the gap allows.</p>
+  <p class="cite"><em>Differentiable End-to-End UAV Navigation Using Time-of-Arrival Fields and Control Barrier Functions.</em>
+  Y. Liu, T. Yang, Z. Li, M. Guo, Z. Wang, Harbin Institute of Technology. Paper © IEEE; every figure here is the reproduction's own.</p>
+
+  <nav class="docnav" aria-label="Documents">
+    <a href="manual.html">Reproduction manual</a>
+    <a href="paper.html" aria-current="page">Paper guide</a>
+    <a href="code.html">Code guide</a>
+  </nav>
+
+  <figure class="hero-fig">
+    <div class="scroll wide">
+    <svg viewBox="0 0 960 400" role="img" aria-label="Top-down forest scene. A straight-line pull from start toward goal ends inside a U-shaped pocket. The TOA route bends above the pocket and reaches the goal. On that route, the drone's camera cone points along its motion, and near a tree only the velocity part aimed at the tree is limited by the safety ring.">
+      <defs>
+        <pattern id="h-dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="12" cy="12" r="1.1" class="fm" opacity="0.35"/></pattern>
+        <marker id="h-ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="fi"/></marker>
+        <marker id="h-ars" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="fs"/></marker>
+      </defs>
+      <rect width="960" height="400" fill="url(#h-dots)"/>
+      <g class="obst">
+        <rect x="300" y="120" width="130" height="18" rx="3"/>
+        <rect x="412" y="120" width="18" height="200" rx="3"/>
+        <rect x="300" y="302" width="130" height="18" rx="3"/>
+        <circle cx="596" cy="236" r="26"/>
+        <circle cx="760" cy="130" r="18"/>
+        <circle cx="820" cy="300" r="20"/>
+        <circle cx="180" cy="330" r="18"/>
+        <circle cx="240" cy="70" r="12"/>
+        <circle cx="880" cy="90" r="14"/>
+        <circle cx="500" cy="350" r="14"/>
+        <circle cx="520" cy="210" r="14"/>
+        <circle cx="130" cy="90" r="13"/>
+        <circle cx="690" cy="330" r="15"/>
+      </g>
+      <!-- straight-line pull: stalls in the pocket -->
+      <line x1="80" y1="219" x2="390" y2="215" class="lnm dash" style="stroke-width:2"/>
+      <path d="M392 207 l14 14 M406 207 l-14 14" class="lns" style="stroke-width:2.6"/>
+      <text x="300" y="246" class="ts" text-anchor="end">straight-line guidance</text>
+      <text x="300" y="262" class="ts" text-anchor="end">stops in the pocket</text>
+      <!-- TOA route -->
+      <path d="M70 220 C140 220 200 100 300 86 C380 74 470 74 540 100 C600 122 640 210 720 205 C780 201 840 200 878 200" class="lna" style="stroke-width:3.2"/>
+      <!-- fix 2: camera cone along the motion -->
+      <path d="M196 139 L212.5 45.4 A95 95 0 0 1 291 139 Z" class="cone"/>
+      <circle cx="196" cy="139" r="7" class="fi" style="stroke:var(--panel);stroke-width:2"/>
+      <!-- fix 3: closing speed toward the nearest tree -->
+      <circle cx="596" cy="236" r="48" class="lnm dash"/>
+      <line x1="598" y1="141" x2="638" y2="178" class="ln" style="stroke-width:2" marker-end="url(#h-ar)"/>
+      <text x="636" y="160" class="t">v</text>
+      <line x1="598" y1="141" x2="597" y2="178" class="lns" style="stroke-width:3.4" marker-end="url(#h-ars)"/>
+      <text x="588" y="170" class="tsig" text-anchor="end">closing</text>
+      <text x="588" y="185" class="tsig" text-anchor="end">speed</text>
+      <circle cx="598" cy="141" r="7" class="fi" style="stroke:var(--panel);stroke-width:2"/>
+      <text x="650" y="236" class="ts">safety ring</text>
+      <!-- start and goal -->
+      <circle cx="70" cy="220" r="8" class="fp" style="stroke:currentColor;stroke-width:2.2"/>
+      <text x="70" y="248" class="t" text-anchor="middle">start</text>
+      <circle cx="890" cy="200" r="13" class="lnm" style="stroke-width:2"/>
+      <circle cx="890" cy="200" r="7" class="fi"/>
+      <text x="890" y="232" class="t" text-anchor="middle">goal</text>
+      <!-- numbered callouts -->
+      <circle cx="312" cy="48" r="10" class="fa"/><text x="312" y="52.5" class="tw" text-anchor="middle">1</text>
+      <text x="328" y="53" class="t">follow the shortest route around obstacles</text>
+      <circle cx="40" cy="128" r="10" class="fa"/><text x="40" y="132.5" class="tw" text-anchor="middle">2</text>
+      <text x="56" y="124" class="t">camera turns</text><text x="56" y="140" class="t">with the motion</text>
+      <circle cx="660" cy="268" r="10" class="fa"/><text x="660" y="272.5" class="tw" text-anchor="middle">3</text>
+      <text x="676" y="273" class="t">brake early: closing speed ≤ k·h</text>
+      <!-- legend -->
+      <line x1="30" y1="384" x2="60" y2="384" class="lna" style="stroke-width:3.2"/><text x="68" y="388" class="ts">TOA route</text>
+      <line x1="170" y1="384" x2="200" y2="384" class="lnm dash" style="stroke-width:2"/><text x="208" y="388" class="ts">straight-line guidance</text>
+      <rect x="380" y="376" width="16" height="16" class="cone"/><text x="404" y="388" class="ts">camera view</text>
+      <line x1="530" y1="384" x2="556" y2="384" class="lns" style="stroke-width:3.4" marker-end="url(#h-ars)"/><text x="566" y="388" class="ts">speed toward the nearest obstacle</text>
+    </svg>
+    </div>
+  </figure>
+
+  <ol class="fixes" aria-label="The three changes">
+    <li><span class="badge">1</span><b>TOA field</b><span class="was">Straight-line reward can lead into a dead end. Reward progress along the obstacle-free route instead.</span><span class="chip">acts on position</span></li>
+    <li><span class="badge">2</span><b>Velocity-aligned yaw</b><span class="was">Sideways flight leaves the camera blind. Turn the nose toward the motion.</span><span class="chip">acts on heading</span></li>
+    <li><span class="badge">3</span><b>CBF loss</b><span class="was">A near-contact penalty brakes too late. Cap approach speed by the clearance left.</span><span class="chip">acts on velocity</span></li>
+  </ol>
+
+  <div class="stats">
+    <div><div class="who">Paper · sim</div><div class="big">90 %<small> vs 57.5 %</small></div><p>Success at 9 m/s, TOA + CBF vs straight-line guidance (Table II, p = 0.002)</p></div>
+    <div><div class="who">Paper · sim</div><div class="big">58.75 %<small> vs 41.25 %</small></div><p>vs the DiffPhys baseline at 9 m/s, its only significant gap (Table III)</p></div>
+    <div><div class="who">Paper · real drone</div><div class="big">18 / 20</div><p>Forest flights on the F250. No tree contact; peak 7.8 m/s</p></div>
+    <div><div class="who">Ours · sim</div><div class="big">95–100 %</div><p>Our drone model (charpi), trained on itself. 60–85 % when trained on the point mass</p></div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Contents">
+  <div class="inner">
+    <p class="lbl">Contents</p>
+    <ol>
+      <li><a href="#policy"><span>01</span>The policy</a></li>
+      <li><a href="#training"><span>02</span>Training through the simulator</a></li>
+      <li><a href="#toa"><span>03</span>TOA field</a></li>
+      <li><a href="#yaw"><span>04</span>Velocity-aligned yaw</a></li>
+      <li><a href="#cbf"><span>05</span>CBF loss</a></li>
+      <li><a href="#loss"><span>06</span>Full training loss</a></li>
+      <li><a href="#experiments"><span>07</span>Paper results</a></li>
+      <li><a href="#drone"><span>08</span>Our drone and results</a></li>
+      <li><a href="#critical"><span>09</span>Where the paper is unclear</a></li>
+      <li><a href="#glossary"><span>10</span>Terms</a></li>
+    </ol>
+  </div>
+</nav>
+
+<main id="content">
+
+<details class="toc-inline">
+  <summary>Contents</summary>
+  <ol>
+    <li><a href="#policy">The policy</a></li>
+    <li><a href="#training">Training through the simulator</a></li>
+    <li><a href="#toa">TOA field</a></li>
+    <li><a href="#yaw">Velocity-aligned yaw</a></li>
+    <li><a href="#cbf">CBF loss</a></li>
+    <li><a href="#loss">Full training loss</a></li>
+    <li><a href="#experiments">Paper results</a></li>
+    <li><a href="#drone">Our drone and results</a></li>
+    <li><a href="#critical">Where the paper is unclear</a></li>
+    <li><a href="#glossary">Terms</a></li>
+  </ol>
+</details>
+
+<!-- ============================================================ -->
+<section id="policy">
+<div class="sec-h"><span class="num">01</span><h2>The policy: depth image in, thrust out</h2></div>
+<p class="take">One small network maps a depth image and four state inputs straight to a command, 15 times a second.
+No map, no planner, no onboard solver.</p>
+
+<figure class="fig">
+<div class="scroll">
+<svg viewBox="0 0 960 280" role="img" aria-label="Policy pipeline: a 64 by 48 depth image goes into a CNN; the CNN features and four state inputs go into a GRU with memory; the GRU outputs a body-frame thrust vector, which Eq. 1 turns into a world-frame acceleration command for the drone.">
+  <defs>
+    <marker id="p1-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="fi"/></marker>
+    <marker id="p1-ara" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="fa"/></marker>
+  </defs>
+  <!-- depth pictogram -->
+  <rect x="20" y="16" width="160" height="120" rx="4" style="fill:var(--seq-lo)"/>
+  <rect x="44" y="16" width="16" height="120" style="fill:var(--seq-hi);opacity:0.45"/>
+  <rect x="92" y="16" width="34" height="120" style="fill:var(--seq-hi);opacity:0.9"/>
+  <rect x="150" y="16" width="9" height="120" style="fill:var(--seq-hi);opacity:0.3"/>
+  <rect x="20" y="112" width="160" height="24" style="fill:var(--seq-hi);opacity:0.25"/>
+  <text x="100" y="155" class="t" text-anchor="middle">depth image, 64 × 48</text>
+  <!-- state chips -->
+  <g>
+    <rect x="20" y="170" width="160" height="21" rx="4" class="box"/><text x="30" y="185" class="ts">velocity, body frame</text>
+    <rect x="20" y="195" width="160" height="21" rx="4" class="box"/><text x="30" y="210" class="ts">target velocity</text>
+    <rect x="20" y="220" width="160" height="21" rx="4" class="box"/><text x="30" y="235" class="ts">up vector (shows tilt)</text>
+    <rect x="20" y="245" width="160" height="21" rx="4" class="box"/><text x="30" y="260" class="ts">clearance setting m</text>
+  </g>
+  <!-- network -->
+  <line x1="182" y1="76" x2="236" y2="76" class="ln" marker-end="url(#p1-ar)"/>
+  <rect x="240" y="46" width="120" height="60" rx="6" class="boxa"/>
+  <text x="300" y="72" class="t" text-anchor="middle">CNN</text><text x="300" y="90" class="ts" text-anchor="middle">reads the image</text>
+  <path d="M362 76 H395 V146 H426" class="ln" marker-end="url(#p1-ar)"/>
+  <path d="M182 218 H395 V166 H426" class="ln" marker-end="url(#p1-ar)"/>
+  <rect x="430" y="126" width="130" height="60" rx="6" class="boxa"/>
+  <text x="495" y="152" class="t" text-anchor="middle">GRU</text><text x="495" y="170" class="ts" text-anchor="middle">remembers past frames</text>
+  <path d="M470 124 C470 92 520 92 520 122" class="lna" marker-end="url(#p1-ara)"/>
+  <text x="495" y="88" class="ta" text-anchor="middle">memory</text>
+  <line x1="562" y1="156" x2="596" y2="156" class="ln" marker-end="url(#p1-ar)"/>
+  <rect x="600" y="126" width="120" height="60" rx="6" class="box"/>
+  <text x="660" y="152" class="t" text-anchor="middle">f<tspan dy="4" style="font-size:10px">body</tspan></text>
+  <text x="660" y="172" class="ts" text-anchor="middle">thrust cmd, m/s²</text>
+  <line x1="722" y1="156" x2="746" y2="156" class="ln" marker-end="url(#p1-ar)"/>
+  <rect x="750" y="126" width="84" height="60" rx="6" class="box"/>
+  <text x="792" y="152" class="t" text-anchor="middle">Eq. (1)</text><text x="792" y="170" class="ts" text-anchor="middle">+ damping</text>
+  <line x1="836" y1="156" x2="856" y2="156" class="ln" marker-end="url(#p1-ar)"/>
+  <rect x="860" y="126" width="90" height="60" rx="6" class="boxa"/>
+  <text x="905" y="152" class="t" text-anchor="middle">u<tspan dy="4" style="font-size:10px">t</tspan></text>
+  <text x="905" y="170" class="ts" text-anchor="middle">accel., world</text>
+  <line x1="905" y1="188" x2="905" y2="212" class="ln" marker-end="url(#p1-ar)"/>
+  <rect x="845" y="216" width="110" height="46" rx="6" class="box"/>
+  <text x="900" y="236" class="t" text-anchor="middle">drone</text><text x="900" y="252" class="ts" text-anchor="middle">simulator or PX4</text>
+  <text x="660" y="236" class="tm" text-anchor="middle">15 Hz, one command</text>
+  <text x="660" y="252" class="tm" text-anchor="middle">every 66.7 ms</text>
+</svg>
+</div>
+<figcaption>CNN: convolutional network for images. GRU: recurrent unit that carries memory between frames. The clearance setting
+<i>m</i> is a requested distance (0.1–0.3 m in training); the policy never sees the true obstacle distance.</figcaption>
+</figure>
+
+<div class="facts">
+  <div><div class="k">TOA field</div><div class="v">training only</div></div>
+  <div><div class="k">CBF loss</div><div class="v">training only</div></div>
+  <div><div class="k">Velocity-aligned yaw</div><div class="v">training and flight</div></div>
+  <div><div class="k">Baseline</div><div class="v">DiffPhys<small>Zhang et al., Nat. Mach. Intell. 2025</small></div></div>
+</div>
+
+<h3 id="background">From network output to motion</h3>
+<div class="eq">\[ \mathbf{u}_t = \kappa\,\big(\mathbf{R}_t\,\class{ma}{\mathbf{f}_{\text{body}}} - \mathbf{v}_t - \mathbf{g}\big) + \mathbf{g} \]<span class="no">(1)</span></div>
+<div class="eq">\[ \mathbf{a}_{t+1} = \alpha\,\mathbf{a}_t + (1-\alpha)\,\mathbf{u}_t + \mathbf{g} + \mathbf{a}_{\text{drag}} \]<span class="no">(2)</span></div>
+<ul class="sym">
+  <li><span>\(\mathbf{f}_{\text{body}}\)</span><span>network output: commanded acceleration (m/s²), before damping</span></li>
+  <li><span>\(\mathbf{R}_t\)</span><span>rotation, body frame → world frame</span></li>
+  <li><span>\(\mathbf{v}_t,\ \mathbf{g}\)</span><span>velocity; gravity</span></li>
+  <li><span>\(\kappa\)</span><span>random thrust error, drawn per episode</span></li>
+  <li><span>\(\alpha\)</span><span>share of last step's acceleration kept (motor lag)</span></li>
+</ul>
+<p>\(\mathbf f_{\text{body}}\) is a commanded acceleration, not a velocity. The \(-\mathbf v\) term is a fixed linear damping, which the paper says matches the closed-loop damping of real flight controllers. With \(\kappa = 1\),
+\(\mathbf u = \mathbf R\mathbf f_{\text{body}} - \mathbf v\), so the real acceleration is the command minus 1 s⁻¹ × velocity. A constant \(\mathbf f_{\text{body}}\) is therefore not a constant force: \(\mathbf u\) shrinks as the drone speeds up, and the speed settles near \(\mathbf R\mathbf f_{\text{body}}\) (in m/s, because the gain is 1 s⁻¹; motor lag and drag aside). This damping is software feedback in the command mapping. It is separate from the physical drag \(\mathbf a_{\text{drag}}\) in Eq. (2), where the paper randomizes both a quadratic and a linear drag term.</p>
+<p>The motor lag rate is 12 s⁻¹, so at 15 Hz:</p>
+<div class="eq plain">\[ \alpha = e^{-12/15} \approx 0.45 \]</div>
+</section>
+
+<!-- ============================================================ -->
+<section id="training">
+<div class="sec-h"><span class="num">02</span><h2>Training through the simulator</h2></div>
+<p class="take">Every simulator step has derivatives. So training can trace a bad flight back to the exact commands
+that caused it, instead of guessing from noisy scores as reinforcement learning does.</p>
+
+<figure class="fig">
+<div class="scroll">
+<svg viewBox="0 0 720 230" role="img" aria-label="One rollout: states s0 to sT linked by policy and physics steps. The loss collects every state, and the gradient flows backward along the chain, scaled by lambda g at each step">
+  <defs>
+    <marker id="p-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="fi"/></marker>
+    <marker id="p-ara" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="fa"/></marker>
+  </defs>
+  <rect x="40" y="16" width="640" height="38" rx="5" class="boxa"/>
+  <text x="360" y="40" text-anchor="middle" class="t">loss over the whole flight:  L = Σₜ ℓ(sₜ, uₜ)</text>
+  <rect x="55" y="120" width="70" height="40" rx="5" class="box"/><text x="90" y="145" text-anchor="middle" class="t">s₀</text>
+  <rect x="195" y="120" width="70" height="40" rx="5" class="box"/><text x="230" y="145" text-anchor="middle" class="t">s₁</text>
+  <rect x="335" y="120" width="70" height="40" rx="5" class="box"/><text x="370" y="145" text-anchor="middle" class="t">s₂</text>
+  <text x="490" y="145" text-anchor="middle" class="t">⋯</text>
+  <rect x="595" y="120" width="70" height="40" rx="5" class="box"/><text x="630" y="145" text-anchor="middle" class="t">s<tspan dy="4" style="font-size:10px">T</tspan></text>
+  <line x1="90" y1="118" x2="90" y2="56" class="lnm"/><line x1="230" y1="118" x2="230" y2="56" class="lnm"/>
+  <line x1="370" y1="118" x2="370" y2="56" class="lnm"/><line x1="630" y1="118" x2="630" y2="56" class="lnm"/>
+  <line x1="127" y1="132" x2="192" y2="132" class="ln" marker-end="url(#p-ar)"/>
+  <line x1="267" y1="132" x2="332" y2="132" class="ln" marker-end="url(#p-ar)"/>
+  <line x1="407" y1="132" x2="465" y2="132" class="ln" marker-end="url(#p-ar)"/>
+  <line x1="515" y1="132" x2="592" y2="132" class="ln" marker-end="url(#p-ar)"/>
+  <text x="160" y="112" text-anchor="middle" class="ts">policy → physics</text>
+  <line x1="192" y1="150" x2="129" y2="150" class="lna dash" marker-end="url(#p-ara)"/>
+  <line x1="332" y1="150" x2="269" y2="150" class="lna dash" marker-end="url(#p-ara)"/>
+  <line x1="465" y1="150" x2="409" y2="150" class="lna dash" marker-end="url(#p-ara)"/>
+  <line x1="592" y1="150" x2="517" y2="150" class="lna dash" marker-end="url(#p-ara)"/>
+  <text x="160" y="182" text-anchor="middle" class="ta">gradient × λ<tspan dy="3" style="font-size:9.5px">g</tspan></text>
+  <text x="360" y="214" text-anchor="middle" class="ts">each step: depth + state → CNN-GRU → f_body → uₜ → dynamics → sₜ₊₁</text>
+</svg>
+</div>
+<figcaption>Solid arrows: the simulated flight, left to right. Dashed arrows: training, right to left, where the loss
+reaches earlier commands. This is back-propagation through time (BPTT).</figcaption>
+</figure>
+
+<div class="facts">
+  <div><div class="k">Rollout</div><div class="v">T = 150 steps<small>10 s at 15 Hz</small></div></div>
+  <div><div class="k">Batch</div><div class="v">64 scenes<small>flown in parallel</small></div></div>
+  <div><div class="k">Gradient decay λ<sub>g</sub></div><div class="v">0.4 per second<small>≈ 0.94 per step</small></div></div>
+  <div><div class="k">Training</div><div class="v">50,000 iterations<small>AdamW, 10⁻³ → 10⁻⁵</small></div></div>
+</div>
+
+<h3>How far back does a loss reach?</h3>
+<p>Gradient decay keeps 150 backward steps stable. The cost: a loss more than about 3 s after a command barely
+changes it.</p>
+<figure class="fig">
+  <div class="chart scroll" id="decay-chart"></div>
+  <figcaption>Weight with which a loss reaches the command that came t seconds earlier: \(0.4^{t}\). At 10 s it is \(0.4^{10} \approx 10^{-4}\).</figcaption>
+</figure>
+<p>The gradient only describes the simulated model. How well it transfers to a real drone depends on how close the model is (Section 08).</p>
+</section>
+
+<!-- ============================================================ -->
+<section id="toa">
+<div class="sec-h"><span class="num">03</span><h2>TOA field: reward progress along the route</h2></div>
+<p class="take">Picture a wave leaving the goal at 1 m/s, blocked by obstacles. Its arrival time at each point is the
+length of the shortest free route from there. Training rewards low arrival times.</p>
+
+<div class="demo" id="guide-demo">
+  <p class="dh">Try it: straight-line vs. route distance</p>
+  <div class="controls">
+    <div class="seg" role="group" aria-label="Guidance field">
+      <button type="button" id="g-euc" aria-pressed="true">Straight-line distance</button>
+      <button type="button" id="g-geo" aria-pressed="false">Route distance (TOA)</button>
+    </div>
+    <span class="hint">Click the map to move the start.</span>
+  </div>
+  <canvas id="g-canvas" width="720" height="432" aria-label="Distance to the goal, arrows that reduce it, and the path that follows them from the start"></canvas>
+  <div class="readout" id="g-readout" aria-live="polite"></div>
+</div>
+<p class="hint">Lighter = closer to the goal. Arrows point downhill; the orange line follows them. 60 m × 36 m map, 1 m cells.
+From the default start, straight-line guidance stalls 19.0 m short; the route distance goes around and arrives.</p>
+
+<div class="eq">\[ \Phi_g(\mathbf p) = \text{length of the shortest obstacle-free route from } \mathbf p \text{ to the goal (m)} \]</div>
+<ul class="sym">
+  <li><span>\(-\nabla\Phi_g\)</span><span>downhill direction: along the shortest route</span></li>
+  <li><span>\(\lVert\nabla\Phi_g\rVert = 1\)</span><span>in open space: 0.2 m downhill lowers Φ by 0.2 m</span></li>
+</ul>
+
+<h3>Build it fast: jump flooding (JFA)</h3>
+<p>Obstacles change every episode, so the field is rebuilt for all 64 scenes at every training iteration. Spreading
+distances one cell per round (breadth-first) would take about 240 rounds. Jump flooding takes about 7 per pass.</p>
+<ol class="flow">
+  <li><b>Start.</b> The goal voxel holds 0. Every other voxel holds ∞: no value yet.</li>
+  <li><b>Look k cells away.</b> Each voxel checks the 26 voxels exactly k cells away: 6 straight, 12 edge-diagonal, 8 corner-diagonal.</li>
+  <li><b>Keep the best offer.</b> Offer = that voxel's value + the jump length. Keep it if it beats your own value. Occupied voxels stay ∞.</li>
+  <li><b>Halve k, repeat.</b> k = 64, 32, …, 1: 7 rounds on a 128-voxel grid.</li>
+</ol>
+<p><b>Why halving works.</b> The longest jumps throw values across the whole grid; each later round fills the gaps
+halfway. Every whole number up to 127 is a sum of some of 64, 32, …, 1 (its binary digits), so every voxel can get a
+value within those 7 rounds:</p>
+<figure class="fig">
+<div class="scroll">
+<svg viewBox="0 0 700 182" role="img" aria-label="Jump flooding in one dimension: the goal cell reaches cell 13 through jumps of 8, 4 and 1 in three of four rounds">
+  <defs><marker id="j-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="fa"/></marker></defs>
+  <g><rect x="52" y="98" width="36" height="30" class="boxa"/><text x="70" y="117" text-anchor="middle" class="tm" style="font-size:9.5px">goal</text><rect x="88" y="98" width="36" height="30" class="box"/><text x="106" y="118" text-anchor="middle" class="tm">1</text><rect x="124" y="98" width="36" height="30" class="box"/><text x="142" y="118" text-anchor="middle" class="tm">2</text><rect x="160" y="98" width="36" height="30" class="box"/><text x="178" y="118" text-anchor="middle" class="tm">3</text><rect x="196" y="98" width="36" height="30" class="box"/><text x="214" y="118" text-anchor="middle" class="tm">4</text><rect x="232" y="98" width="36" height="30" class="box"/><text x="250" y="118" text-anchor="middle" class="tm">5</text><rect x="268" y="98" width="36" height="30" class="box"/><text x="286" y="118" text-anchor="middle" class="tm">6</text><rect x="304" y="98" width="36" height="30" class="box"/><text x="322" y="118" text-anchor="middle" class="tm">7</text><rect x="340" y="98" width="36" height="30" class="box"/><text x="358" y="118" text-anchor="middle" class="tm">8</text><rect x="376" y="98" width="36" height="30" class="box"/><text x="394" y="118" text-anchor="middle" class="tm">9</text><rect x="412" y="98" width="36" height="30" class="box"/><text x="430" y="118" text-anchor="middle" class="tm">10</text><rect x="448" y="98" width="36" height="30" class="box"/><text x="466" y="118" text-anchor="middle" class="tm">11</text><rect x="484" y="98" width="36" height="30" class="box"/><text x="502" y="118" text-anchor="middle" class="tm">12</text><rect x="520" y="98" width="36" height="30" class="boxa"/><text x="538" y="118" text-anchor="middle" class="tm">13</text><rect x="556" y="98" width="36" height="30" class="box"/><text x="574" y="118" text-anchor="middle" class="tm">14</text><rect x="592" y="98" width="36" height="30" class="box"/><text x="610" y="118" text-anchor="middle" class="tm">15</text><text x="70" y="148" text-anchor="middle" class="ta">0</text><text x="358" y="148" text-anchor="middle" class="ta">8δ</text><text x="502" y="148" text-anchor="middle" class="ta">12δ</text><text x="538" y="148" text-anchor="middle" class="ta">13δ</text></g>
+  <path d="M 70 98 Q 214 10 358 98" class="lna" marker-end="url(#j-ar)"/>
+  <text x="214" y="44" text-anchor="middle" class="ta">round 1: k = 8</text>
+  <path d="M 358 98 Q 430 50 502 98" class="lna" marker-end="url(#j-ar)"/>
+  <text x="430" y="64" text-anchor="middle" class="ta">round 2: k = 4</text>
+  <path d="M 502 98 Q 520 78 538 98" class="lna" marker-end="url(#j-ar)"/>
+  <text x="570" y="78" text-anchor="start" class="ta">round 4: k = 1</text>
+  <text x="350" y="174" text-anchor="middle" class="ts">round 3 (k = 2) keeps the value; cell 13 ends with 8δ + 4δ + δ = 13δ</text>
+</svg>
+</div>
+<figcaption>1-D, 16 cells. Cell 13 = 8 + 4 + 1, so it gets its value in the k = 8, 4 and 1 rounds, and keeps it
+in the k = 2 round. Spreading one cell per round would take 13 rounds.</figcaption>
+</figure>
+
+<div class="demo" id="j3-demo">
+  <p class="dh">Try it: jump flooding in 3-D</p>
+  <div class="sched" id="j3-sched" role="group" aria-label="Show the grid after this round"></div>
+  <div class="legend">
+    <span><i class="dot" style="background:var(--ink)"></i>goal</span>
+    <span><i class="dot" style="background:var(--accent)"></i>value set this round</span>
+    <span><i class="dot" style="background:var(--muted);opacity:0.6"></i>value from an earlier round</span>
+    <span><i style="background:var(--path)"></i>selected voxel's jumps back to the goal</span>
+  </div>
+  <canvas id="j3-canvas" width="720" height="432" aria-label="A 17 by 17 by 17 voxel cube with the goal in the middle. Dots mark voxels that have a value after the chosen round; lines show the jumps that brought the values."></canvas>
+  <div class="controls" style="margin:0.6rem 0 0">
+    <button type="button" class="btn" id="j3-next">Next round</button>
+    <span class="hint">Drag to turn the cube. Click a dot to trace its jumps.</span>
+  </div>
+  <div class="readout" id="j3-readout" aria-live="polite"></div>
+</div>
+<p class="hint">17 × 17 × 17 voxels, goal in the middle, no obstacles. A jump of k costs kδ straight, 1.41 kδ along an
+edge diagonal and 1.73 kδ along a corner diagonal (δ = voxel size). Round 1 shows the shape every round uses: the
+goal's 3 × 3 × 3 neighbourhood, stretched 8 cells apart.</p>
+
+<p><b>What the cleanup rounds fix.</b> After the halving rounds every voxel has a value, but many run long, because a
+voxel can only use one jump of each size, in order. Voxel (+8, +4, 0) gets 8 + 4 = 12δ, while 4 diagonal steps and 4
+straight ones make 9.66δ. A few extra rounds at k = 1 let neighbours correct each other. In the cube above the average
+excess falls from 12.8 % to 0.13 % after 3 cleanup rounds.</p>
+
+<p><b>In code, one round is one pooling call.</b> A 3-D max-pool with kernel 3 and dilation k reads exactly the 27
+voxels at offsets −k, 0 and +k on each axis. Negating G turns its max into a min:</p>
+<div class="eq">\[ G_{\text{prop}} = -\operatorname{MaxPool3D}\big(-G;\ \text{kernel } 3,\ \text{dilation } k\big) + k\,\delta \]<span class="no">(3)</span></div>
+<div class="eq">\[ G \leftarrow \min\big(G,\ G_{\text{prop}}\big), \qquad G[M = 1] \leftarrow +\infty \]<span class="no">(4)</span></div>
+<ul class="sym">
+  <li><span>\(G\)</span><span>distance estimates; goal 0, all else ∞</span></li>
+  <li><span>\(M = 1\)</span><span>occupied voxel (obstacles grown by one voxel)</span></li>
+  <li><span>\(\delta\)</span><span>voxel size, 0.2 m; at most 128 per axis</span></li>
+  <li><span>\(k\)</span><span>jump size in cells: 64, 32, …, 1</span></li>
+</ul>
+
+<p><b>Walls.</b> Eq. (4) wipes occupied voxels after each round, so a jump cannot start or end inside a wall. Nothing
+checks the cells in between, so a long jump can land on the far side of a wall.</p>
+<div class="demo" id="j2-demo">
+  <p class="dh">Try it: jump flooding around walls</p>
+  <div class="controls">
+    <div class="seg" role="group" aria-label="Update rule">
+      <button type="button" id="j2-paper" aria-pressed="true">As printed</button>
+      <button type="button" id="j2-safe" aria-pressed="false">Ours: checks walls</button>
+    </div>
+    <button type="button" class="btn" id="j2-next">Next round</button>
+    <button type="button" class="btn" id="j2-play">Play</button>
+  </div>
+  <div class="sched" id="j2-sched" role="group" aria-label="Show the map after this round"></div>
+  <div class="legend">
+    <span><i class="ramp"></i>near → far from the goal</span>
+    <span><i class="tile" style="background:var(--gridline)"></i>no value yet</span>
+    <span><i class="tile" style="background:var(--ink-2)"></i>wall</span>
+    <span><i class="tile" style="border:2px solid var(--signal)"></i>value inside the doorless room</span>
+  </div>
+  <canvas id="j2-canvas" width="720" height="450" aria-label="A 32 by 20 cell map: the goal on the left, a wall with a gap at the bottom, and a closed room on the right. Colours show each cell's distance after the chosen round."></canvas>
+  <p class="hint" style="margin:0.4rem 0 0">Click a cell to see the 8 jumps it checks in the shown round. Blue lines bring
+  a value, grey ones find none, orange ones pass through a wall.</p>
+  <div class="readout" id="j2-readout" aria-live="polite"></div>
+</div>
+<p>Ours (<code>jfa_safe</code>) refuses any jump that passes an occupied cell; a diagonal jump is checked as straight
+legs along each axis in turn. Refused jumps slow the spread, so it runs the schedule 3 times and then 8 cleanup
+rounds: 29 rounds on a 128-voxel grid. It also charges diagonals their real length (1.41 kδ, 1.73 kδ) where Eq. (3)
+charges kδ. It is still not exact: a diagonal jump that rounds a wall end is checked along its legs but charged the
+shorter diagonal, so cells behind it come out a little short (up to 12 % on this map). <a href="#critical">Section 09</a>
+has the error numbers and timings.</p>
+<div class="facts">
+  <div><div class="k">Breadth-first</div><div class="v">≈ 240 rounds<small>one cell per round</small></div></div>
+  <div><div class="k">Jump flooding</div><div class="v">≈ 7 rounds a pass<small>N = 100 cells: k = 64 … 1</small></div></div>
+  <div><div class="k">Ours</div><div class="v">29 rounds<small>3 passes + 8 cleanup</small></div></div>
+  <div><div class="k">Slope ∇Φ</div><div class="v">central differences<small>after the cleanup rounds</small></div></div>
+</div>
+<details class="more">
+<summary>Not the textbook jump flooding</summary>
+<p>In graphics, jump flooding passes along each pixel's nearest seed point and measures the straight-line distance to
+it, so it ignores walls. Here each voxel passes along a route length, which adds up jump by jump and can bend around
+obstacles. The price is the long-running values that the cleanup rounds fix.</p>
+</details>
+
+<h3>Turn the field into a training gradient</h3>
+<p>The field is a lookup table, so it has no derivative of its own. The paper uses the stored slope as the gradient:</p>
+<div class="eq">\[ \tilde\Phi_g(\mathbf p_t) = \Phi_g(\bar{\mathbf p}_t) + \class{ma}{\nabla\Phi_g(\bar{\mathbf p}_t)}^{\top}\big(\mathbf p_t - \bar{\mathbf p}_t\big), \qquad \bar{\mathbf p}_t = \operatorname{sg}(\mathbf p_t) \]<span class="no">(5)</span></div>
+<figure class="fig">
+<div class="scroll">
+<svg viewBox="0 0 640 232" role="img" aria-label="Straight-through gradient: the forward pass reads the stair-step grid value at p bar; the backward pass uses the straight line with the stored slope through that point.">
+  <line x1="50" y1="200" x2="612" y2="200" class="lnm"/>
+  <line x1="50" y1="20" x2="50" y2="200" class="lnm"/>
+  <path d="M50 40 H106 V54 H162 V68 H218 V82 H274 V96 H330 V110 H386 V124 H442 V138 H498 V152 H554 V166 H610" class="ln" style="stroke-width:1.8"/>
+  <text x="470" y="128" class="ts">Φ on the grid: one value per voxel</text>
+  <line x1="50" y1="96" x2="296" y2="96" class="lnm dash"/>
+  <text x="58" y="116" class="t">forward: grid value Φ(p̄)</text>
+  <line x1="190" y1="68" x2="414" y2="124" class="lna" style="stroke-width:3"/>
+  <text x="330" y="72" class="ta">backward: stored slope ∇Φ(p̄)</text>
+  <line x1="302" y1="102" x2="302" y2="200" class="lnm dash"/>
+  <circle cx="302" cy="96" r="6" class="fa" style="stroke:var(--panel);stroke-width:2"/>
+  <text x="302" y="218" class="t" text-anchor="middle">p̄</text>
+  <text x="610" y="218" class="ts" text-anchor="end">position → toward goal</text>
+  <text x="30" y="112" class="ts" text-anchor="middle" transform="rotate(-90 30 112)">Φ (m)</text>
+</svg>
+</div>
+<figcaption>sg(·) is a stop-gradient (<code>.detach()</code>): same value, but treated as a constant. Since \(\mathbf p - \bar{\mathbf p} = 0\),
+the forward value is the table lookup; the backward derivative is the stored slope. This is a straight-through gradient.</figcaption>
+</figure>
+<div class="eq">\[ L_{\text{toa}} = \mathbb{E}\big[\tilde\Phi_g(\mathbf p_t)\big] \]</div>
+<p>\(\mathbb E\) averages over steps and scenes. BPTT turns "move this position downhill" into changes to earlier commands.</p>
+<details class="more">
+<summary>Why reward positions instead of a TOA velocity target?</summary>
+<p>Lee et al. (ICRA 2026) aimed velocity along \(-\nabla\Phi\). That target stops correcting once the velocity points the
+right way, and it competes with the CBF on velocity. Rewarding positions keeps rewarding real progress, and leaves
+velocity to the CBF.</p>
+</details>
+</section>
+
+<!-- ============================================================ -->
+<section id="yaw">
+<div class="sec-h"><span class="num">04</span><h2>Velocity-aligned yaw: look where you go</h2></div>
+<p class="take">The camera faces forward. If the nose stays on the goal while the drone sidesteps an obstacle,
+the camera misses the space the drone is flying into.</p>
+<figure class="fig">
+<div class="scroll">
+<svg viewBox="0 0 760 270" role="img" aria-label="Two panels. Left: the drone moves up while its nose and camera face the goal to the right; a tree in its path is outside the camera cone. Right: the nose follows the velocity, and the same tree is inside the camera cone.">
+  <defs><marker id="y-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="fi"/></marker></defs>
+  <text x="20" y="26" class="t">Nose faces the goal</text>
+  <text x="20" y="43" class="ts">fixed yaw (Distance setting)</text>
+  <path d="M120 200 L236.9 132.5 A135 135 0 0 1 236.9 267.5 Z" class="cone"/>
+  <rect x="262" y="150" width="20" height="100" rx="3" class="obst"/>
+  <circle cx="124" cy="74" r="20" class="obst"/>
+  <circle cx="124" cy="74" r="27" class="lns dash" style="stroke-width:1.6"/>
+  <text x="158" y="70" class="tsig">not in view</text>
+  <line x1="120" y1="200" x2="120" y2="116" class="ln" style="stroke-width:2.2" marker-end="url(#y-ar)"/>
+  <text x="128" y="132" class="t">v</text>
+  <circle cx="120" cy="200" r="8" class="fi" style="stroke:var(--panel);stroke-width:2"/>
+  <text x="350" y="205" class="ts" text-anchor="end">goal →</text>
+  <line x1="380" y1="14" x2="380" y2="262" class="gridl"/>
+  <text x="410" y="26" class="t">Nose follows the velocity</text>
+  <text x="410" y="43" class="ts">velocity-aligned yaw (TOA, TOA + CBF)</text>
+  <path d="M510 200 L442.5 83.1 A135 135 0 0 1 577.5 83.1 Z" class="cone"/>
+  <rect x="652" y="150" width="20" height="100" rx="3" class="obst"/>
+  <circle cx="514" cy="74" r="20" class="obst"/>
+  <circle cx="514" cy="74" r="27" style="fill:none;stroke:var(--ok);stroke-width:1.6"/>
+  <text x="550" y="70" class="tok">in view</text>
+  <line x1="510" y1="200" x2="510" y2="116" class="ln" style="stroke-width:2.2" marker-end="url(#y-ar)"/>
+  <text x="518" y="140" class="t">v</text>
+  <circle cx="510" cy="200" r="8" class="fi" style="stroke:var(--panel);stroke-width:2"/>
+  <text x="740" y="205" class="ts" text-anchor="end">goal →</text>
+</svg>
+</div>
+<figcaption>Blue wedge: the depth camera's view. A low-pass filter turns the heading gradually, so the nose trails sharp turns.</figcaption>
+</figure>
+<div class="note"><b>Read the ablation with this in mind.</b>
+<p>The paper's "TOA" setting adds the TOA loss and this yaw rule together, so its gain covers both. TOA's detours are exactly the
+flights that would enter a blind spot with a goal-facing nose.</p></div>
+</section>
+
+<!-- ============================================================ -->
+<section id="cbf">
+<div class="sec-h"><span class="num">05</span><h2>CBF loss: slow down before it is too late</h2></div>
+<p class="take">Cap the speed toward the nearest obstacle at gain × clearance. The closer the obstacle, the lower the cap.
+Sliding past sideways is free.</p>
+<figure class="fig">
+<div class="scroll">
+<svg viewBox="0 0 640 250" role="img" aria-label="Barrier geometry: the part of the drone's velocity that points at the nearest obstacle is the closing speed; it must not exceed k times the clearance h to the safety boundary">
+  <defs><marker id="c-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="fi"/></marker>
+  <marker id="c-ars" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="fs"/></marker></defs>
+  <circle cx="470" cy="130" r="100" class="lnm dash"/>
+  <circle cx="470" cy="130" r="60" class="obst"/>
+  <text x="470" y="22" text-anchor="middle" class="ts">safety boundary (h = 0), d<tspan dy="3" style="font-size:9px">safe</tspan><tspan dy="-3"> from the surface</tspan></text>
+  <text x="470" y="135" text-anchor="middle" class="tw">obstacle</text>
+  <line x1="150" y1="150" x2="408" y2="133.8" class="lnm dash"/>
+  <text x="258" y="170" class="ts" text-anchor="middle">n̂: toward the nearest obstacle</text>
+  <line x1="150" y1="150" x2="288" y2="72" class="ln" style="stroke-width:2" marker-end="url(#c-ar)"/>
+  <text x="298" y="68" class="t">v</text>
+  <line x1="290" y1="70" x2="294.4" y2="141" class="lnm dash"/>
+  <line x1="150" y1="150" x2="290" y2="141.2" class="lns" style="stroke-width:3.6" marker-end="url(#c-ars)"/>
+  <text x="196" y="134" class="tsig">v<tspan dy="3.5" style="font-size:9.5px">close</tspan></text>
+  <circle cx="150" cy="150" r="9" class="fi"/>
+  <text x="150" y="126" text-anchor="middle" class="ts">drone</text>
+  <path d="M150 188 L150 196 L370 182 L370 174" class="lnm"/>
+  <text x="262" y="212" text-anchor="middle" class="t">h = d − d<tspan dy="3" style="font-size:9px">safe</tspan></text>
+  <text x="320" y="240" text-anchor="middle" class="ta">rule: v<tspan dy="3.5" style="font-size:9.5px">close</tspan><tspan dy="-3.5"> ≤ k · h</tspan></text>
+</svg>
+</div>
+<figcaption>Only the velocity part aimed at the nearest obstacle (orange) is limited. \(d\): distance to the obstacle minus the drone's radius.</figcaption>
+</figure>
+<div class="eq">\[ \dot h + k\,h \ge 0 \quad\Longleftrightarrow\quad \class{ms}{v_{\text{close}}} \le \class{ma}{k\,h}, \qquad v_{\text{close}} = \mathbf v\cdot\hat{\mathbf n} \]<span class="no">(6)</span></div>
+<div class="facts">
+  <div><div class="k">k = 2.5 s⁻¹, h = 1 m</div><div class="v">cap 2.5 m/s</div></div>
+  <div><div class="k">k = 2.5 s⁻¹, h = 0.4 m</div><div class="v">cap 1.0 m/s</div></div>
+  <div><div class="k">h = 0</div><div class="v">cap 0 m/s<small>no approach at all</small></div></div>
+</div>
+<p>\(k\) is the CBF gain: larger allows a faster approach. The rule says how fast clearance may shrink, since \(\dot h = -\mathbf v\cdot\hat{\mathbf n}\).</p>
+
+<h3>As a training penalty</h3>
+<p>The paper does not enforce the rule in flight (that would need a solver, a CBF-QP). It penalizes violations in training:</p>
+<div class="eq">\[ \ell_{\text{cbf}} = \operatorname{softplus}\big(\beta\,(\class{ms}{v_{\text{close}}} - \class{ma}{k\,h})\big), \qquad \operatorname{softplus}(x) = \log(1 + e^{x}) \]<span class="no">(7)</span></div>
+<ul class="sym">
+  <li><span>\(\beta\)</span><span>sharpness; larger is closer to a hard limit</span></li>
+  <li><span>\(d_{\text{act}}\)</span><span>only points with \(h &lt; d_{\text{act}}\) are averaged</span></li>
+  <li><span>\(M\)</span><span>points checked ahead along the motion (10 here)</span></li>
+  <li><span>\(h,\ \hat{\mathbf n}\)</span><span>held constant: the gradient flows through velocity only</span></li>
+</ul>
+
+<div class="demo" id="cbf-demo">
+  <p class="dh">Try it: the CBF penalty</p>
+  <div class="controls">
+    <label for="c-k"><span>gain k (s⁻¹) <output id="c-k-o"></output></span><input id="c-k" type="range" min="0.5" max="5" step="0.1" value="2.5"></label>
+    <label for="c-h"><span>clearance h (m) <output id="c-h-o"></output></span><input id="c-h" type="range" min="0" max="3" step="0.05" value="1"></label>
+    <label for="c-v"><span>closing speed (m/s) <output id="c-v-o"></output></span><input id="c-v" type="range" min="-2" max="10" step="0.1" value="4"></label>
+    <label for="c-b"><span>sharpness β <output id="c-b-o"></output></span><input id="c-b" type="range" min="0.5" max="8" step="0.5" value="2"></label>
+    <label for="c-a"><span>cutoff d<sub>act</sub> (m) <output id="c-a-o"></output></span><input id="c-a" type="range" min="0.25" max="3" step="0.05" value="1.5"></label>
+  </div>
+  <div class="chart" id="c-chart"></div>
+  <div class="readout" id="c-readout" aria-live="polite"></div>
+</div>
+<p class="hint">At the start values: 4 m/s against a 2.5 m/s cap costs softplus(2 × 1.5) ≈ 3.05; 1 m/s costs ≈ 0.05.
+The paper does not report k, β or d<sub>act</sub>; these are this repo's defaults.</p>
+
+<h3>The collision penalty still guards contact</h3>
+<div class="eq">\[ L_{\text{collide}} = \mathbb E\big[\,v_{\text{approach}}\cdot\operatorname{softplus}\big(-\alpha\,d(\mathbf p, \mathcal O)\big)\big], \qquad v_{\text{approach}} = (-\dot d)^{+} \]<span class="no">(9)</span></div>
+<p>\(\mathcal O\): all obstacles. \((\cdot)^+\) keeps positive values. The two penalties work at very different ranges:</p>
+<figure class="fig">
+  <div class="chart scroll" id="ranges-chart"></div>
+  <figcaption>To scale, with this repo's α = 32 m⁻¹ and d<sub>act</sub> = 1.5 m. The CBF teaches early braking;
+  the collision term pushes the flight off near-contact positions.</figcaption>
+</figure>
+</section>
+
+<!-- ============================================================ -->
+<section id="loss">
+<div class="sec-h"><span class="num">06</span><h2>The full training loss</h2></div>
+<p class="take">Six weighted terms: progress, safety and smooth commands. Collision and CBF weigh most.</p>
+<div class="eq">\[ \begin{aligned} L = {}& \lambda_v L_v + \class{ma}{\lambda_{\text{toa}} L_{\text{toa}}} + \class{ma}{\lambda_{\text{cbf}} L_{\text{cbf}}} \\ &+ \lambda_{\text{collide}} L_{\text{collide}} + \lambda_{\text{acc}} L_{\text{acc}} + \lambda_{\text{jerk}} L_{\text{jerk}} \end{aligned} \]<span class="no">(8)</span></div>
+<div class="wbars" role="list" aria-label="Loss weights from the paper's Table I">
+  <div class="lab" role="listitem">L<sub>collide</sub><small>no contact (Eq. 9)</small></div><div class="track"><div class="fill" style="width:100%"></div></div><div class="val">7.0</div>
+  <div class="lab" role="listitem">L<sub>cbf</sub> <span class="chip">new</span><small>brake early (Eq. 7)</small></div><div class="track"><div class="fill" style="width:71.4%"></div></div><div class="val">5.0</div>
+  <div class="lab" role="listitem">L<sub>v</sub><small>speed toward goal</small></div><div class="track"><div class="fill" style="width:28.6%"></div></div><div class="val">2.0</div>
+  <div class="lab" role="listitem">L<sub>toa</sub> <span class="chip">new</span><small>route progress (Eq. 5)</small></div><div class="track"><div class="fill" style="width:2.86%"></div></div><div class="val">0.2</div>
+  <div class="lab" role="listitem">L<sub>acc</sub><small>small commands |u|²</small></div><div class="track"><div class="fill" style="width:0.43%"></div></div><div class="val">0.03</div>
+  <div class="lab" role="listitem">L<sub>jerk</sub><small>smooth |Δu·f|²</small></div><div class="track"><div class="fill" style="width:0.014%"></div></div><div class="val">0.001</div>
+</div>
+<ul>
+  <li>\(L_v\): SmoothL1 between mean and target velocity. It is the original straight-line goal reward; \(L_{\text{toa}}\) corrects it near dead ends.</li>
+  <li>In \(L_{\text{jerk}}\), \(f\) = 15 Hz, so a 1 m/s² change per step counts as 15 m/s³.</li>
+  <li>The authors found \(\lambda_{\text{toa}}\) barely mattered over their range. \(\lambda_{\text{cbf}}\) trades safety for agility.</li>
+</ul>
+</section>
+
+<!-- ============================================================ -->
+<section id="experiments">
+<div class="sec-h"><span class="num">07</span><h2>Results reported in the paper</h2></div>
+<p class="take">TOA + CBF did best in simulation, most clearly at 9 m/s. On the real F250, 18 of 20 forest flights
+succeeded and none touched a tree.</p>
+
+<div class="facts">
+  <div><div class="k">Simulator</div><div class="v">Flightmare<small>stereo depth (SGM), 640×480</small></div></div>
+  <div><div class="k">Trials</div><div class="v">40 per cell<small>35 m straight line</small></div></div>
+  <div><div class="k">Success</div><div class="v">within 5 m of the end<small>no collision, no time-out</small></div></div>
+  <div><div class="k">Test</div><div class="v">Fisher exact<small>significant if p &lt; 0.05</small></div></div>
+</div>
+
+<h3>Ablation: add one idea at a time (Table II)</h3>
+<p>Distance = straight-line guidance, fixed yaw. TOA adds the TOA loss and velocity-aligned yaw. TOA + CBF adds the CBF loss.</p>
+<figure class="fig"><div class="chart scroll" id="chart-ablation"></div>
+<figcaption>Only the 9 m/s gap over Distance is significant. Distance peaks at 5 m/s; the paper blames competing goal and
+collision signals below that, blind spots and local minima above.</figcaption></figure>
+<details class="more">
+<summary>Table II with mean speeds</summary>
+<div class="table"><table>
+  <thead><tr><th>Success · mean speed (m/s)</th><th class="n">3 m/s</th><th class="n">5 m/s</th><th class="n">7 m/s</th><th class="n">9 m/s</th></tr></thead>
+  <tbody>
+    <tr><td>Distance</td><td class="n">72.5 % · 2.98</td><td class="n">85 % · 4.66</td><td class="n">67.5 % · 6.37</td><td class="n">57.5 % · 8.02</td></tr>
+    <tr><td>TOA</td><td class="n">90 % · 3.23</td><td class="n">90 % · 5.17</td><td class="n">80 % · 7.15</td><td class="n">75 % · 8.58</td></tr>
+    <tr class="best"><td>TOA + CBF</td><td class="n">87.5 % · 3.43</td><td class="n">87.5 % · 5.21</td><td class="n">85 % · 6.98</td><td class="n">90 % · 8.77</td></tr>
+    <tr><td>p, TOA + CBF vs Distance</td><td class="n">0.16</td><td class="n">1.00</td><td class="n">0.11</td><td class="n"><strong>0.002</strong></td></tr>
+  </tbody>
+</table></div>
+</details>
+
+<h3>Benchmark against other methods (Table III)</h3>
+<p>80 trials per cell: a forest with 3 m tree spacing plus large spheres, cylinders and boxes.
+EGO-Planner maps then optimizes a path; Agile imitates an expert; DiffPhys is the baseline with its official settings.</p>
+<figure class="fig"><div class="chart scroll" id="chart-bench"></div>
+<figcaption>The lead over DiffPhys grows from 5 to 17.5 points; only 9 m/s is significant. TOA + CBF significantly beats
+EGO-Planner and Agile from 5 m/s up.</figcaption></figure>
+<details class="more">
+<summary>Table III</summary>
+<div class="table"><table>
+  <thead><tr><th>Success rate</th><th class="n">3 m/s</th><th class="n">5 m/s</th><th class="n">7 m/s</th><th class="n">9 m/s</th></tr></thead>
+  <tbody>
+    <tr><td>EGO-Planner</td><td class="n">51.25 %</td><td class="n">27.5 %</td><td class="n">11.25 %</td><td class="n">5 %</td></tr>
+    <tr><td>Agile</td><td class="n">48.75 %</td><td class="n">32.5 %</td><td class="n">16.25 %</td><td class="n">2.5 %</td></tr>
+    <tr><td>DiffPhys</td><td class="n">62.5 %</td><td class="n">53.75 %</td><td class="n">52.5 %</td><td class="n">41.25 %</td></tr>
+    <tr class="best"><td>TOA + CBF</td><td class="n">67.5 %</td><td class="n">63.75 %</td><td class="n">65 %</td><td class="n">58.75 %</td></tr>
+    <tr><td>p, TOA + CBF vs DiffPhys</td><td class="n">0.62</td><td class="n">0.26</td><td class="n">0.15</td><td class="n"><strong>0.040</strong></td></tr>
+  </tbody>
+</table></div>
+</details>
+
+<h3>Real flights on the F250</h3>
+<p>The simulation-trained policy flew the authors' 250 mm quadrotor with no extra training: five flights per target speed through a ~50 m forest corridor.</p>
+<figure class="fig">
+<div class="scroll">
+<svg viewBox="0 0 720 226" role="img" aria-label="Real-flight results per target speed. 3 and 5 m/s: 5 of 5 succeed. 7 and 9 m/s: 4 of 5. Mean speeds 2.77, 3.55, 4.75, 5.17 m/s; peaks 3.92, 5.49, 6.27, 7.80 m/s, all below target except 3 and 5 m/s peaks.">
+  <text x="78" y="18" class="ts">flights</text>
+  <text x="240" y="18" class="ts">speed (m/s): mean bar, peak outline, target tick</text>
+  <text x="696" y="18" class="ts" text-anchor="end">mean / peak</text>
+  <g class="gridl">
+    <line x1="240" y1="28" x2="240" y2="196"/><line x1="312" y1="28" x2="312" y2="196"/><line x1="384" y1="28" x2="384" y2="196"/>
+    <line x1="456" y1="28" x2="456" y2="196"/><line x1="528" y1="28" x2="528" y2="196"/><line x1="600" y1="28" x2="600" y2="196"/>
+  </g>
+  <g class="tm" text-anchor="middle">
+    <text x="240" y="214">0</text><text x="312" y="214">2</text><text x="384" y="214">4</text><text x="456" y="214">6</text><text x="528" y="214">8</text><text x="600" y="214">10</text>
+  </g>
+  <!-- rows: y = 50, 90, 130, 170; x(s) = 240 + 36 s -->
+  <g>
+    <text x="20" y="55" class="t">3 m/s</text>
+    <circle cx="90" cy="50" r="7" class="fok"/><circle cx="112" cy="50" r="7" class="fok"/><circle cx="134" cy="50" r="7" class="fok"/><circle cx="156" cy="50" r="7" class="fok"/><circle cx="178" cy="50" r="7" class="fok"/>
+    <rect x="240" y="43" width="141.1" height="14" rx="2" class="boxa"/><rect x="240" y="47" width="99.7" height="6" style="fill:var(--accent)"/>
+    <line x1="348" y1="38" x2="348" y2="62" class="ln" style="stroke-width:2.2"/>
+    <text x="696" y="54" class="tm" text-anchor="end">2.77 / 3.92</text>
+  </g>
+  <g>
+    <text x="20" y="95" class="t">5 m/s</text>
+    <circle cx="90" cy="90" r="7" class="fok"/><circle cx="112" cy="90" r="7" class="fok"/><circle cx="134" cy="90" r="7" class="fok"/><circle cx="156" cy="90" r="7" class="fok"/><circle cx="178" cy="90" r="7" class="fok"/>
+    <rect x="240" y="83" width="197.6" height="14" rx="2" class="boxa"/><rect x="240" y="87" width="127.8" height="6" style="fill:var(--accent)"/>
+    <line x1="420" y1="78" x2="420" y2="102" class="ln" style="stroke-width:2.2"/>
+    <text x="696" y="94" class="tm" text-anchor="end">3.55 / 5.49</text>
+  </g>
+  <g>
+    <text x="20" y="135" class="t">7 m/s</text>
+    <circle cx="90" cy="130" r="7" class="fok"/><circle cx="112" cy="130" r="7" class="fok"/><circle cx="134" cy="130" r="7" class="fok"/><circle cx="156" cy="130" r="7" class="fok"/>
+    <circle cx="178" cy="130" r="7" class="fp" style="stroke:var(--signal);stroke-width:2"/><path d="M174 126 l8 8 M182 126 l-8 8" class="lns"/>
+    <rect x="240" y="123" width="225.7" height="14" rx="2" class="boxa"/><rect x="240" y="127" width="171" height="6" style="fill:var(--accent)"/>
+    <line x1="492" y1="118" x2="492" y2="142" class="ln" style="stroke-width:2.2"/>
+    <text x="696" y="134" class="tm" text-anchor="end">4.75 / 6.27</text>
+  </g>
+  <g>
+    <text x="20" y="175" class="t">9 m/s</text>
+    <circle cx="90" cy="170" r="7" class="fok"/><circle cx="112" cy="170" r="7" class="fok"/><circle cx="134" cy="170" r="7" class="fok"/><circle cx="156" cy="170" r="7" class="fok"/>
+    <circle cx="178" cy="170" r="7" class="fp" style="stroke:var(--signal);stroke-width:2"/><path d="M174 166 l8 8 M182 166 l-8 8" class="lns"/>
+    <rect x="240" y="163" width="280.8" height="14" rx="2" class="boxa"/><rect x="240" y="167" width="186.1" height="6" style="fill:var(--accent)"/>
+    <line x1="564" y1="158" x2="564" y2="182" class="ln" style="stroke-width:2.2"/>
+    <text x="696" y="174" class="tm" text-anchor="end">5.17 / 7.80</text>
+  </g>
+</svg>
+</div>
+<figcaption>Green: success. Orange ×: the two failures, which the authors blame on odometry drift (growing error in the drone's
+own position estimate). Mean speed stays below target because the policy slows near trunks, as the CBF intends.</figcaption>
+</figure>
+
+<figure class="fig">
+<div class="scroll">
+<svg viewBox="0 0 720 112" role="img" aria-label="Timing in one 66.7 millisecond control period: depth image to command takes 27 milliseconds, of which network inference is 2 milliseconds; about 40 milliseconds are spare.">
+  <text x="20" y="22" class="t">one control period at 15 Hz = 66.7 ms</text>
+  <rect x="20" y="34" width="680" height="30" rx="4" class="box"/>
+  <rect x="20" y="34" width="275" height="30" rx="4" class="boxa"/>
+  <rect x="275" y="34" width="20" height="30" style="fill:var(--accent)"/>
+  <text x="34" y="54" class="ta">depth image → command: 27 ± 3 ms</text>
+  <text x="498" y="54" class="ts" text-anchor="middle">≈ 40 ms spare</text>
+  <path d="M285 66 V80 H300" class="lna"/>
+  <text x="306" y="84" class="ts">network inference: 2.0 ± 0.3 ms</text>
+  <text x="20" y="104" class="tm">RealSense D435 · Jetson Orin NX · PX4 flight control · VIO (camera + IMU odometry)</text>
+</svg>
+</div>
+</figure>
+</section>
+
+<!-- ============================================================ -->
+<section id="drone">
+<div class="sec-h"><span class="num">08</span><h2>Our drone (charpi) and local results</h2></div>
+<p class="take">Trained on our drone's own model, the policy reached 95–100 % success flying that model in simulation.
+Our point-mass benchmark did not reproduce the paper's lead.</p>
+<div class="note sig"><b>Simulation only.</b>
+<p>No policy from this repo has flown on the physical drone yet. "charpi" below means its model, calibrated from flight logs.</p></div>
+
+<h3>charpi responds about 2.4× slower than the point mass</h3>
+<p>charpi takes collective thrust and body rates (CTBR), with command delays, rate limits and thrust limits. A first-order
+lag fitted to its acceleration gives 5 s⁻¹, against the point mass's 12 s⁻¹.</p>
+<figure class="fig">
+  <div class="chart scroll" id="step-chart"></div>
+  <figcaption>Share of a step command reached over time, \(1 - e^{-\lambda t}\). After one policy step the point mass keeps
+  \(\alpha = e^{-12/15} \approx 0.45\) of its old acceleration; charpi keeps \(e^{-5/15} \approx 0.72\).
+  The fit explains about 88 % of charpi's acceleration variation.</figcaption>
+</figure>
+<details class="more">
+<summary>Point mass vs. charpi plant, side by side</summary>
+<div class="table"><table>
+  <thead><tr><th></th><th>Point mass, Eq. (2)</th><th>charpi plant</th></tr></thead>
+  <tbody>
+    <tr><td>Input</td><td>world acceleration u, 15 Hz</td><td>throttle η 0.15–0.8 and roll / pitch / yaw rates ≤ 4.0 / 2.5 / 3.0 rad/s, every 10 ms</td></tr>
+    <tr><td>Delays</td><td>first-order lag</td><td>20 ms command delay; slew limit 110 / 50 / 25 rad/s²; 30 ms motor lag</td></tr>
+    <tr><td>Attitude</td><td>instant; heading filtered at 6 s⁻¹</td><td>2nd-order rate loop per axis, ωₙ 62.9 / 67.4 / 40 rad/s, fitted to real CTBR logs</td></tr>
+    <tr><td>Thrust</td><td>no limit</td><td>47.3 η² + 9.31 N = 10.4–39.6 N (0.83–3.15 g at 1.279 kg)</td></tr>
+    <tr><td>Randomized</td><td>lag, drag, κ, wind, gravity disturbance</td><td>thrust scale 0.85–1.2, ωₙ, damping, motor lag; plus wind and gravity disturbance</td></tr>
+  </tbody>
+</table></div>
+<p>Other lag fits: narrow randomization band 5 s⁻¹; PX4-SITL body-rate fit 4 s⁻¹; commands twice as aggressive 3.5 s⁻¹ (<code>scripts/charpi/fit_charpi_surrogate.py</code>).</p>
+</details>
+
+<h3>Two models per step: one flies, one gives the gradient</h3>
+<figure class="fig">
+<div class="scroll">
+<svg viewBox="0 0 720 304" role="img" aria-label="Two forward models. Paper: the policy's acceleration command u goes through the point mass of Eq. (2), which gives both the state and its gradient. This repo: u goes through a 100 Hz controller and the charpi plant without gradient, and in parallel through feasible_accel and the point mass of Eq. (2) with a fitted lag of 5 per second. The state takes its value from the plant and its derivative from the point mass.">
+  <defs>
+    <marker id="d-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="fi"/></marker>
+    <marker id="d-ara" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="fa"/></marker>
+  </defs>
+  <text x="20" y="20" class="t">Paper: <tspan class="tm">--dynamics diffphys</tspan></text>
+  <rect x="20" y="32" width="130" height="46" rx="5" class="box"/>
+  <text x="85" y="52" text-anchor="middle" class="t">policy, 15 Hz</text>
+  <text x="85" y="68" text-anchor="middle" class="ts">u from Eq. (1)</text>
+  <line x1="152" y1="55" x2="187" y2="55" class="lna" marker-end="url(#d-ara)"/>
+  <rect x="190" y="32" width="382" height="46" rx="5" class="boxa"/>
+  <text x="381" y="52" text-anchor="middle" class="t">point mass, Eq. (2): lag 12 ± 1.2 s⁻¹, no thrust limit</text>
+  <text x="381" y="68" text-anchor="middle" class="ts">state and derivative from the same model</text>
+  <line x1="574" y1="55" x2="607" y2="55" class="lna" marker-end="url(#d-ara)"/>
+  <rect x="610" y="32" width="95" height="46" rx="5" class="box"/>
+  <text x="657.5" y="52" text-anchor="middle" class="t">p, v, a, R</text>
+  <text x="657.5" y="68" text-anchor="middle" class="ts">→ losses</text>
+  <line x1="20" y1="96" x2="705" y2="96" class="gridl"/>
+  <text x="20" y="118" class="t">This repo: <tspan class="tm">--dynamics charpi</tspan></text>
+  <rect x="20" y="181" width="130" height="46" rx="5" class="box"/>
+  <text x="85" y="201" text-anchor="middle" class="t">policy, 15 Hz</text>
+  <text x="85" y="217" text-anchor="middle" class="ts">u from Eq. (1)</text>
+  <path d="M150 196 H170 V161 H187" class="ln" marker-end="url(#d-ar)"/>
+  <path d="M150 212 H170 V247 H187" class="lna" marker-end="url(#d-ara)"/>
+  <rect x="190" y="130" width="140" height="62" rx="5" class="box"/>
+  <text x="260" y="150" text-anchor="middle" class="t">100 Hz controller</text>
+  <text x="260" y="167" text-anchor="middle" class="ts">PX4 attitude law</text>
+  <text x="260" y="182" text-anchor="middle" class="ts">thrust law, tilt ≤ 60°</text>
+  <line x1="332" y1="161" x2="369" y2="161" class="ln" marker-end="url(#d-ar)"/>
+  <text x="351" y="153" text-anchor="middle" class="tm">CTBR</text>
+  <rect x="372" y="130" width="200" height="62" rx="5" class="box"/>
+  <text x="472" y="150" text-anchor="middle" class="t">charpi plant, no gradient</text>
+  <text x="472" y="167" text-anchor="middle" class="ts">20 ms delay, slew + rate limits</text>
+  <text x="472" y="182" text-anchor="middle" class="ts">rate loop, thrust curve, DR</text>
+  <line x1="574" y1="161" x2="607" y2="161" class="ln" marker-end="url(#d-ar)"/>
+  <rect x="190" y="222" width="140" height="50" rx="5" class="boxa"/>
+  <text x="260" y="243" text-anchor="middle" class="tm">feasible_accel(u)</text>
+  <text x="260" y="260" text-anchor="middle" class="ts">achievable part of u</text>
+  <line x1="332" y1="247" x2="369" y2="247" class="lna" marker-end="url(#d-ara)"/>
+  <rect x="372" y="222" width="200" height="50" rx="5" class="boxa"/>
+  <text x="472" y="243" text-anchor="middle" class="t">point mass, Eq. (2)</text>
+  <text x="472" y="260" text-anchor="middle" class="ts">lag 5 s⁻¹ (fitted), charpi drag</text>
+  <line x1="574" y1="247" x2="607" y2="247" class="lna" marker-end="url(#d-ara)"/>
+  <rect x="610" y="130" width="95" height="142" rx="5" class="box"/>
+  <text x="657.5" y="152" text-anchor="middle" class="t">p, v, a</text>
+  <text x="657.5" y="172" text-anchor="middle" class="ts">value from</text>
+  <text x="657.5" y="186" text-anchor="middle" class="ts">the plant</text>
+  <text x="657.5" y="236" text-anchor="middle" class="ts">derivative</text>
+  <text x="657.5" y="250" text-anchor="middle" class="ts">from Eq. (2)</text>
+  <line x1="20" y1="290" x2="44" y2="290" class="lna"/>
+  <text x="50" y="294" class="ts">carries the gradient</text>
+  <line x1="200" y1="290" x2="224" y2="290" class="ln"/>
+  <text x="230" y="294" class="ts">value only, no gradient</text>
+</svg>
+</div>
+<figcaption>The camera and policy see the plant's position, velocity and attitude. The gradient is only approximate, since the surrogate explains ~88 % of the plant's acceleration.</figcaption>
+</figure>
+<div class="eq">\[ \mathbf x_{t+1} = \hat{\mathbf x}_{t+1} + \operatorname{sg}\big(\class{ma}{\mathbf x^{\text{plant}}_{t+1}} - \hat{\mathbf x}_{t+1}\big), \qquad \mathbf x \in \{\mathbf p, \mathbf v, \mathbf a\} \]</div>
+<p>The same straight-through trick as Eq. (5), now between two models: value from the plant, derivative from the surrogate \(\hat{\mathbf x}\).</p>
+
+<h3>The 100 Hz controller: acceleration to thrust and body rates</h3>
+<ol class="flow">
+  <li><b>Thrust direction.</b> \(\mathbf f = \mathbf u + (0, 0, 9.81)\), tilt ≤ 60°. \(\mathbf u = 0\) is hover.</li>
+  <li><b>Body rates.</b> PX4's attitude law (tilt before yaw), MC_ROLL_P = MC_PITCH_P = 6.5, MC_YAW_P = 2.8.</li>
+  <li><b>Collective thrust.</b> Push along the body's up axis, never less than what holds height.</li>
+  <li><b>Throttle η.</b> From the nominal thrust curve; the controller does not know the randomized scale.</li>
+</ol>
+<div class="eq plain">\[ \text{hover: } 47.3\,\eta^{2} + 9.31 = 1.279 \times 9.81 \approx 12.5\ \text{N} \;\Rightarrow\; \eta \approx 0.26 \]</div>
+<p>Policy steps last 7, 6, 7, … ticks, since 15 Hz does not divide 100 Hz. Each command still takes effect one policy step (66.7 ms) after it is computed.
+The nose trails the heading setpoint by about 1 / <code>MC_YAW_P</code> ≈ 0.36 s.</p>
+
+<h3>Braking downward is weak</h3>
+<figure class="fig">
+<div class="scroll">
+<svg viewBox="0 0 600 250" role="img" aria-label="Vertical acceleration available in level flight. The point mass has no limit. charpi can accelerate up to 21.1 metres per second squared upward but only 1.70 downward.">
+  <defs>
+    <marker id="t-ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="fa"/></marker>
+    <marker id="t-ars" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="fs"/></marker>
+    <marker id="t-arm" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="fm"/></marker>
+  </defs>
+  <line x1="40" y1="170" x2="580" y2="170" class="lnm"/>
+  <text x="34" y="174" class="tm" text-anchor="end">0</text>
+  <text x="150" y="22" class="t" text-anchor="middle">point mass</text>
+  <line x1="150" y1="170" x2="150" y2="44" class="lnm dash" style="stroke-width:2" marker-end="url(#t-arm)"/>
+  <line x1="150" y1="170" x2="150" y2="236" class="lnm dash" style="stroke-width:2" marker-end="url(#t-arm)"/>
+  <text x="162" y="64" class="ts">no limit</text>
+  <text x="162" y="226" class="ts">no limit</text>
+  <text x="380" y="22" class="t" text-anchor="middle">charpi, level flight</text>
+  <line x1="380" y1="170" x2="380" y2="50" class="lna" style="stroke-width:4" marker-end="url(#t-ar)"/>
+  <line x1="380" y1="170" x2="380" y2="183" class="lns" style="stroke-width:4" marker-end="url(#t-ars)"/>
+  <text x="394" y="60" class="ta">up to 21.1 m/s²</text>
+  <text x="394" y="76" class="ts">throttle 0.8 → 30.9 m/s²</text>
+  <text x="394" y="200" class="tsig">down at most 1.70 m/s²</text>
+  <text x="394" y="216" class="ts">throttle floor 0.15 still gives 8.1 m/s²</text>
+</svg>
+</div>
+<figcaption>Braking a climb toward an overhead obstacle needs downward acceleration. At thrust scale 1.2 the floor reaches about 1 g,
+leaving almost none. <code>feasible_accel</code> clips commands to this range, so training gets no gradient for pushing on a command the plant ignores.</figcaption>
+</figure>
+
+<h3 id="local-results">Training on charpi raises success on charpi</h3>
+<p>Same policy recipe, two training models, both flown on simulated charpi: forest with 3 m spacing, 40 trials per bar, nominal dynamics, one training seed.</p>
+<figure class="fig"><div class="chart scroll" id="chart-charpi"></div>
+<figcaption>p from a two-sided Fisher exact test, unadjusted. charpi-trained mean speed: 2.36 / 3.61 / 4.50 / 4.86 m/s, below target.</figcaption></figure>
+<figure class="fig">
+  <div class="pair">
+    <div><div class="tag"><span class="chip sig">trained on point mass</span> flown on charpi: 1 reached, 3 collisions</div>
+      <div class="plate"><img src="figures/charpi_scene1_pointmass.png" width="1125" height="520" loading="lazy" alt="Four top-down forest panels at 3, 5, 7 and 9 m/s. Only the 3 m/s flight reaches the goal circle; the others crash within the first 7 m."></div></div>
+    <div><div class="tag"><span class="chip">trained on charpi</span> flown on charpi: 4 reached</div>
+      <div class="plate"><img src="figures/charpi_scene1_charpi.png" width="1125" height="520" loading="lazy" alt="The same forest scene: all four flights at 3, 5, 7 and 9 m/s weave between trees and reach the goal circle."></div></div>
+  </div>
+  <figcaption>Same forest scene (3 m spacing), target speeds 3 / 5 / 7 / 9 m/s left to right. Darker line = faster; × = collision; dashed circle = 5 m goal zone.</figcaption>
+</figure>
+
+<h3 id="local-benchmark">Our point-mass benchmark did not reproduce the paper's lead</h3>
+<figure class="fig"><div class="chart scroll" id="chart-local"></div>
+<figcaption>Local point mass, 80 trials per point (forest + large obstacles). DiffPhys is its official code, trained here.
+Only the 3 m/s gap is significant (p = 0.023), in DiffPhys's favour. One seed cannot rank the methods in general.</figcaption></figure>
+
+<h3>Same policy in PX4 SITL + Gazebo</h3>
+<p>SITL runs the real PX4 flight software against a simulated drone, through the same deployment path as our real drone.
+Each SITL trial pairs with the Python trial of the same seed.</p>
+<figure class="fig">
+  <div class="plate"><img src="figures/sitl_forest_s3_paths.png" width="1560" height="1219" loading="lazy" alt="Twelve top-down panels, rows 3, 5, 7 and 9 m/s, columns forest trials 0 to 2: the orange SITL path lies on the blue Python path in ten panels; in trial 2 at 5 and 9 m/s it passes a tree on the other side."></div>
+  <figcaption>Blue: Python simulation. Orange: PX4 SITL. Median gap 0.09 m; in two panels SITL passes an early tree on the other side. All 24 flights reach the goal zone.</figcaption>
+</figure>
+<div class="table"><table>
+  <thead><tr><th>10 trials per speed, Python / SITL</th><th class="n">3 m/s</th><th class="n">5 m/s</th><th class="n">7 m/s</th><th class="n">9 m/s</th><th class="n">mean speed</th></tr></thead>
+  <tbody>
+    <tr><td>Forest, 3 m spacing</td><td class="n">100 / 100 %</td><td class="n">100 / 100 %</td><td class="n">100 / 100 %</td><td class="n">100 / 100 %</td><td class="n">4.05 / 3.93</td></tr>
+    <tr><td>Large obstacles</td><td class="n">90 / 90 %</td><td class="n">100 / 100 %</td><td class="n">100 / 100 %</td><td class="n">90 / 100 %</td><td class="n">4.33 / 4.17</td></tr>
+  </tbody>
+</table></div>
+<p class="hint">A second simulator, not a flight test. Still to do: onboard integration, hardware timing checks, real flights.</p>
+</section>
+
+<!-- ============================================================ -->
+<section id="critical">
+<div class="sec-h"><span class="num">09</span><h2>Where the paper is unclear, and what we chose</h2></div>
+<p class="take">The printed TOA update undercharges diagonal steps and can jump through thin walls. Our default fixes both.</p>
+<figure class="fig">
+<div class="scroll">
+<svg viewBox="0 0 760 232" role="img" aria-label="Two flaws. Left: on a 0.2 metre grid, a diagonal step is 0.28 metres long but Eq. 3 charges it 0.2 metres, like a straight step. Right: a jump of 8 cells checks only its two ends, so it crosses a one-cell wall and cells behind the wall get too small a distance.">
+  <defs><marker id="f-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="fi"/></marker>
+  <marker id="f-ars" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="fs"/></marker></defs>
+  <text x="20" y="24" class="t">Diagonals cost too little</text>
+  <g class="box">
+    <rect x="40" y="56" width="50" height="50"/><rect x="90" y="56" width="50" height="50"/><rect x="140" y="56" width="50" height="50"/>
+    <rect x="40" y="106" width="50" height="50"/><rect x="90" y="106" width="50" height="50" style="fill:var(--accent-soft)"/><rect x="140" y="106" width="50" height="50"/>
+    <rect x="40" y="156" width="50" height="50"/><rect x="90" y="156" width="50" height="50"/><rect x="140" y="156" width="50" height="50"/>
+  </g>
+  <line x1="115" y1="131" x2="160" y2="131" class="ln" style="stroke-width:2" marker-end="url(#f-ar)"/>
+  <line x1="115" y1="131" x2="159" y2="87" class="lns" style="stroke-width:2.4" marker-end="url(#f-ars)"/>
+  <text x="204" y="80" class="tsig">diagonal: 0.28 m long,</text>
+  <text x="204" y="96" class="tsig">charged 0.2 m</text>
+  <text x="204" y="136" class="ts">straight: 0.2 m,</text>
+  <text x="204" y="152" class="ts">charged 0.2 m</text>
+  <text x="115" y="224" class="tm" text-anchor="middle">0.2 m voxels</text>
+  <line x1="372" y1="14" x2="372" y2="222" class="gridl"/>
+  <text x="392" y="24" class="t">Long jumps skip thin walls</text>
+  <g class="box">
+    <rect x="400" y="120" width="21" height="24" style="fill:var(--accent-soft)"/><rect x="421" y="120" width="21" height="24"/><rect x="442" y="120" width="21" height="24"/>
+    <rect x="463" y="120" width="21" height="24" style="fill:var(--ink-2);stroke:var(--ink-2)"/>
+    <rect x="484" y="120" width="21" height="24"/><rect x="505" y="120" width="21" height="24"/><rect x="526" y="120" width="21" height="24"/><rect x="547" y="120" width="21" height="24"/>
+    <rect x="568" y="120" width="21" height="24" style="fill:var(--signal-soft);stroke:var(--signal)"/><rect x="589" y="120" width="21" height="24"/><rect x="610" y="120" width="21" height="24"/><rect x="631" y="120" width="21" height="24"/>
+    <rect x="652" y="120" width="21" height="24"/><rect x="673" y="120" width="21" height="24"/><rect x="694" y="120" width="21" height="24"/><rect x="715" y="120" width="21" height="24"/>
+  </g>
+  <path d="M410.5 120 Q494.5 44 578.5 120" class="lns" style="stroke-width:2.2" marker-end="url(#f-ars)"/>
+  <text x="494" y="58" class="tsig" text-anchor="middle">k = 8 jump: only its two ends are checked</text>
+  <text x="410.5" y="164" class="ta" text-anchor="middle">goal</text>
+  <text x="473.5" y="164" class="ts" text-anchor="middle">wall</text>
+  <text x="392" y="196" class="ts">cells behind the wall get too small a distance;</text>
+  <text x="392" y="212" class="ts">cleanup rounds only lower values, so they stay wrong</text>
+</svg>
+</div>
+<figcaption>With 0.2 m voxels a k = 8 jump spans 1.6 m. Our default checks obstacles along each jump and charges diagonals their true length.</figcaption>
+</figure>
+<figure class="fig">
+  <div class="plate"><img src="figures/toa_fig3.png" width="2037" height="606" loading="lazy" alt="Three maps of one obstacle layout. The literal update shows blocky patches and axis-aligned arrows; this repo's default and the breadth-first reference look alike."></div>
+  <figcaption>Route distance to the goal (star) on a layout like the paper's Fig. 3. Left: Eqs. (3)–(4) as printed. Middle: our default.
+  Right: exact breadth-first reference.</figcaption>
+</figure>
+<div class="facts">
+  <div><div class="k">Literal update</div><div class="v" style="color:var(--signal)">6–13 % error<small>larger in places</small></div></div>
+  <div><div class="k">Our default</div><div class="v" style="color:var(--ok)">0.2–0.5 % error<small>vs breadth-first reference</small></div></div>
+  <div><div class="k">Scenes &gt; 25.6 m</div><div class="v">bigger voxels<small>to fit the 128-cell cap</small></div></div>
+</div>
+
+<h3>The accurate field costs most of each iteration</h3>
+<figure class="fig">
+<div class="scroll">
+<svg viewBox="0 0 720 186" role="img" aria-label="Seconds per training iteration on an RTX 5080. Default field: 0.90 field plus 0.18 other, 1.08 s, about 15 h for 50,000 iterations. Literal update: 0.09 plus 0.18, 0.27 s, about 3.8 h. charpi with default field: 1.09 s, about 15 h. Distance, no field: 0.17 s, about 2.4 h.">
+  <rect x="236" y="8" width="14" height="10" style="fill:var(--accent)"/><text x="256" y="17" class="ts">build TOA field</text>
+  <rect x="370" y="8" width="14" height="10" style="fill:var(--gridline);stroke:var(--muted)"/><text x="390" y="17" class="ts">everything else</text>
+  <text x="20" y="49" class="t">TOA + CBF, default field</text>
+  <rect x="236" y="34" width="297" height="22" style="fill:var(--accent)"/><rect x="533" y="34" width="59.4" height="22" style="fill:var(--gridline);stroke:var(--muted)"/>
+  <text x="600" y="49" class="tm">1.08 s · 15 h</text>
+  <text x="20" y="89" class="t">TOA + CBF, literal update</text>
+  <rect x="236" y="74" width="29.7" height="22" style="fill:var(--accent)"/><rect x="265.7" y="74" width="59.4" height="22" style="fill:var(--gridline);stroke:var(--muted)"/>
+  <text x="333" y="89" class="tm">0.27 s · 3.8 h</text>
+  <text x="20" y="129" class="t">TOA + CBF on charpi</text>
+  <rect x="236" y="114" width="297" height="22" style="fill:var(--accent)"/><rect x="533" y="114" width="62.7" height="22" style="fill:var(--gridline);stroke:var(--muted)"/>
+  <text x="604" y="129" class="tm">1.09 s · 15 h</text>
+  <text x="20" y="169" class="t">Distance (no field)</text>
+  <rect x="236" y="154" width="56.1" height="22" style="fill:var(--gridline);stroke:var(--muted)"/>
+  <text x="300" y="169" class="tm">0.17 s · 2.4 h</text>
+</svg>
+</div>
+<figcaption>Seconds per iteration on an RTX 5080 (T = 150, 64 scenes), and time for 50,000 iterations. The default field runs 3 passes plus 8 cleanup rounds; the paper reports round counts, not timings.</figcaption>
+</figure>
+
+<h3>Constants the paper leaves out</h3>
+<div class="table"><table>
+  <thead><tr><th>Constant</th><th>Paper</th><th>This repo (<code>train.py</code>)</th></tr></thead>
+  <tbody>
+    <tr><td>CBF gain k</td><td>not reported</td><td>2.5 s⁻¹</td></tr>
+    <tr><td>Sharpness β</td><td>not reported</td><td>2.0</td></tr>
+    <tr><td>Active cutoff d<sub>act</sub></td><td>not reported</td><td>1.5 m</td></tr>
+    <tr><td>Points checked M</td><td>not reported</td><td>10 (DiffPhysDrone)</td></tr>
+    <tr><td>Collision sharpness α</td><td>not reported</td><td>32 m⁻¹</td></tr>
+    <tr><td>d<sub>safe</sub> = clearance setting m?</td><td>implied, not stated</td><td>yes</td></tr>
+  </tbody>
+</table></div>
+<p>Also unreported: the velocity averaging window, the training speed range and scene sizes.</p>
+
+<details class="more">
+<summary>The ground counts as an obstacle, so the CBF is nearly always active</summary>
+<p>Ours puts a ground plane at z = −1 m, with training starts 0.4–1.5 m above it. With d<sub>act</sub> = 1.5 m every checked point
+is then inside the cutoff (69 % without the ground); logged <code>cbf_active</code> ≈ 0.87. So the CBF also caps descent speed near the
+ground at k·h: 2.5 m/s at 1 m clearance. The code was not changed for this.</p>
+</details>
+<details class="more">
+<summary>How strong is the evidence?</summary>
+<p>Limited, as the paper says. With 40–80 trials per cell, even 10-point gains are inconclusive; against DiffPhys only 9 m/s is
+significant. Real flights: five per speed.</p>
+</details>
+<details class="more">
+<summary>Why the paper's two tables disagree</summary>
+<p>Different scenes: Table II uses forests of unstated density; Table III pools a 3 m forest with large obstacles. So at 3 m/s
+TOA + CBF scores 87.5 % in one and 67.5 % in the other. Training also uses exact ray-cast depth plus noise, while evaluation
+uses stereo depth, so the tests also cover a sensor change.</p>
+</details>
+</section>
+
+<!-- ============================================================ -->
+<section id="glossary">
+<div class="sec-h"><span class="num">10</span><h2>Terms</h2></div>
+<dl class="gloss">
+  <dt>Ablation</dt><dd>Adding one idea at a time to measure each one (Table II).</dd>
+  <dt>BPTT</dt><dd>Back-propagation through time: gradients computed backward through every step of a flight.</dd>
+  <dt>CBF</dt><dd>Control barrier function: positive inside the safe set. Here, a training penalty on closing speed above k·h.</dd>
+  <dt>CBF-QP</dt><dd>The usual run-time use: an optimizer that edits each command as little as possible to stay safe.</dd>
+  <dt>charpi</dt><dd>Our drone's simulated model, calibrated from its flight logs, ported from qpg-quad-jax.</dd>
+  <dt>CTBR</dt><dd>Collective thrust and body rates: total thrust plus roll, pitch and yaw rate setpoints.</dd>
+  <dt>DiffPhys</dt><dd>The baseline method (Zhang et al., 2025). DiffPhysDrone is its code and simulator.</dd>
+  <dt>Domain randomization</dt><dd>Varying model parameters between episodes so the policy tolerates model error.</dd>
+  <dt>Fisher exact test</dt><dd>Exact test for a difference between two success rates; suits small samples.</dd>
+  <dt>Geodesic distance</dt><dd>Length of the shortest route that avoids obstacles.</dd>
+  <dt>JFA</dt><dd>Jump flooding algorithm: each voxel takes the best value offered by voxels k cells away, with k halving every round (64, 32, …, 1).</dd>
+  <dt>Plant / surrogate</dt><dd>Plant: charpi's detailed model, which flies the state. Surrogate: the point mass that supplies the gradient.</dd>
+  <dt>Point mass</dt><dd>The paper's simple vehicle model, Eq. (2): no flight controller, no motors.</dd>
+  <dt>Rollout</dt><dd>One simulated flight: 150 steps (10 s at 15 Hz) for 64 scenes at once.</dd>
+  <dt>SITL</dt><dd>Software-in-the-loop: real PX4 flight software flying a simulated drone.</dd>
+  <dt>Softplus</dt><dd>log(1 + eˣ): ≈ 0 for negative x, ≈ x for large x.</dd>
+  <dt>Stop-gradient sg(·)</dt><dd>Keep a value but treat it as a constant for gradients (<code>.detach()</code>).</dd>
+  <dt>Straight-through</dt><dd>Forward pass uses one value, backward pass the derivative of another.</dd>
+  <dt>Success rate</dt><dd>Share of trials that end within 5 m of the goal with no collision or time-out.</dd>
+  <dt>TOA field</dt><dd>Time-of-arrival field: each voxel's shortest free route length to the goal.</dd>
+  <dt>VIO</dt><dd>Visual-inertial odometry: position and attitude from cameras plus an IMU.</dd>
+  <dt>Voxel</dt><dd>Cube-shaped grid cell, 0.2 m in the paper.</dd>
+</dl>
+<footer><p>Written for the <code>diff_nav_toa_cbf</code> reproduction. Paper numbers are the authors'; local numbers are from
+<code>results/</code> and <code>sitl_runs/</code>, seed 0. Full local tables:
+<a href="../results/table2_ablation.md"><code>table2_ablation.md</code></a>,
+<a href="../results/table3_benchmark.md"><code>table3_benchmark.md</code></a>,
+<a href="../results/table_charpi.md"><code>table_charpi.md</code></a>. SITL commands:
+<a href="manual.html#sitl">manual</a>.</p></footer>
+</section>
+
+</main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var root = document.documentElement;
+  function cssv(name) { return getComputedStyle(root).getPropertyValue(name).trim(); }
+  function rgb(c) {
+    c = c.replace("#", "");
+    if (c.length === 3) c = c.split("").map(function (x) { return x + x; }).join("");
+    return [0, 2, 4].map(function (i) { return parseInt(c.substr(i, 2), 16); });
+  }
+  function mix(a, b, t) { return "rgb(" + a.map(function (v, i) { return Math.round(v + (b[i] - v) * t); }).join(",") + ")"; }
+  var NS = "http://www.w3.org/2000/svg";
+  function el(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function subText(t, base, s, rest) {                               // SVG text has no sub tag, so shift a tspan down
+    t.appendChild(document.createTextNode(base));
+    el("tspan", { dy: "3.5", style: "font-size:0.8em" }, t).textContent = s;
+    el("tspan", { dy: "-3.5" }, t).textContent = rest;
+    return t;
+  }
+  function softplus(x) { return x > 30 ? x : Math.log1p(Math.exp(x)); }
+  function sigmoid(x) { return 1 / (1 + Math.exp(-x)); }
+  function legendFor(host, series) {
+    var legend = document.createElement("div"); legend.className = "legend";
+    series.forEach(function (s) {
+      var span = document.createElement("span");
+      span.innerHTML = "<i style=\"background:" + s.color + "\"></i>" + s.name;
+      legend.appendChild(span);
+    });
+    host.appendChild(legend);
+  }
+
+  /* 1. Straight-line vs. route-distance map (#toa) */
+  var W = 60, H = 36, N = W * H;
+  var occ = new Uint8Array(N);
+  function block(x0, y0, x1, y1) { for (var y = y0; y <= y1; y++) for (var x = x0; x <= x1; x++) occ[y * W + x] = 1; }
+  function disk(cx, cy, r) {
+    for (var y = 0; y < H; y++) for (var x = 0; x < W; x++)
+      if ((x - cx) * (x - cx) + (y - cy) * (y - cy) <= r * r) occ[y * W + x] = 1;
+  }
+  block(36, 7, 37, 28); block(24, 7, 37, 8); block(24, 27, 37, 28);      // U-shaped pocket facing the start: the trap for straight-line guidance
+  disk(12, 6, 2.2); disk(16, 30, 2.2); disk(47, 10, 2.5); disk(46, 26, 2.5); disk(54, 4, 1.6); disk(8, 26, 1.6);
+  var goal = { x: 54, y: 18 }, start = { x: 5, y: 18 };
+  var mode = "euc";
+  var NB = [[1, 0, 1], [-1, 0, 1], [0, 1, 1], [0, -1, 1], [1, 1, Math.SQRT2], [1, -1, Math.SQRT2], [-1, 1, Math.SQRT2], [-1, -1, Math.SQRT2]];
+  function free(x, y) { return x >= 0 && y >= 0 && x < W && y < H && !occ[y * W + x]; }
+  function canStep(x, y, dx, dy) {
+    if (!free(x + dx, y + dy)) return false;
+    if (dx && dy) return free(x + dx, y) && free(x, y + dy);            // a diagonal step needs both side cells free, so it cannot cut a blocked corner
+    return true;
+  }
+  var geo = (function () {                                              // shortest grid routes to the goal (Dijkstra): a straight step costs 1 m, a diagonal √2 m
+    var d = new Float64Array(N).fill(Infinity), done = new Uint8Array(N);
+    var heap = [[0, goal.y * W + goal.x]];
+    d[goal.y * W + goal.x] = 0;
+    function push(item) {
+      heap.push(item); var i = heap.length - 1;
+      while (i > 0) { var p = (i - 1) >> 1; if (heap[p][0] <= heap[i][0]) break; var t = heap[p]; heap[p] = heap[i]; heap[i] = t; i = p; }
+    }
+    function pop() {
+      var top = heap[0], last = heap.pop();
+      if (heap.length) {
+        heap[0] = last; var i = 0;
+        for (;;) {
+          var l = 2 * i + 1, r = l + 1, m = i;
+          if (l < heap.length && heap[l][0] < heap[m][0]) m = l;
+          if (r < heap.length && heap[r][0] < heap[m][0]) m = r;
+          if (m === i) break; var t = heap[m]; heap[m] = heap[i]; heap[i] = t; i = m;
+        }
+      }
+      return top;
+    }
+    while (heap.length) {
+      var cur = pop(), u = cur[1];
+      if (done[u]) continue; done[u] = 1;
+      var ux = u % W, uy = (u / W) | 0;
+      for (var n = 0; n < 8; n++) {
+        var dx = NB[n][0], dy = NB[n][1];
+        if (!canStep(ux, uy, dx, dy)) continue;
+        var v = (uy + dy) * W + ux + dx, nd = d[u] + NB[n][2];
+        if (nd < d[v]) { d[v] = nd; push([nd, v]); }
+      }
+    }
+    return d;
+  })();
+  var euc = new Float64Array(N);
+  for (var i = 0; i < N; i++) euc[i] = Math.hypot(i % W - goal.x, ((i / W) | 0) - goal.y);
+  function field() { return mode === "euc" ? euc : geo; }
+  function bestStep(x, y, phi) {
+    var best = null, bv = phi[y * W + x];
+    for (var n = 0; n < 8; n++) {
+      var dx = NB[n][0], dy = NB[n][1];
+      if (!canStep(x, y, dx, dy)) continue;
+      var v = phi[(y + dy) * W + x + dx];
+      if (v < bv - 1e-9) { bv = v; best = n; }
+    }
+    return best;
+  }
+  function descend() {
+    var phi = field(), x = start.x, y = start.y, pts = [[x, y]], len = 0;
+    for (var s = 0; s < 400; s++) {
+      if (x === goal.x && y === goal.y) break;
+      var n = bestStep(x, y, phi);
+      if (n === null) break;
+      x += NB[n][0]; y += NB[n][1]; len += NB[n][2]; pts.push([x, y]);
+    }
+    return { pts: pts, len: len, reached: x === goal.x && y === goal.y, left: Math.hypot(x - goal.x, y - goal.y) };
+  }
+  var canvas = document.getElementById("g-canvas");
+  var ctx = canvas.getContext("2d");
+  var readout = document.getElementById("g-readout");
+  function drawGuide() {
+    var dpr = window.devicePixelRatio || 1;
+    var cw = canvas.clientWidth || 720;
+    canvas.width = Math.round(cw * dpr);
+    canvas.height = Math.round(cw * dpr * H / W);
+    var cs = canvas.width / W;
+    var phi = field(), max = 0;
+    for (var i = 0; i < N; i++) if (!occ[i] && isFinite(phi[i])) max = Math.max(max, phi[i]);
+    var lo = rgb(cssv("--seq-lo")), hi = rgb(cssv("--seq-hi"));
+    for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) {
+      var k = y * W + x;
+      ctx.fillStyle = occ[k] ? cssv("--ink-2") : mix(lo, hi, Math.min(1, (isFinite(phi[k]) ? phi[k] : max) / max));
+      ctx.fillRect(x * cs, y * cs, cs + 0.5, cs + 0.5);
+    }
+    ctx.strokeStyle = cssv("--ink");
+    ctx.globalAlpha = 0.55;
+    ctx.lineWidth = Math.max(1, dpr);
+    for (y = 1; y < H; y += 3) for (x = 1; x < W; x += 3) {
+      if (occ[y * W + x]) continue;
+      var dx, dy;
+      if (mode === "euc") { dx = goal.x - x; dy = goal.y - y; }
+      else { var n = bestStep(x, y, phi); if (n === null) continue; dx = NB[n][0]; dy = NB[n][1]; }
+      var l = Math.hypot(dx, dy); if (!l) continue;
+      dx /= l; dy /= l;
+      var cx = (x + 0.5) * cs, cy = (y + 0.5) * cs, a = cs * 1.1;
+      ctx.beginPath();
+      ctx.moveTo(cx - dx * a * 0.5, cy - dy * a * 0.5);
+      ctx.lineTo(cx + dx * a * 0.5, cy + dy * a * 0.5);
+      ctx.lineTo(cx + dx * a * 0.5 - (dx * 0.35 - dy * 0.25) * a, cy + dy * a * 0.5 - (dy * 0.35 + dx * 0.25) * a);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    var r = descend();
+    ctx.strokeStyle = cssv("--path");
+    ctx.lineWidth = 3.2 * dpr; ctx.lineJoin = "round"; ctx.lineCap = "round";
+    ctx.beginPath();
+    r.pts.forEach(function (p, j) { var px = (p[0] + 0.5) * cs, py = (p[1] + 0.5) * cs; j ? ctx.lineTo(px, py) : ctx.moveTo(px, py); });
+    ctx.stroke();
+    function dot(p, fill, ring) {
+      ctx.beginPath(); ctx.arc((p.x + 0.5) * cs, (p.y + 0.5) * cs, cs * 0.75, 0, 2 * Math.PI);
+      ctx.fillStyle = fill; ctx.fill(); ctx.lineWidth = 2 * dpr; ctx.strokeStyle = ring; ctx.stroke();
+    }
+    dot(start, cssv("--panel"), cssv("--ink"));
+    dot(goal, cssv("--ink"), cssv("--panel"));
+    ctx.fillStyle = cssv("--ink"); ctx.font = (12 * dpr) + "px " + cssv("--body");
+    ctx.textAlign = "center";
+    ctx.fillText("goal", (goal.x + 0.5) * cs, (goal.y - 1.2) * cs);
+    ctx.fillText("start", (start.x + 0.5) * cs, (start.y - 1.2) * cs);
+    var name = mode === "euc" ? "Straight-line" : "Route (TOA)";
+    readout.innerHTML = r.reached
+      ? "<span>" + name + " field: <span class=\"state-ok\">reaches the goal</span> along a " + r.len.toFixed(1) + " m path.</span>"
+      : "<span>" + name + " field: <span class=\"state-bad\">stuck in a dead end</span> after " + r.len.toFixed(1) +
+        " m, still " + r.left.toFixed(1) + " m from the goal.</span>";
+  }
+  function setMode(m) {
+    mode = m;
+    document.getElementById("g-euc").setAttribute("aria-pressed", String(m === "euc"));
+    document.getElementById("g-geo").setAttribute("aria-pressed", String(m === "geo"));
+    drawGuide();
+  }
+  document.getElementById("g-euc").addEventListener("click", function () { setMode("euc"); });
+  document.getElementById("g-geo").addEventListener("click", function () { setMode("geo"); });
+  canvas.addEventListener("click", function (ev) {
+    var rect = canvas.getBoundingClientRect();
+    var x = Math.floor((ev.clientX - rect.left) / rect.width * W), y = Math.floor((ev.clientY - rect.top) / rect.height * H);
+    if (free(x, y)) { start = { x: x, y: y }; drawGuide(); }
+  });
+
+  /* 2. CBF penalty explorer (#cbf) */
+  var C = { W: 560, H: 300, l: 52, r: 18, t: 14, b: 44, x0: 0, x1: 3, y0: -2, y1: 10 };
+  function cx(h) { return C.l + (h - C.x0) / (C.x1 - C.x0) * (C.W - C.l - C.r); }
+  function cy(v) { return C.t + (C.y1 - v) / (C.y1 - C.y0) * (C.H - C.t - C.b); }
+  var ids = ["k", "h", "v", "b", "a"];
+  function val(id) { return parseFloat(document.getElementById("c-" + id).value); }
+  function drawCbf() {
+    var k = val("k"), h = val("h"), v = val("v"), beta = val("b"), dact = val("a");
+    ids.forEach(function (id) {
+      var x = val(id); document.getElementById("c-" + id + "-o").textContent = x.toFixed(id === "b" ? 1 : 2);
+    });
+    var host = document.getElementById("c-chart");
+    host.innerHTML = "";
+    var svg = el("svg", { viewBox: "0 0 " + C.W + " " + C.H, role: "img",
+      "aria-label": "Closing speed against clearance h. Speeds on or below the line v_close = k·h are allowed. Points with h ≥ d_act are ignored. The dot marks the current slider values." }, host);
+    for (var yv = -2; yv <= 10; yv += 2) {
+      el("line", { x1: C.l, x2: C.W - C.r, y1: cy(yv), y2: cy(yv), class: "gridl" }, svg);
+      el("text", { x: C.l - 8, y: cy(yv) + 4, "text-anchor": "end", class: "tm" }, svg).textContent = yv;
+    }
+    for (var xv = 0; xv <= 3.001; xv += 0.5) {
+      el("text", { x: cx(xv), y: C.H - C.b + 18, "text-anchor": "middle", class: "tm" }, svg).textContent = xv.toFixed(1);
+    }
+    var xa = Math.min(C.x1, C.y1 / k);
+    el("polygon", { points: [[cx(0), cy(C.y0)], [cx(0), cy(0)], [cx(xa), cy(k * xa)], [cx(C.x1), cy(Math.min(C.y1, k * C.x1))],
+      [cx(C.x1), cy(C.y0)]].map(function (p) { return p.join(","); }).join(" "), style: "fill:var(--accent-soft)" }, svg);
+    if (dact < C.x1) el("rect", { x: cx(dact), y: C.t, width: cx(C.x1) - cx(dact), height: C.H - C.t - C.b,
+      style: "fill:var(--muted);opacity:0.12" }, svg);
+    el("line", { x1: cx(0), y1: cy(0), x2: cx(xa), y2: cy(k * xa), class: "lna" }, svg);
+    el("line", { x1: cx(dact), x2: cx(dact), y1: C.t, y2: C.H - C.b, class: "lnm dash" }, svg);
+    subText(el("text", { x: cx(dact) + 5, y: C.t + 14, class: "ts" }, svg), "d", "act", " (ignored beyond)");
+    subText(el("text", { x: cx(Math.min(xa, 2.6)) - 6, y: cy(k * Math.min(xa, 2.6)) - 8, "text-anchor": "end", class: "ta" }, svg),
+      "v", "close", " = k·h");
+    el("text", { x: cx(0.08), y: cy(-1.3), class: "ts" }, svg).textContent = "allowed (safe side)";
+    el("line", { x1: C.l, x2: C.W - C.r, y1: cy(0), y2: cy(0), class: "lnm" }, svg);
+    el("text", { x: (C.l + C.W - C.r) / 2, y: C.H - 6, "text-anchor": "middle", class: "ts" }, svg).textContent = "clearance h (m)";
+    var yl = el("text", { x: 14, y: (C.t + C.H - C.b) / 2, "text-anchor": "middle", class: "ts",
+      transform: "rotate(-90 14 " + (C.t + C.H - C.b) / 2 + ")" }, svg);
+    subText(yl, "closing speed v", "close", " (m/s)");
+    var active = h < dact, viol = v - k * h;
+    var fill = !active ? "var(--muted)" : viol > 0 ? "var(--signal)" : "var(--ok)";
+    el("circle", { cx: cx(h), cy: cy(v), r: 7, style: "fill:" + fill + ";stroke:var(--panel);stroke-width:2.5" }, svg);
+    var pen = softplus(beta * viol), grad = beta * sigmoid(beta * viol);
+    var status = !active ? "<span style=\"color:var(--muted);font-weight:700\">ignored</span> (h ≥ d<sub>act</sub>: too far away to count)"
+      : viol > 0 ? "<span class=\"state-bad\">over the cap</span> by " + viol.toFixed(2) + " m/s"
+      : "<span class=\"state-ok\">within the cap</span> (" + (-viol).toFixed(2) + " m/s to spare)";
+    document.getElementById("c-readout").innerHTML =
+      "<span>cap k·h = <b>" + (k * h).toFixed(2) + " m/s</b></span>" +
+      "<span>" + status + "</span>" +
+      "<span>penalty = <b>" + (active ? pen.toFixed(3) : "0") + "</b></span>" +
+      "<span>gradient ∂ℓ/∂v<sub>close</sub> = <b>" + (active ? grad.toFixed(3) : "0") + "</b></span>";
+  }
+  ids.forEach(function (id) { document.getElementById("c-" + id).addEventListener("input", drawCbf); });
+
+  /* 3. Charts */
+  var MARK = ["circle", "square", "triangle", "diamond"];
+  function marker(g, kind, x, y, color) {
+    var s = 5.5, st = "fill:" + color + ";stroke:var(--panel);stroke-width:2";
+    if (kind === "circle") return el("circle", { cx: x, cy: y, r: s, style: st }, g);
+    if (kind === "square") return el("rect", { x: x - s, y: y - s, width: 2 * s, height: 2 * s, style: st }, g);
+    if (kind === "triangle") return el("polygon", { points: [x, y - s * 1.2, x + s * 1.1, y + s * 0.8, x - s * 1.1, y + s * 0.8].join(","), style: st }, g);
+    return el("polygon", { points: [x, y - s * 1.3, x + s * 1.2, y, x, y + s * 1.3, x - s * 1.2, y].join(","), style: st }, g);
+  }
+  function lineChart(id, spec) {
+    var host = document.getElementById(id);
+    var P = { W: 640, H: 320, l: 48, r: 150, t: 14, b: 46 };
+    var xs = spec.x, x0 = xs[0] - 0.5, x1 = xs[xs.length - 1] + 0.5;
+    function X(v) { return P.l + (v - x0) / (x1 - x0) * (P.W - P.l - P.r); }
+    function Y(v) { return P.t + (100 - v) / 100 * (P.H - P.t - P.b); }
+    host.innerHTML = "";
+    legendFor(host, spec.series);
+    var svg = el("svg", { viewBox: "0 0 " + P.W + " " + P.H, role: "img", "aria-label": spec.label }, host);
+    [0, 25, 50, 75, 100].forEach(function (v) {
+      el("line", { x1: P.l, x2: P.W - P.r, y1: Y(v), y2: Y(v), class: "gridl" }, svg);
+      el("text", { x: P.l - 8, y: Y(v) + 4, "text-anchor": "end", class: "tm" }, svg).textContent = v;
+    });
+    xs.forEach(function (v) {
+      el("text", { x: X(v), y: P.H - P.b + 20, "text-anchor": "middle", class: "tm" }, svg).textContent = v;
+    });
+    el("text", { x: (P.l + P.W - P.r) / 2, y: P.H - 8, "text-anchor": "middle", class: "ts" }, svg).textContent = "target speed (m/s)";
+    var yl = el("text", { x: 13, y: (P.t + P.H - P.b) / 2, "text-anchor": "middle", class: "ts",
+      transform: "rotate(-90 13 " + (P.t + P.H - P.b) / 2 + ")" }, svg);
+    yl.textContent = "success rate (%)";
+    if (spec.bracket) {                                                  // mark the one significant gap
+      var b = spec.bracket, bx = X(b.x) - 14;
+      el("path", { d: "M" + (bx + 5) + " " + Y(b.a) + " H" + bx + " V" + Y(b.b) + " H" + (bx + 5), class: "lnm" }, svg);
+      el("text", { x: X(b.x), y: Y(b.b) + 24, "text-anchor": "middle", class: "tm", style: "font-weight:600" }, svg).textContent = b.text;
+    }
+    var labels = [];
+    spec.series.forEach(function (s) {
+      el("polyline", { points: s.values.map(function (v, j) { return X(xs[j]) + "," + Y(v); }).join(" "),
+        style: "fill:none;stroke:" + s.color + ";stroke-width:2.4;stroke-linejoin:round" }, svg);
+      labels.push({ y: Y(s.values[s.values.length - 1]), s: s });
+    });
+    spec.series.forEach(function (s, si) {
+      s.values.forEach(function (v, j) { marker(svg, MARK[si % 4], X(xs[j]), Y(v), s.color); });
+    });
+    labels.sort(function (a, b) { return a.y - b.y; });                 // spread end-of-line labels so close values stay readable
+    for (var it = 0; it < 20; it++) for (var i = 1; i < labels.length; i++) {
+      var gap = labels[i].y - labels[i - 1].y;
+      if (gap < 15) { labels[i].y += (15 - gap) / 2; labels[i - 1].y -= (15 - gap) / 2; }
+    }
+    labels.forEach(function (lb) {
+      el("text", { x: X(xs[xs.length - 1]) + 12, y: lb.y + 4, class: "ts" }, svg).textContent =
+        lb.s.name + " " + lb.s.values[lb.s.values.length - 1] + "%";
+    });
+    var tip = document.createElement("div"); tip.className = "tip"; tip.hidden = true; host.appendChild(tip);
+    spec.series.forEach(function (s) {
+      s.values.forEach(function (v, j) {
+        var hit = el("circle", { cx: X(xs[j]), cy: Y(v), r: 13, style: "fill:transparent;cursor:default" }, svg);
+        function show() {
+          var sb = svg.getBoundingClientRect(), hb = host.getBoundingClientRect(), sc = sb.width / P.W;
+          tip.textContent = s.name + " · " + xs[j] + " m/s: " + v + " %";
+          tip.style.left = (sb.left - hb.left + X(xs[j]) * sc) + "px";
+          tip.style.top = (sb.top - hb.top + Y(v) * sc) + "px";
+          tip.hidden = false;
+        }
+        hit.addEventListener("pointerenter", show);
+        hit.addEventListener("pointerleave", function () { tip.hidden = true; });
+      });
+    });
+  }
+  function barChart(id, spec) {
+    var host = document.getElementById(id);
+    var P = { W: 640, H: 300, l: 48, r: 12, t: 44, b: 46 };
+    var n = spec.x.length, ns = spec.series.length, gw = (P.W - P.l - P.r) / n, bw = Math.min(46, gw * 0.7 / ns);
+    function Y(v) { return P.t + (100 - v) / 100 * (P.H - P.t - P.b); }
+    host.innerHTML = "";
+    legendFor(host, spec.series);
+    var svg = el("svg", { viewBox: "0 0 " + P.W + " " + P.H, role: "img", "aria-label": spec.label }, host);
+    [0, 25, 50, 75, 100].forEach(function (v) {
+      el("line", { x1: P.l, x2: P.W - P.r, y1: Y(v), y2: Y(v), class: "gridl" }, svg);
+      el("text", { x: P.l - 8, y: Y(v) + 4, "text-anchor": "end", class: "tm" }, svg).textContent = v;
+    });
+    spec.x.forEach(function (xv, i) {
+      var gx = P.l + gw * (i + 0.5);
+      el("text", { x: gx, y: P.H - P.b + 20, "text-anchor": "middle", class: "tm" }, svg).textContent = xv;
+      spec.series.forEach(function (s, si) {
+        var v = s.values[i], x = gx + (si - ns / 2) * (bw + 4) + 2;
+        el("rect", { x: x, y: Y(v), width: bw, height: Y(0) - Y(v), rx: 2, style: "fill:" + s.color }, svg);
+        el("text", { x: x + bw / 2, y: Y(v) - 6, "text-anchor": "middle", class: "tm" }, svg).textContent = v;
+      });
+      if (spec.p) el("text", { x: gx, y: 22, "text-anchor": "middle", class: spec.p[i].sig ? "ta" : "ts" }, svg).textContent = "p " + spec.p[i].t;
+    });
+    el("text", { x: (P.l + P.W - P.r) / 2, y: P.H - 8, "text-anchor": "middle", class: "ts" }, svg).textContent = "target speed (m/s)";
+    var yl = el("text", { x: 13, y: (P.t + P.H - P.b) / 2, "text-anchor": "middle", class: "ts",
+      transform: "rotate(-90 13 " + (P.t + P.H - P.b) / 2 + ")" }, svg);
+    yl.textContent = "success rate (%)";
+  }
+  function decayChart() {
+    var host = document.getElementById("decay-chart");
+    var P = { W: 640, H: 210, l: 48, r: 12, t: 20, b: 44 };
+    var gw = (P.W - P.l - P.r) / 11, bw = gw * 0.62;
+    function Y(v) { return P.t + (1 - v) * (P.H - P.t - P.b); }
+    host.innerHTML = "";
+    var svg = el("svg", { viewBox: "0 0 " + P.W + " " + P.H, role: "img",
+      "aria-label": "Bars of 0.4 to the power t for t from 0 to 10 seconds: 1, 0.40, 0.16, 0.064, then near zero; 10 to the minus 4 at 10 seconds." }, host);
+    [0, 0.5, 1].forEach(function (v) {
+      el("line", { x1: P.l, x2: P.W - P.r, y1: Y(v), y2: Y(v), class: "gridl" }, svg);
+      el("text", { x: P.l - 8, y: Y(v) + 4, "text-anchor": "end", class: "tm" }, svg).textContent = v;
+    });
+    for (var t = 0; t <= 10; t++) {
+      var v = Math.pow(0.4, t), x = P.l + gw * t + (gw - bw) / 2;
+      el("rect", { x: x, y: Y(v), width: bw, height: Math.max(1, Y(0) - Y(v)), rx: 2, style: "fill:var(--accent)" }, svg);
+      el("text", { x: x + bw / 2, y: P.H - P.b + 18, "text-anchor": "middle", class: "tm" }, svg).textContent = t;
+      var lab = t <= 3 ? (t ? v.toFixed(t < 2 ? 2 : 3).replace(/0+$/, "") : "1") : t === 10 ? "10⁻⁴" : "";
+      if (lab) el("text", { x: x + bw / 2, y: Y(v) - 6, "text-anchor": "middle", class: "tm" }, svg).textContent = lab;
+    }
+    el("text", { x: (P.l + P.W - P.r) / 2, y: P.H - 6, "text-anchor": "middle", class: "ts" }, svg).textContent = "seconds between the command and the loss";
+  }
+  function rangesChart() {
+    var host = document.getElementById("ranges-chart");
+    var Wd = 700, Hd = 184, base = 136;
+    function X(d) { return 60 + d * 300; }
+    host.innerHTML = "";
+    var svg = el("svg", { viewBox: "0 0 " + Wd + " " + Hd, role: "img",
+      "aria-label": "On one distance axis from 0 to 2 metres: the CBF loss acts over the first 1.5 metres of clearance; the collision term is a narrow spike that falls from 0.69 at contact to 0.04 at 0.1 metres." }, host);
+    el("rect", { x: X(0), y: 24, width: X(1.5) - X(0), height: 30, rx: 4, class: "boxa" }, svg);
+    subText(el("text", { x: X(0) + 12, y: 44, class: "ta" }, svg), "CBF loss acts while h < d", "act", " = 1.5 m");
+    var pts = [[X(0), base]];
+    for (var d = 0; d <= 0.4001; d += 0.005) pts.push([X(d), base - 62 * softplus(-32 * d) / Math.LN2]);
+    pts.push([X(0.4), base]);
+    el("polygon", { points: pts.map(function (p) { return p.join(","); }).join(" "), style: "fill:var(--signal-soft);stroke:var(--signal);stroke-width:2" }, svg);
+    el("text", { x: X(0.16), y: 98, class: "tsig" }, svg).textContent = "collision term softplus(−32 d)";
+    el("text", { x: X(0.16), y: 114, class: "ts" }, svg).textContent = "0.69 at contact, 0.04 at 0.1 m";
+    el("line", { x1: X(0), x2: X(2), y1: base, y2: base, class: "lnm" }, svg);
+    [0, 0.5, 1, 1.5, 2].forEach(function (v) {
+      el("line", { x1: X(v), x2: X(v), y1: base, y2: base + 5, class: "lnm" }, svg);
+      el("text", { x: X(v), y: base + 20, "text-anchor": "middle", class: "tm" }, svg).textContent = v;
+    });
+    el("text", { x: X(1), y: Hd - 6, "text-anchor": "middle", class: "ts" }, svg).textContent = "distance to the obstacle or safety boundary (m)";
+  }
+  function stepChart() {
+    var host = document.getElementById("step-chart");
+    var P = { W: 640, H: 290, l: 52, r: 20, t: 18, b: 46 };
+    function X(t) { return P.l + t * (P.W - P.l - P.r); }
+    function Y(v) { return P.t + (1 - v) * (P.H - P.t - P.b); }
+    var series = [{ name: "point mass: 12 s⁻¹ (time constant 0.08 s)", lam: 12, color: "var(--s2)" },
+      { name: "charpi fit: 5 s⁻¹ (time constant 0.2 s)", lam: 5, color: "var(--s1)" }];
+    host.innerHTML = "";
+    legendFor(host, series);
+    var svg = el("svg", { viewBox: "0 0 " + P.W + " " + P.H, role: "img",
+      "aria-label": "Step responses 1 minus e to the minus lambda t. After one policy step of 1/15 s, the point mass reaches 55 percent of a new command and charpi 28 percent." }, host);
+    [0, 0.25, 0.5, 0.75, 1].forEach(function (v) {
+      el("line", { x1: P.l, x2: P.W - P.r, y1: Y(v), y2: Y(v), class: "gridl" }, svg);
+      el("text", { x: P.l - 8, y: Y(v) + 4, "text-anchor": "end", class: "tm" }, svg).textContent = Math.round(v * 100);
+    });
+    [0, 0.2, 0.4, 0.6, 0.8, 1].forEach(function (t) {
+      el("text", { x: X(t), y: P.H - P.b + 18, "text-anchor": "middle", class: "tm" }, svg).textContent = t.toFixed(1);
+    });
+    var ts = 1 / 15;
+    el("line", { x1: X(ts), x2: X(ts), y1: P.t, y2: Y(0), class: "lnm dash" }, svg);
+    el("text", { x: X(ts) + 6, y: Y(0.06), class: "ts" }, svg).textContent = "one policy step, 1/15 s";
+    series.forEach(function (s) {
+      var pts = [];
+      for (var t = 0; t <= 1.0001; t += 0.005) pts.push(X(t) + "," + Y(1 - Math.exp(-s.lam * t)));
+      el("polyline", { points: pts.join(" "), style: "fill:none;stroke:" + s.color + ";stroke-width:2.6" }, svg);
+      var r = 1 - Math.exp(-s.lam * ts);
+      el("circle", { cx: X(ts), cy: Y(r), r: 5.5, style: "fill:" + s.color + ";stroke:var(--panel);stroke-width:2" }, svg);
+      el("text", { x: X(ts) - 9, y: Y(r) + 4, "text-anchor": "end", class: "tm", style: "font-weight:600" }, svg).textContent = Math.round(r * 100) + " %";
+    });
+    el("text", { x: (P.l + P.W - P.r) / 2, y: P.H - 6, "text-anchor": "middle", class: "ts" }, svg).textContent = "time after a step command (s)";
+    var yl = el("text", { x: 14, y: (P.t + P.H - P.b) / 2, "text-anchor": "middle", class: "ts",
+      transform: "rotate(-90 14 " + (P.t + P.H - P.b) / 2 + ")" }, svg);
+    yl.textContent = "share of command reached (%)";
+  }
+  function drawCharts() {
+    lineChart("chart-ablation", {
+      label: "Success rates in the paper's Table II ablation. TOA + CBF is highest at 7 and 9 m/s, TOA at 3 and 5 m/s. Distance is lowest at every speed.",
+      x: [3, 5, 7, 9], bracket: { x: 9, a: 90, b: 57.5, text: "p = 0.002" },
+      series: [
+        { name: "TOA + CBF", color: "var(--s1)", values: [87.5, 87.5, 85, 90] },
+        { name: "TOA", color: "var(--s2)", values: [90, 90, 80, 75] },
+        { name: "Distance", color: "var(--s3)", values: [72.5, 85, 67.5, 57.5] }]
+    });
+    lineChart("chart-bench", {
+      label: "Success rates in the paper's Table III benchmark. TOA + CBF is highest at every speed. EGO-Planner and Agile fall below 20 % at 7 m/s.",
+      x: [3, 5, 7, 9], bracket: { x: 9, a: 58.75, b: 41.25, text: "p = 0.040" },
+      series: [
+        { name: "TOA + CBF", color: "var(--s1)", values: [67.5, 63.75, 65, 58.75] },
+        { name: "DiffPhys", color: "var(--s2)", values: [62.5, 53.75, 52.5, 41.25] },
+        { name: "EGO-Planner", color: "var(--s3)", values: [51.25, 27.5, 11.25, 5] },
+        { name: "Agile", color: "var(--s4)", values: [48.75, 32.5, 16.25, 2.5] }]
+    });
+    lineChart("chart-local", {
+      label: "Local point-mass benchmark: DiffPhys about 91 to 93 percent at every speed; TOA + CBF rises from 78.75 percent at 3 m/s to 92.5 percent at 9 m/s.",
+      x: [3, 5, 7, 9],
+      series: [
+        { name: "TOA + CBF", color: "var(--s1)", values: [78.75, 83.75, 87.5, 92.5] },
+        { name: "DiffPhys", color: "var(--s2)", values: [92.5, 91.25, 92.5, 91.25] }]
+    });
+    barChart("chart-charpi", {
+      label: "Success on simulated charpi. Trained on point mass: 75, 85, 72.5, 60 percent. Trained on charpi: 95, 95, 100, 95 percent.",
+      x: [3, 5, 7, 9],
+      p: [{ t: "= 0.025", sig: true }, { t: "= 0.263", sig: false }, { t: "< 0.001", sig: true }, { t: "< 0.001", sig: true }],
+      series: [
+        { name: "trained on point mass", color: "var(--s2)", values: [75, 85, 72.5, 60] },
+        { name: "trained on charpi", color: "var(--s1)", values: [95, 95, 100, 95] }]
+    });
+    decayChart(); rangesChart(); stepChart();
+  }
+
+  drawGuide(); drawCbf(); drawCharts();
+  // canvas pixels do not follow CSS, so repaint the map on resize and theme change
+  if (window.ResizeObserver) new ResizeObserver(function () { drawGuide(); }).observe(canvas);
+  if (window.matchMedia) {
+    var mq = window.matchMedia("(prefers-color-scheme: dark)");
+    (mq.addEventListener ? mq.addEventListener.bind(mq, "change") : mq.addListener.bind(mq))(drawGuide);
+  }
+  new MutationObserver(drawGuide).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+
+  /* 4. Contents rail follows the section in view */
+  var links = {};
+  document.querySelectorAll("nav.toc a").forEach(function (a) { links[a.getAttribute("href").slice(1)] = a; });
+  if (window.IntersectionObserver) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        for (var k in links) links[k].removeAttribute("aria-current");
+        if (links[e.target.id]) links[e.target.id].setAttribute("aria-current", "location");
+      });
+    }, { rootMargin: "-25% 0px -65% 0px" });
+    document.querySelectorAll("main > section[id]").forEach(function (s) { io.observe(s); });
+  }
+})();
+</script>
+<script>
+/* Jump flooding demos (#toa): an open 3-D cube, then a 2-D map with walls. Both follow toanav/toa.py. */
+(function () {
+  "use strict";
+  var root = document.documentElement;
+  function cssv(n) { return getComputedStyle(root).getPropertyValue(n).trim(); }
+  function rgb(c) {
+    c = c.replace("#", "");
+    if (c.length === 3) c = c.split("").map(function (x) { return x + x; }).join("");
+    return [0, 2, 4].map(function (i) { return parseInt(c.substr(i, 2), 16); });
+  }
+  function mix(a, b, t) { return "rgb(" + a.map(function (v, i) { return Math.round(v + (b[i] - v) * t); }).join(",") + ")"; }
+  function num(v) { return (Math.round(v * 100) / 100).toString(); }
+  function big(n) { return n.toLocaleString("en-US"); }
+  var SQ2 = Math.SQRT2, SQ3 = Math.sqrt(3);
+  var reduce = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+  // Round picker: one chip per round, grouped into passes and cleanup. steps[0] is the start state.
+  function makeSched(host, steps, onPick) {
+    host.innerHTML = "";
+    var btns = [];
+    steps.forEach(function (s, r) {
+      if (s.group) { var g = document.createElement("span"); g.className = "grp"; g.textContent = s.group; host.appendChild(g); }
+      var b = document.createElement("button");
+      b.type = "button";
+      b.textContent = r ? s.k : "start";
+      if (s.cl) b.className = "cl";
+      b.setAttribute("aria-label", r ? "after round " + r + ", k = " + s.k + (s.cl ? ", cleanup" : "") : "start");
+      b.addEventListener("click", function () { onPick(r); });
+      host.appendChild(b); btns.push(b);
+    });
+    return function mark(cur) {
+      btns.forEach(function (b, r) {
+        b.setAttribute("aria-pressed", String(r === cur));
+        b.classList.toggle("done", r < cur);
+      });
+    };
+  }
+
+  /* ---------- 1. 3-D cube, no obstacles ---------- */
+  var S = 17, C = 8, NV = S * S * S;
+  var st3 = [{ k: 0 }, { k: 8, group: "halving" }, { k: 4 }, { k: 2 }, { k: 1 },
+    { k: 1, cl: true, group: "cleanup" }, { k: 1, cl: true }, { k: 1, cl: true }];
+  var OFF = [];
+  for (var oz = -1; oz <= 1; oz++) for (var oy = -1; oy <= 1; oy++) for (var ox = -1; ox <= 1; ox++) {
+    var on = Math.abs(ox) + Math.abs(oy) + Math.abs(oz);
+    if (on) OFF.push([ox, oy, oz, on === 1 ? 1 : on === 2 ? SQ2 : SQ3]);
+  }
+  function id3(x, y, z) { return (z * S + y) * S + x; }
+  function xyz(i) { return [i % S, ((i / S) | 0) % S, (i / (S * S)) | 0]; }
+  var GOAL3 = id3(C, C, C);
+  var exact3 = new Float64Array(NV);                     // shortest 26-direction grid route in open space, in voxels
+  for (var i3 = 0; i3 < NV; i3++) {
+    var q = xyz(i3).map(function (v) { return Math.abs(v - C); }).sort(function (a, b) { return b - a; });
+    exact3[i3] = q[0] + (SQ2 - 1) * q[1] + (SQ3 - SQ2) * q[2];
+  }
+  // states[r]: values after round r, plus where each value came from (par) and in which round it was set (set)
+  var states = [];
+  (function () {
+    var G = new Float64Array(NV).fill(Infinity), par = new Int32Array(NV).fill(-1), set = new Int8Array(NV).fill(-1);
+    G[GOAL3] = 0; set[GOAL3] = 0;
+    states.push({ G: G, par: par, set: set });
+    for (var r = 1; r < st3.length; r++) {
+      var k = st3[r].k, Gn = G.slice(), pn = par.slice(), sn = set.slice();
+      for (var s = 0; s < NV; s++) {                        // every voxel reads the previous round only, as one pooling call does
+        if (G[s] === Infinity) continue;
+        var p = xyz(s);
+        for (var o = 0; o < 26; o++) {
+          var tx = p[0] + k * OFF[o][0], ty = p[1] + k * OFF[o][1], tz = p[2] + k * OFF[o][2];
+          if (tx < 0 || ty < 0 || tz < 0 || tx >= S || ty >= S || tz >= S) continue;
+          var t = id3(tx, ty, tz), c = G[s] + k * OFF[o][3];
+          if (c < Gn[t] - 1e-9) { Gn[t] = c; pn[t] = s; sn[t] = r; }
+        }
+      }
+      G = Gn; par = pn; set = sn;
+      states.push({ G: G, par: par, set: set });
+    }
+    states.forEach(function (st, r) {
+      var lit = 0, fresh = 0, ex = 0, n = 0;
+      for (var i = 0; i < NV; i++) {
+        if (st.G[i] === Infinity) continue;
+        lit++;
+        if (r && st.set[i] === r) fresh++;
+        if (i !== GOAL3) { ex += st.G[i] / exact3[i] - 1; n++; }
+      }
+      st.lit = lit; st.fresh = fresh; st.excess = n ? ex / n : 0;
+    });
+  })();
+
+  var cv3 = document.getElementById("j3-canvas"), x3 = cv3.getContext("2d"), out3 = document.getElementById("j3-readout");
+  var cur3 = 1, sel3 = id3(C + 8, C + 4, C), yaw = -0.65, pitch = 0.45, spin = !reduce, drag = null, onScreen = true, raf = 0, lastT = 0;
+  var P = new Float32Array(NV * 3);                        // projected x, y (device px) and depth per voxel
+  var mark3 = makeSched(document.getElementById("j3-sched"), st3, function (r) { cur3 = r; update3(); });
+
+  function project(w, h) {
+    var sc = h * 0.265, cx = w / 2, cy = h / 2;           // the cube's projection never exceeds 1.77 sc from the centre
+    var cyw = Math.cos(yaw), syw = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
+    return function (x, y, z, out, j) {                     // x, y, z in [-1, 1]; z is up
+      var x1 = x * cyw - y * syw, y1 = x * syw + y * cyw;
+      var up = z * cp + y1 * sp, d = y1 * cp - z * sp, f = 9 / (9 + d);
+      out[j] = cx + x1 * sc * f; out[j + 1] = cy - up * sc * f; out[j + 2] = d;
+    };
+  }
+  function chain(v, r) {                                   // jumps that built v's value, goal first
+    var hops = [];
+    while (v !== GOAL3 && r >= 0) {
+      var st = states[r], t = st.set[v], p = st.par[v];
+      if (t < 1 || p < 0) break;
+      hops.unshift({ from: p, to: v, cost: st.G[v] - states[t - 1].G[p] });
+      v = p; r = t - 1;
+    }
+    return hops;
+  }
+  function draw3() {
+    var dpr = window.devicePixelRatio || 1, cw = cv3.clientWidth || 720;
+    var w = Math.round(cw * dpr), h = Math.round(cw * dpr * 0.62);
+    if (cv3.width !== w || cv3.height !== h) { cv3.width = w; cv3.height = h; }
+    var proj = project(w, h), st = states[cur3], G = st.G, i;
+    for (i = 0; i < NV; i++) { var p = xyz(i); proj((p[0] - C) / C, (p[1] - C) / C, (p[2] - C) / C, P, 3 * i); }
+    x3.clearRect(0, 0, w, h);
+    var acc = cssv("--accent"), mut = cssv("--muted"), ink = cssv("--ink"), pan = cssv("--panel"), path = cssv("--path");
+    // grid outline
+    var cor = new Float32Array(24), b = 0;
+    for (var cz = -1; cz <= 1; cz += 2) for (var cy = -1; cy <= 1; cy += 2) for (var cx = -1; cx <= 1; cx += 2) { proj(cx, cy, cz, cor, b); b += 3; }
+    var E = [[0, 1], [2, 3], [4, 5], [6, 7], [0, 2], [1, 3], [4, 6], [5, 7], [0, 4], [1, 5], [2, 6], [3, 7]];
+    x3.strokeStyle = cssv("--rule"); x3.lineWidth = 1.2 * dpr; x3.beginPath();
+    E.forEach(function (e) { x3.moveTo(cor[3 * e[0]], cor[3 * e[0] + 1]); x3.lineTo(cor[3 * e[1]], cor[3 * e[1] + 1]); });
+    x3.stroke();
+    // jumps that set this round's new values (cleanup rounds are too dense to draw)
+    if (cur3 > 0 && !st3[cur3].cl) {
+      x3.strokeStyle = acc; x3.globalAlpha = cur3 >= 3 ? 0.2 : 0.55; x3.lineWidth = dpr; x3.beginPath();
+      for (i = 0; i < NV; i++) if (st.set[i] === cur3) {
+        var f = st.par[i];
+        x3.moveTo(P[3 * f], P[3 * f + 1]); x3.lineTo(P[3 * i], P[3 * i + 1]);
+      }
+      x3.stroke(); x3.globalAlpha = 1;
+    }
+    // voxels, far ones first
+    var order = [];
+    for (i = 0; i < NV; i++) if (G[i] !== Infinity && i !== GOAL3) order.push(i);
+    order.sort(function (a, c) { return P[3 * c + 2] - P[3 * a + 2]; });
+    order.forEach(function (j) {
+      var fresh = cur3 > 0 && st.set[j] === cur3, s = 9 / (9 + P[3 * j + 2]);
+      x3.globalAlpha = fresh ? 1 : 0.45;
+      x3.fillStyle = fresh ? acc : mut;
+      x3.beginPath(); x3.arc(P[3 * j], P[3 * j + 1], (fresh ? 3.1 : 1.9) * dpr * s, 0, 2 * Math.PI); x3.fill();
+    });
+    x3.globalAlpha = 1;
+    // selected voxel's chain of jumps
+    if (G[sel3] !== Infinity) {
+      var hops = chain(sel3, cur3);
+      x3.strokeStyle = path; x3.lineWidth = 2.8 * dpr; x3.lineJoin = "round"; x3.lineCap = "round"; x3.beginPath();
+      x3.moveTo(P[3 * GOAL3], P[3 * GOAL3 + 1]);
+      hops.forEach(function (hp) { x3.lineTo(P[3 * hp.to], P[3 * hp.to + 1]); });
+      x3.stroke();
+      x3.fillStyle = path;
+      hops.forEach(function (hp) { x3.beginPath(); x3.arc(P[3 * hp.to], P[3 * hp.to + 1], 3.2 * dpr, 0, 2 * Math.PI); x3.fill(); });
+      x3.strokeStyle = ink; x3.lineWidth = 2 * dpr;
+      x3.beginPath(); x3.arc(P[3 * sel3], P[3 * sel3 + 1], 7 * dpr, 0, 2 * Math.PI); x3.stroke();
+    }
+    x3.fillStyle = ink; x3.strokeStyle = pan; x3.lineWidth = 2 * dpr;
+    x3.beginPath(); x3.arc(P[3 * GOAL3], P[3 * GOAL3 + 1], 6 * dpr, 0, 2 * Math.PI); x3.fill(); x3.stroke();
+  }
+  function text3() {
+    var st = states[cur3], s = st3[cur3], lines = [], pct = (100 * st.excess).toFixed(st.excess < 0.01 ? 2 : 1) + " %";
+    if (!cur3) lines.push("<b>Start.</b> The goal holds 0. The other 4,912 voxels hold ∞ (no value yet).");
+    else if (cur3 === 1) lines.push("<b>Round 1, k = 8.</b> 26 voxels got a value, each 8 cells from the goal: 6 straight (8δ), " +
+      "12 edge-diagonal (11.3δ), 8 corner-diagonal (13.9δ). 27 of 4,913 voxels have a value.");
+    else if (!s.cl) lines.push("<b>Round " + cur3 + ", k = " + s.k + ".</b> " + big(st.fresh) + " voxels got their first value, each copied from a voxel " +
+      s.k + (s.k > 1 ? " cells" : " cell") + " away plus the jump. " + big(st.lit) + " of 4,913 have a value." +
+      (st.lit === NV ? " On average they run " + pct + " longer than the shortest grid route." : ""));
+    else lines.push("<b>Cleanup " + (cur3 - 4) + ", k = 1.</b> " + big(st.fresh) + " values got shorter. Average excess over the shortest grid route: " + pct + ".");
+    var p = xyz(sel3).map(function (v) { v -= C; return (v > 0 ? "+" : "") + v; }).join(", ");
+    if (st.G[sel3] === Infinity) lines.push("Selected voxel (" + p + "): no value yet.");
+    else if (sel3 === GOAL3) lines.push("Selected voxel: the goal, 0.");
+    else {
+      var hops = chain(sel3, cur3), ex = exact3[sel3], gv = st.G[sel3];
+      lines.push("Selected voxel (" + p + "): " + hops.map(function (hp) { return num(hp.cost); }).join(" + ") + " = " + num(gv) +
+        "δ. Shortest grid route " + num(ex) + "δ" + (gv > ex + 1e-6 ? " (+" + Math.round(100 * (gv / ex - 1)) + " %)." : ", exact."));
+    }
+    out3.innerHTML = lines.map(function (l) { return "<span>" + l + "</span>"; }).join("");
+    document.getElementById("j3-next").textContent = cur3 === st3.length - 1 ? "Start over" : "Next round";
+  }
+  function update3() { mark3(cur3); text3(); draw3(); }
+  function loop(t) {
+    raf = 0;
+    if (spin && onScreen) { yaw += Math.min(0.05, (t - (lastT || t)) / 1000) * 0.25; lastT = t; draw3(); raf = requestAnimationFrame(loop); }
+    else lastT = 0;
+  }
+  function kick() { if (!raf && spin && onScreen) raf = requestAnimationFrame(loop); }
+  document.getElementById("j3-next").addEventListener("click", function () { cur3 = (cur3 + 1) % st3.length; update3(); });
+  function pick(e) {
+    var rc = cv3.getBoundingClientRect(), sx = (e.clientX - rc.left) * cv3.width / rc.width, sy = (e.clientY - rc.top) * cv3.height / rc.height;
+    var G = states[cur3].G, best = -1, bd = Infinity, lim = Math.pow(12 * (window.devicePixelRatio || 1), 2);
+    for (var i = 0; i < NV; i++) {
+      if (G[i] === Infinity) continue;
+      var d = Math.pow(P[3 * i] - sx, 2) + Math.pow(P[3 * i + 1] - sy, 2);
+      if (d > lim) continue;
+      d += P[3 * i + 2] * 20;                              // among overlapping dots prefer the front one
+      if (d < bd) { bd = d; best = i; }
+    }
+    if (best >= 0) { sel3 = best; text3(); draw3(); }
+  }
+  cv3.addEventListener("pointerdown", function (e) { drag = { x: e.clientX, y: e.clientY, moved: false }; spin = false; });
+  cv3.addEventListener("pointermove", function (e) {
+    if (!drag) return;
+    var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (!drag.moved && Math.abs(dx) + Math.abs(dy) < 4) return;
+    if (!drag.moved) { drag.moved = true; try { cv3.setPointerCapture(e.pointerId); } catch (err) {} }
+    yaw += dx * 0.01; pitch = Math.max(-1.3, Math.min(1.3, pitch + dy * 0.01));
+    drag.x = e.clientX; drag.y = e.clientY; draw3();
+  });
+  cv3.addEventListener("pointerup", function (e) { if (drag && !drag.moved) pick(e); drag = null; });
+  cv3.addEventListener("pointercancel", function () { drag = null; });
+  if (window.IntersectionObserver) new IntersectionObserver(function (es) { onScreen = es[0].isIntersecting; kick(); }).observe(cv3);
+
+  /* ---------- 2. 2-D map with walls ---------- */
+  var W = 32, H = 20, N = W * H;
+  var occ = new Uint8Array(N);
+  function wall(x0, y0, x1, y1) { for (var y = y0; y <= y1; y++) for (var x = x0; x <= x1; x++) occ[y * W + x] = 1; }
+  wall(12, 0, 12, 14);                                     // wall with a gap at the bottom
+  wall(19, 3, 29, 3); wall(19, 11, 29, 11); wall(19, 3, 19, 11); wall(29, 3, 29, 11);   // room with no door
+  var GOAL = 10 * W + 4;
+  function inRoom(i) { var x = i % W, y = (i / W) | 0; return x > 19 && x < 29 && y > 3 && y < 11; }
+  var LV = [16, 8, 4, 2, 1];
+  function sched(passes, cleanup) {
+    var s = [{ k: 0 }];
+    for (var p = 0; p < passes; p++) LV.forEach(function (k, j) { s.push({ k: k, group: j ? null : passes > 1 ? "pass " + (p + 1) : "halving" }); });
+    for (var c = 0; c < cleanup; c++) s.push({ k: 1, cl: true, group: c ? null : "cleanup" });
+    return s;
+  }
+  var MODES = {
+    paper: { cheb: true, checked: false, steps: sched(1, 4) },   // Eq. (3)-(4) as printed: the repo's toa_cbf_literal_jfa
+    safe: { cheb: false, checked: true, steps: sched(3, 8) }     // repo default: jfa_safe, octile costs
+  };
+  function shift(X, d, ax, fill) {                         // Y[i] = X[i + d] along x (ax 0) or y (ax 1)
+    var Y = new X.constructor(N);
+    for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) {
+      var sx = ax ? x : x + d, sy = ax ? y + d : y;
+      Y[y * W + x] = sx < 0 || sy < 0 || sx >= W || sy >= H ? fill : X[sy * W + sx];
+    }
+    return Y;
+  }
+  function windows(k) {                                    // B[i] = some occupied cell in [i, i + k] along the axis
+    return [0, 1].map(function (ax) {
+      var b = occ.slice();
+      for (var j = 1; j <= k; j++) { var s = shift(occ, j, ax, 0); for (var i = 0; i < N; i++) b[i] |= s[i]; }
+      return b;
+    });
+  }
+  function axisMin(X, k, ax, B) {
+    var f = shift(X, k, ax, Infinity), bk = shift(X, -k, ax, Infinity), Bb = B ? shift(B, -k, ax, 1) : null, Y = new Float64Array(N);
+    for (var i = 0; i < N; i++) Y[i] = Math.min(X[i], B && B[i] ? Infinity : f[i], Bb && Bb[i] ? Infinity : bk[i]);
+    return Y;
+  }
+  function round2(G, k, m) {
+    var B = m.checked ? windows(k) : [null, null];
+    var mx = axisMin(G, k, 0, B[0]), my = axisMin(G, k, 1, B[1]), mxy = axisMin(mx, k, 1, B[1]), Gn = new Float64Array(N);
+    for (var i = 0; i < N; i++) {
+      var r = m.cheb ? mxy[i] + k : Math.min(Math.min(mx[i], my[i]) + k, mxy[i] + SQ2 * k);
+      Gn[i] = occ[i] ? Infinity : Math.min(G[i], r);
+    }
+    return Gn;
+  }
+  var G0 = new Float64Array(N).fill(Infinity); G0[GOAL] = 0;
+  function settle(m) {                                     // k = 1 wall-checked rounds until nothing changes: [G, rounds]
+    for (var G = G0, r = 0; ; r++) {
+      var nx = round2(G, 1, m), same = true;
+      for (var e = 0; e < N; e++) if (nx[e] !== G[e]) { same = false; break; }
+      if (same) return [G, r];
+      G = nx;
+    }
+  }
+  var ref = settle(MODES.safe), exact = ref[0], bfsRounds = ref[1];   // the true route (breadth-first)
+  var chebRef = settle({ cheb: true, checked: true })[0];             // least a value can be under Eq. (3)'s costs without crossing a wall
+  var maxEx = 0, nFree = 0;
+  for (var e2 = 0; e2 < N; e2++) { if (!occ[e2]) nFree++; if (exact[e2] < Infinity) maxEx = Math.max(maxEx, exact[e2]); }
+  Object.keys(MODES).forEach(function (name) {
+    var m = MODES[name], G = G0;
+    m.hist = [G0];
+    for (var r = 1; r < m.steps.length; r++) { G = round2(G, m.steps[r].k, m); m.hist.push(G); }
+    m.stats = m.hist.map(function (Gr) {
+      var lit = 0, leak = 0, err = 0, n = 0;
+      for (var i = 0; i < N; i++) {
+        if (occ[i] || Gr[i] === Infinity) continue;
+        lit++;
+        if (inRoom(i)) leak++;
+        if (exact[i] < Infinity && exact[i] > 0) { err += Math.abs(Gr[i] - exact[i]) / exact[i]; n++; }
+      }
+      return { lit: lit, leak: leak, err: n ? err / n : null };
+    });
+  });
+
+  var cv2 = document.getElementById("j2-canvas"), x2 = cv2.getContext("2d"), out2 = document.getElementById("j2-readout");
+  var mode = "paper", cur2 = 1, sel2 = 10 * W + 20, timer = 0;
+  var schedHost = document.getElementById("j2-sched"), mark2;
+  function setMode(m) {
+    var o = MODES[mode], n = MODES[m];
+    cur2 = cur2 === o.steps.length - 1 ? n.steps.length - 1 : Math.min(cur2, n.steps.length - 1);
+    mode = m;
+    document.getElementById("j2-paper").setAttribute("aria-pressed", String(m === "paper"));
+    document.getElementById("j2-safe").setAttribute("aria-pressed", String(m === "safe"));
+    mark2 = makeSched(schedHost, n.steps, function (r) { stop(); cur2 = r; update2(); });
+    update2();
+  }
+  function walled(a, b) {                                  // any occupied cell on the straight cells from a to b (ends included)
+    var ax = a % W, ay = (a / W) | 0, bx = b % W, by = (b / W) | 0, n = Math.max(Math.abs(bx - ax), Math.abs(by - ay));
+    for (var j = 0; j <= n; j++) if (occ[(ay + Math.round((by - ay) * j / n)) * W + ax + Math.round((bx - ax) * j / n)]) return true;
+    return false;
+  }
+  function jumps(i, r) {                                   // the 8 jumps cell i checks in round r, with what each offers
+    var m = MODES[mode], k = m.steps[r].k, Gp = m.hist[r - 1], x = i % W, y = (i / W) | 0, js = [];
+    for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) {
+      if (!dx && !dy) continue;
+      var sx = x + k * dx, sy = y + k * dy;
+      if (sx < 0 || sy < 0 || sx >= W || sy >= H) continue;
+      var s = sy * W + sx, pts = [s, i], wallHit;
+      if (m.checked && dx && dy) {                         // as relax(): an x leg from the source, then a y leg into the cell
+        var c = sy * W + x;
+        pts = [s, c, i];
+        wallHit = walled(s, c) || walled(c, i);
+      } else wallHit = walled(s, i);
+      var cost = m.cheb ? k : dx && dy ? SQ2 * k : k;
+      js.push({ s: s, pts: pts, wall: wallHit, used: !(m.checked && wallHit), from: Gp[s], cost: cost, offer: Gp[s] + cost });
+    }
+    var best = null;
+    js.forEach(function (j) { if (j.used && j.from < Infinity && (!best || j.offer < best.offer)) best = j; });
+    return { k: k, list: js, best: best };
+  }
+  function draw2() {
+    var dpr = window.devicePixelRatio || 1, cw = cv2.clientWidth || 720;
+    var w = Math.round(cw * dpr), h = Math.round(cw * dpr * H / W);
+    if (cv2.width !== w || cv2.height !== h) { cv2.width = w; cv2.height = h; }
+    var cs = w / W, m = MODES[mode], G = m.hist[cur2], gap = Math.max(1, Math.round(dpr));
+    var lo = rgb(cssv("--seq-lo")), hi = rgb(cssv("--seq-hi")), sig = cssv("--signal"), ink = cssv("--ink"), acc = cssv("--accent");
+    x2.fillStyle = cssv("--panel"); x2.fillRect(0, 0, w, h);
+    for (var i = 0; i < N; i++) {
+      var x = i % W, y = (i / W) | 0;
+      x2.fillStyle = occ[i] ? cssv("--ink-2") : G[i] === Infinity ? cssv("--gridline") : mix(lo, hi, 0.12 + 0.88 * Math.min(1, G[i] / maxEx));
+      x2.fillRect(x * cs, y * cs, cs - gap, cs - gap);
+      if (!occ[i] && G[i] < Infinity && inRoom(i)) {
+        x2.strokeStyle = sig; x2.lineWidth = 2 * dpr;
+        x2.strokeRect(x * cs + 1.5 * dpr, y * cs + 1.5 * dpr, cs - gap - 3 * dpr, cs - gap - 3 * dpr);
+      }
+    }
+    function ctr(j) { return [(j % W + 0.5) * cs - gap / 2, (((j / W) | 0) + 0.5) * cs - gap / 2]; }
+    if (cur2 > 0 && !occ[sel2]) {
+      var J = jumps(sel2, cur2);
+      J.list.forEach(function (j) {
+        var win = j === J.best;
+        x2.strokeStyle = j.wall ? sig : j.from < Infinity ? acc : cssv("--muted");
+        x2.lineWidth = (win ? 3.4 : 1.8) * dpr;
+        x2.setLineDash(j.wall && !j.used ? [5 * dpr, 4 * dpr] : []);
+        x2.globalAlpha = j.from < Infinity || j.wall ? 1 : 0.7;
+        x2.beginPath();
+        j.pts.forEach(function (p, n) { var c = ctr(p); n ? x2.lineTo(c[0], c[1]) : x2.moveTo(c[0], c[1]); });
+        x2.stroke();
+        var c0 = ctr(j.s);
+        x2.setLineDash([]); x2.beginPath(); x2.arc(c0[0], c0[1], (win ? 4.5 : 3) * dpr, 0, 2 * Math.PI);
+        x2.fillStyle = x2.strokeStyle; x2.fill();
+      });
+      x2.globalAlpha = 1;
+    }
+    var cs0 = ctr(sel2);
+    x2.strokeStyle = ink; x2.lineWidth = 2.5 * dpr;
+    x2.strokeRect(cs0[0] - cs / 2 + gap / 2, cs0[1] - cs / 2 + gap / 2, cs - gap, cs - gap);
+    var g = ctr(GOAL);
+    x2.beginPath(); x2.arc(g[0], g[1], cs * 0.38, 0, 2 * Math.PI);
+    x2.fillStyle = ink; x2.fill(); x2.strokeStyle = cssv("--panel"); x2.lineWidth = 2 * dpr; x2.stroke();
+    x2.font = "600 " + Math.round(11.5 * dpr) + "px " + cssv("--body"); x2.textAlign = "center"; x2.fillStyle = ink;
+    x2.fillText("goal", g[0], g[1] - cs * 0.75);
+    x2.fillStyle = cssv("--ink-2");
+    x2.fillText("room with no door", 24.5 * cs, 2.55 * cs);
+  }
+  function verdict(v, ex, i, last) {                       // why the selected value differs from the true route
+    var bad = function (s) { return "<span class=\"state-bad\">" + s + "</span>"; };
+    if (ex === Infinity) return v === Infinity ? "Correct: the room is sealed." : bad("Should be ∞") + ": the room is sealed, so this value came through a wall.";
+    if (v === Infinity) return "No value yet.";
+    var d = v - ex, pc = " (" + Math.round(100 * Math.abs(d) / ex) + " %)";
+    if (Math.abs(d) < 1e-6) return "Equal to the true route.";
+    if (d > 0) return num(d) + " too long" + pc + ": " + (last
+      ? "each jump size is used once, in order, and the cleanup rounds did not close the gap."
+      : "later rounds can still lower it.");
+    var why = mode === "safe"
+      ? "a diagonal jump on the way here cut past a wall corner. It is checked along an L-shaped path (x leg, then y leg) but charged the shorter diagonal, 1.41 k. The repo's <code>jfa_safe</code> does the same."
+      : v < chebRef[i] - 1e-6 ? "a jump on the way here crossed a wall."
+      : "Eq. (3) charges a diagonal step 1, not 1.41, so routes with diagonals come out short.";
+    return (mode === "safe" ? num(-d) + " too short" : bad(num(-d) + " too short")) + pc + ": " + why + " Rounds only lower values, so it stays short.";
+  }
+  function text2() {
+    var m = MODES[mode], st = m.stats[cur2], s = m.steps[cur2], n = m.steps.length - 1, lines = [];
+    lines.push(cur2 ? "<b>Round " + cur2 + " of " + n + ", k = " + s.k + (s.cl ? " (cleanup)" : "") + ".</b>"
+      : "<b>Start.</b> Only the goal has a value. Breadth-first would need " + bfsRounds + " rounds on this map.");
+    lines.push(big(st.lit) + " of " + big(nFree) + " free cells have a value.");
+    lines.push(st.leak ? "<span class=\"state-bad\">" + st.leak + (st.leak > 1 ? " of them are" : " of them is") + " inside the room with no door</span>: " + (st.leak > 1 ? "those values" : "that value") + " jumped a wall."
+      : "None inside the room with no door.");
+    lines.push("Mean error against the true route (shortest path around the walls; straight step 1, diagonal 1.41): " +
+      (st.err === null ? "no cell to compare yet." : (100 * st.err).toFixed(1) + " %."));
+    if (occ[sel2]) lines.push("Selected cell is a wall.");
+    else {
+      var v = m.hist[cur2][sel2], ex = exact[sel2], t = "Selected cell: ";
+      if (cur2) {
+        var J = jumps(sel2, cur2), refused = J.list.filter(function (j) { return !j.used && j.from < Infinity; }).length;
+        t += J.best ? "best offer " + num(J.best.from) + " + " + num(J.best.cost) + " = " + num(J.best.offer) +
+          (J.best.wall ? ", <span class=\"state-bad\">through a wall</span>" : "") + ". " : "no jump brought a value. ";
+        if (refused) t += refused + (refused > 1 ? " jumps" : " jump") + " with a value refused: " + (refused > 1 ? "they pass" : "it passes") + " a wall. ";
+      }
+      t += "Value now " + (v < Infinity ? num(v) : "∞") + "; true route " + (ex < Infinity ? num(ex) : "none, the room is sealed") + ".";
+      lines.push(t, verdict(v, ex, sel2, cur2 === n));
+    }
+    out2.innerHTML = lines.map(function (l) { return "<span>" + l + "</span>"; }).join("");
+    document.getElementById("j2-next").textContent = cur2 === n ? "Start over" : "Next round";
+  }
+  function update2() { mark2(cur2); text2(); draw2(); }
+  function stop() { if (timer) { clearInterval(timer); timer = 0; document.getElementById("j2-play").textContent = "Play"; } }
+  document.getElementById("j2-paper").addEventListener("click", function () { stop(); setMode("paper"); });
+  document.getElementById("j2-safe").addEventListener("click", function () { stop(); setMode("safe"); });
+  document.getElementById("j2-next").addEventListener("click", function () {
+    stop(); cur2 = (cur2 + 1) % MODES[mode].steps.length; update2();
+  });
+  document.getElementById("j2-play").addEventListener("click", function () {
+    if (timer) { stop(); return; }
+    if (cur2 === MODES[mode].steps.length - 1) cur2 = 0;
+    this.textContent = "Pause";
+    timer = setInterval(function () {
+      cur2++; update2();
+      if (cur2 >= MODES[mode].steps.length - 1) stop();
+    }, 650);
+  });
+  cv2.addEventListener("click", function (ev) {
+    var rc = cv2.getBoundingClientRect(), x = Math.floor((ev.clientX - rc.left) / rc.width * W), y = Math.floor((ev.clientY - rc.top) / rc.height * H);
+    if (x >= 0 && y >= 0 && x < W && y < H && !occ[y * W + x]) { sel2 = y * W + x; text2(); draw2(); }
+  });
+
+  setMode("paper"); update3(); kick();
+  // canvas pixels do not follow CSS, so repaint on resize and theme change
+  function redraw() { draw2(); draw3(); }
+  if (window.ResizeObserver) { var ro = new ResizeObserver(redraw); ro.observe(cv2); ro.observe(cv3); }
+  if (window.matchMedia) {
+    var mq = window.matchMedia("(prefers-color-scheme: dark)");
+    (mq.addEventListener ? mq.addEventListener.bind(mq, "change") : mq.addListener.bind(mq))(redraw);
+  }
+  new MutationObserver(redraw).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+})();
+</script>
+</body>
+</html>

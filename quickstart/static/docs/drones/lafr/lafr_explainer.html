@@ -1,0 +1,609 @@
+<title>Learning Agile Quadrotor Flight in the Real World</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: one ~70ch reading column, figures and diagrams widen to 1080px. Color says where a thing comes from: coral = real flight, blue = model/simulation, orange = time scaling (ATS). */
+:root {
+  --bg: #F2F4F7;
+  --surface: #FFFFFF;
+  --surface-2: #E8ECF1;
+  --ink: #142030;
+  --muted: #5B6878;
+  --line: #D3DAE3;
+  --real: #C33650;
+  --real-soft: #FBE5EA;
+  --sim: #2B64BF;
+  --sim-soft: #E3ECFA;
+  --time: #B0590C;
+  --time-soft: #FCEBD8;
+  --mat: #FFFFFF;
+  --f-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E141B; --surface: #161F2A; --surface-2: #1F2A37; --ink: #E4EAF1; --muted: #97A4B4; --line: #2B3846;
+    --real: #F27D93; --real-soft: #3A1F28; --sim: #7AAAF5; --sim-soft: #1B2B44; --time: #F0A35E; --time-soft: #3A2A19;
+    --mat: #F3F5F8; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E141B; --surface: #161F2A; --surface-2: #1F2A37; --ink: #E4EAF1; --muted: #97A4B4; --line: #2B3846;
+  --real: #F27D93; --real-soft: #3A1F28; --sim: #7AAAF5; --sim-soft: #1B2B44; --time: #F0A35E; --time-soft: #3A2A19;
+  --mat: #F3F5F8; color-scheme: dark;
+}
+
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.6 var(--f-body); }
+.wrap {
+  max-width: 1080px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 72px;
+  display: flex; flex-direction: column; gap: 72px;
+}
+section, header { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+.prose { max-width: 68ch; }
+p { margin: 0; }
+a { color: var(--sim); text-underline-offset: 3px; }
+a:focus-visible, input:focus-visible { outline: 2px solid var(--time); outline-offset: 3px; border-radius: 4px; }
+
+.eyebrow { font: 500 12px/1.4 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1, h2 { font-family: var(--f-display); text-wrap: balance; margin: 0; letter-spacing: .005em; }
+h1 { font-weight: 700; font-size: clamp(2.3rem, 5.6vw, 3.7rem); line-height: 1.02; max-width: 18ch; }
+h2 { font-weight: 600; font-size: clamp(1.75rem, 3.6vw, 2.4rem); line-height: 1.08; }
+h3 { font: 600 1.05rem/1.35 var(--f-body); margin: 0; text-wrap: balance; }
+.sec-head { display: flex; flex-direction: column; gap: 6px; }
+.lede { font-size: 1.12rem; color: var(--ink); max-width: 62ch; }
+.authors { color: var(--muted); font-size: 15px; }
+
+/* key numbers */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 12px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; }
+.stat b { font: 600 2rem/1.05 var(--f-display); font-variant-numeric: tabular-nums; }
+.stat span { font-size: 14px; color: var(--muted); line-height: 1.4; }
+.stat.r b { color: var(--real); } .stat.t b { color: var(--time); } .stat.s b { color: var(--sim); }
+
+.key { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 14px; color: var(--muted); align-items: center; }
+.key i { display: inline-block; width: 22px; height: 4px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+.key .kr i { background: var(--real); } .key .ks i { background: var(--sim); } .key .kt i { background: var(--time); }
+.key .kd i { background: transparent; border-top: 3px dashed var(--sim); height: 0; }
+
+/* paper figures sit on a light mat so they read in both themes */
+figure { margin: 0; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.mat { background: var(--mat); border: 1px solid var(--line); border-radius: 10px; padding: 10px; }
+.mat img { display: block; width: 100%; height: auto; }
+figcaption { font-size: 14.5px; line-height: 1.5; color: var(--ink); max-width: 75ch; }
+.figno { font: 500 11px/1 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-right: 8px; }
+
+/* own diagrams */
+.diagram { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; overflow-x: auto; }
+.diagram svg { display: block; width: 100%; height: auto; min-width: 620px; }
+svg text { font-family: var(--f-body); fill: var(--ink); }
+svg .sm { font-size: 12px; fill: var(--muted); }
+svg .md { font-size: 13px; }
+svg .b { font-weight: 600; }
+svg .mono { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .06em; fill: var(--muted); }
+svg .sub { font-size: 9px; }
+svg .box { fill: var(--surface-2); stroke: var(--line); stroke-width: 1; }
+svg .box-r { fill: var(--real-soft); stroke: var(--real); stroke-width: 1.2; }
+svg .box-s { fill: var(--sim-soft); stroke: var(--sim); stroke-width: 1.2; }
+svg .box-t { fill: var(--time-soft); stroke: var(--time); stroke-width: 1.2; }
+svg .ln { fill: none; stroke: var(--muted); stroke-width: 1.6; }
+svg .ln-r { fill: none; stroke: var(--real); stroke-width: 1.8; }
+svg .ln-s { fill: none; stroke: var(--sim); stroke-width: 1.8; }
+svg .ln-d { fill: none; stroke: var(--muted); stroke-width: 1.4; stroke-dasharray: 5 4; }
+svg .tr { fill: var(--real); } svg .ts { fill: var(--sim); } svg .tt { fill: var(--time); }
+svg .ah { fill: var(--muted); } svg .ah-r { fill: var(--real); } svg .ah-s { fill: var(--sim); }
+svg .dot-r { fill: var(--real); } svg .dot-t { fill: var(--time); }
+svg .zone-s { fill: var(--sim-soft); } svg .zone-r { fill: var(--real-soft); }
+svg .axis { stroke: var(--muted); stroke-width: 1; fill: none; }
+svg .grid { stroke: var(--line); stroke-width: 1; fill: none; }
+
+/* equations */
+.eq { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; align-items: center; }
+.eq .body { overflow-x: auto; overflow-y: hidden; min-width: 0; }
+.eq .num { font: 500 12px/1 var(--f-mono); color: var(--muted); white-space: nowrap; align-self: center; }
+.eq .say { grid-column: 1 / -1; font-size: 14.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 10px; margin-top: 4px; }
+.eq .say b { color: var(--ink); font-weight: 600; }
+mjx-container[display="true"] { margin: 4px 0 !important; }
+mjx-container .cr { fill: var(--real); color: var(--real); }
+mjx-container .cs { fill: var(--sim); color: var(--sim); }
+mjx-container .ct { fill: var(--time); color: var(--time); }
+
+.sym { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 16px; margin: 0; font-size: 14.5px; }
+.sym dt { color: var(--ink); white-space: nowrap; }
+.sym dd { margin: 0; color: var(--muted); }
+
+.stack { display: flex; flex-direction: column; gap: 14px; }
+.pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 24px; align-items: start; }
+.parts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 12px; }
+.part { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+.part .eyebrow { color: inherit; }
+.part.r { color: var(--real); } .part.s { color: var(--sim); } .part.t { color: var(--time); }
+.part p { color: var(--ink); font-size: 14.5px; }
+.part h3 { color: var(--ink); }
+
+ul.tight { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 6px; max-width: 70ch; }
+ul.tight li::marker { color: var(--muted); }
+
+table { border-collapse: collapse; font-size: 14.5px; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+th { font: 500 11px/1.3 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+td.n, th.n { text-align: right; }
+tr.ours td { font-weight: 600; color: var(--real); }
+.tablebox { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px 12px; overflow-x: auto; display: flex; flex-direction: column; gap: 8px; }
+.note { font-size: 13px; color: var(--muted); }
+
+/* ATS playground */
+.play { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 16px 24px; align-items: center; }
+@media (max-width: 720px) { .play { grid-template-columns: minmax(0, 1fr); } }
+.play svg { width: 100%; height: auto; display: block; }
+.ctrl { display: flex; flex-direction: column; gap: 14px; }
+.ctrl label { font: 500 12px/1.3 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; gap: 12px; }
+.ctrl label output { color: var(--time); font-size: 15px; letter-spacing: 0; }
+input[type="range"] { width: 100%; accent-color: var(--time); }
+.readout { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.readout div { background: var(--surface-2); border-radius: 8px; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; }
+.readout b { font: 600 1.45rem/1.1 var(--f-display); font-variant-numeric: tabular-nums; }
+.readout span { font-size: 12px; color: var(--muted); }
+
+footer { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 14px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 18px; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg-full.js" defer></script>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">RSS 2026 · arXiv 2602.10111 · UZH Robotics and Perception Group</div>
+  <h1>Learning Agile Quadrotor Flight in the Real World</h1>
+  <div class="authors">Yunfan Ren, Zhiyuan Zhu, Jiaxu Xing, Davide Scaramuzza</div>
+  <p class="lede">A drone starts with a slow, safe policy and teaches itself to fly fast while it flies. It learns what its physics model gets wrong, retrains the controller in a few seconds, and speeds up the reference trajectory until tracking error says stop. No precise system identification and no offline sim-to-real retraining.</p>
+  <div class="stats">
+    <div class="stat r"><b>2.0 → 7.3 m/s</b><span>peak speed on the line shuttle, same drone, same task</span></div>
+    <div class="stat s"><b>≈ 100 s</b><span>of real flight time to get there (12 policy updates)</span></div>
+    <div class="stat t"><b>6 rad/s</b><span>body-rate command limit: the learned policy ends up saturating it</span></div>
+    <div class="stat r"><b>−42 %</b><span>inspection mission time under fan wind (12 s → 7 s)</span></div>
+  </div>
+  <figure>
+    <div class="mat"><img src="figs/fig1.jpg" alt="Left: loop between real-world rollout and rapid policy learning. Right: long-exposure photos of the drone at iteration 0 (dense, slow) and iteration 12 (sparse, fast) on figure-8, line and landmark tasks."></div>
+    <figcaption><span class="figno">Paper Fig. 1</span>Frames are sampled every 0.5 s, so sparse dots mean high speed. Top row: iteration 0 (≈ 2 m/s). Bottom row: iteration 12 (5.4–7.3 m/s).</figcaption>
+  </figure>
+</header>
+
+<section id="loop">
+  <div class="sec-head"><div class="eyebrow">§ III · Overview</div><h2>One loop, four steps, ~9 s per turn</h2></div>
+  <p class="prose">The drone keeps flying while a GPU workstation learns in the background. Every update takes about 9 s (100 epochs: ~3 s model fit + ~6 s policy) on an RTX 4090 with JAX. The letters match the paper's Fig. 2 panels.</p>
+  <div class="key"><span class="kr"><i></i>learned from real flight</span><span class="ks"><i></i>model / simulation</span><span class="kt"><i></i>time scaling (ATS)</span></div>
+  <div class="diagram" role="img" aria-label="Loop: fly the policy, fit the residual model, update the policy with anchored rollouts, re-time the reference with ATS, then copy the new weights back to the drone.">
+    <svg viewBox="0 0 760 200">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker>
+      </defs>
+      <rect class="box-r" x="10" y="30" width="160" height="88" rx="8"/>
+      <text class="mono" x="160" y="46" text-anchor="end">B</text>
+      <text class="md b" x="22" y="56">Fly</text>
+      <text class="sm" x="22" y="78">current policy on the drone</text>
+      <text class="sm" x="22" y="95">CTBR commands at 50 Hz</text>
+      <text class="sm" x="22" y="111">mocap state at 100 Hz</text>
+
+      <rect class="box-r" x="200" y="30" width="160" height="88" rx="8"/>
+      <text class="mono" x="350" y="46" text-anchor="end">C</text>
+      <text class="md b" x="212" y="56">Fit the model</text>
+      <text class="sm" x="212" y="78">residual net on recent</text>
+      <text class="sm" x="212" y="95">real transitions</text>
+      <text class="sm" x="212" y="111">≈ 3 s</text>
+
+      <rect class="box-s" x="390" y="30" width="160" height="88" rx="8"/>
+      <text class="mono" x="540" y="46" text-anchor="end">A + D</text>
+      <text class="md b" x="402" y="56">Update the policy</text>
+      <text class="sm" x="402" y="78">RASH-BPTT: short sim</text>
+      <text class="sm" x="402" y="95">rollouts from real states</text>
+      <text class="sm" x="402" y="111">≈ 6 s</text>
+
+      <rect class="box-t" x="580" y="30" width="170" height="88" rx="8"/>
+      <text class="mono" x="740" y="46" text-anchor="end">E</text>
+      <text class="md b" x="592" y="56">Re-time the reference</text>
+      <text class="sm" x="592" y="78">ATS tunes speed factor α</text>
+      <text class="sm" x="592" y="95">faster while error is low,</text>
+      <text class="sm" x="592" y="111">slower when it is not</text>
+
+      <path class="ln" d="M170 74 H196" marker-end="url(#ah)"/>
+      <path class="ln" d="M360 74 H386" marker-end="url(#ah)"/>
+      <path class="ln" d="M550 74 H576" marker-end="url(#ah)"/>
+      <path class="ln" d="M665 118 V160 H90 V122" marker-end="url(#ah)"/>
+      <text class="sm" x="378" y="184" text-anchor="middle">copy new weights to the drone and keep flying · 12 turns ≈ 100 s of flight</text>
+    </svg>
+  </div>
+  <figure>
+    <div class="mat"><img src="figs/fig2.png" alt="Paper Fig. 2: framework overview with panels A continual policy learning, B real-world rollout, C model calibration, D anchored initialization, E adaptive temporal scaling, and the system workflow loop."></div>
+    <figcaption><span class="figno">Paper Fig. 2</span>The full framework. Before the loop starts, a base policy is trained with plain BPTT on the nominal model; that takes seconds.</figcaption>
+  </figure>
+  <div class="parts">
+    <div class="part r"><div class="eyebrow">§ III-A · Model</div><h3>Hybrid dynamics</h3><p>Simple physics plus a small neural net that learns the leftover error: drag, delays, a heavier or damaged drone.</p></div>
+    <div class="part s"><div class="eyebrow">§ III-B · Policy</div><h3>RASH-BPTT</h3><p>Real-world Anchored Short-Horizon BPTT. Train the controller by differentiating through short simulated rollouts that start at real states.</p></div>
+    <div class="part t"><div class="eyebrow">§ III-C · Speed</div><h3>Adaptive Temporal Scaling</h3><p>One number α stretches or squeezes the reference in time. Gradient steps push it down until tracking error nears a limit.</p></div>
+  </div>
+</section>
+
+<section id="model">
+  <div class="sec-head"><div class="eyebrow">§ III-A</div><h2>Hybrid model: physics + learned residual</h2></div>
+  <p class="prose">The nominal model is a point mass with a thrust direction. A neural net adds two corrections, shown in coral: an extra acceleration and an extra body rate.</p>
+
+  <div class="eq">
+    <div class="body">\[ \mathbf{u} = \begin{bmatrix} c \\ \boldsymbol{\omega}_{\text{cmd}} \end{bmatrix} \in [c_{\min}, c_{\max}] \times \{\boldsymbol{\omega} \in \mathbb{R}^3 : \|\boldsymbol{\omega}\|_\infty \le \omega_{\max}\} \]</div>
+    <div class="num">CTBR input</div>
+    <div class="say"><b>CTBR</b> = collective thrust and body rates. The policy outputs 4 numbers: thrust per unit mass \(c\) (m/s²) and three body rates. A tuned low-level controller turns these into motor commands. In the experiments \(c \le 25\ \text{m/s}^2\) and each rate is capped at \(\omega_{\max} = 6\ \text{rad/s}\).</div>
+  </div>
+
+  <div class="eq">
+    <div class="body">\[ \begin{aligned} \dot{\mathbf{p}} &amp;= \mathbf{v} \\ \dot{\mathbf{v}} &amp;= c\,\mathbf{R}\mathbf{e}_3 - g\,\mathbf{e}_3 + \class{cr}{\mathbf{a}_{\text{res}}(\boldsymbol{\zeta};\theta)} \\ \dot{\mathbf{R}} &amp;= \mathbf{R}\,\big(\boldsymbol{\omega}_{\text{cmd}} + \class{cr}{\boldsymbol{\omega}_{\text{res}}(\boldsymbol{\zeta};\theta)}\big)^{\wedge} \end{aligned} \]</div>
+    <div class="num">(1a–c)</div>
+    <div class="say">State \(\mathbf{x} = (\mathbf{p}, \mathbf{v}, \mathbf{R})\): world-frame position, velocity, and body-to-world rotation. \(\mathbf{R}\mathbf{e}_3\) is the thrust axis. \((\cdot)^\wedge\) turns a 3-vector into a skew-symmetric matrix.</div>
+  </div>
+
+  <div class="eq">
+    <div class="body">\[ \boldsymbol{\zeta} = \big[\mathbf{p}^\top,\ \mathbf{v}^\top,\ \mathrm{vec}(\mathbf{R})^\top,\ \mathbf{u}^\top\big]^\top \in \mathbb{R}^{3+3+9+4=19} \;\xrightarrow{\;f_{\text{res}}(\cdot\,;\theta)\;}\; \big[\class{cr}{\mathbf{a}_{\text{res}}^\top},\ \class{cr}{\boldsymbol{\omega}_{\text{res}}^\top}\big]^\top \in \mathbb{R}^{6} \]</div>
+    <div class="num">(2)</div>
+  </div>
+
+  <div class="diagram" role="img" aria-label="Hybrid model block diagram: inputs go to the nominal model and the residual MLP, their outputs add, an RK4 step on SO(3) predicts the next state, and the loss against the measured next state updates the residual weights.">
+    <svg viewBox="0 0 760 252">
+      <defs>
+        <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker>
+        <marker id="ah2r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah-r" d="M0,0 L10,5 L0,10 z"/></marker>
+      </defs>
+      <rect class="box" x="8" y="80" width="170" height="90" rx="8"/>
+      <text class="mono" x="20" y="102">INPUTS</text>
+      <text class="md" x="20" y="126">state x = (p, v, R)</text>
+      <text class="md" x="20" y="148">command u = (c, ω<tspan class="sub" dy="3">cmd</tspan><tspan dy="-3">)</tspan></text>
+
+      <rect class="box" x="228" y="20" width="210" height="70" rx="8"/>
+      <text class="md b" x="240" y="42">Nominal rigid-body model</text>
+      <text class="sm" x="240" y="62">v̇ = c·Re₃ − g·e₃</text>
+      <text class="sm" x="240" y="80">Ṙ = R·(ω<tspan class="sub" dy="3">cmd</tspan><tspan dy="-3">)^</tspan></text>
+
+      <rect class="box-r" x="228" y="160" width="210" height="70" rx="8"/>
+      <text class="md b" x="240" y="182">Residual MLP f<tspan class="sub" dy="3">res</tspan><tspan dy="-3">(ζ; θ)</tspan></text>
+      <text class="sm" x="240" y="202">19 inputs: p, v, vec(R), u</text>
+      <text class="sm" x="240" y="220">6 outputs: a<tspan class="sub" dy="3">res</tspan><tspan dy="-3">, ω</tspan><tspan class="sub" dy="3">res</tspan></text>
+
+      <circle class="box" cx="486" cy="125" r="16"/>
+      <text class="md b" x="486" y="130" text-anchor="middle">+</text>
+
+      <rect class="box-s" x="530" y="95" width="110" height="60" rx="8"/>
+      <text class="md b" x="585" y="120" text-anchor="middle">RK4 step</text>
+      <text class="sm" x="585" y="139" text-anchor="middle">on SO(3)</text>
+
+      <rect class="box" x="560" y="180" width="192" height="52" rx="8"/>
+      <text class="md b" x="572" y="201">Loss vs. measured x<tspan class="sub" dy="3">k+1</tspan></text>
+      <text class="sm" x="572" y="220">position + rotation error</text>
+
+      <path class="ln" d="M178 125 H200 V55 H224" marker-end="url(#ah2)"/>
+      <path class="ln" d="M200 125 V195 H224" marker-end="url(#ah2)"/>
+      <path class="ln" d="M438 55 H486 V105" marker-end="url(#ah2)"/>
+      <path class="ln-r" d="M438 195 H486 V145" marker-end="url(#ah2r)"/>
+      <path class="ln" d="M502 125 H526" marker-end="url(#ah2)"/>
+      <path class="ln" d="M640 125 H668" marker-end="url(#ah2)"/>
+      <text class="md" x="674" y="130">x̂<tspan class="sub" dy="3">k+1</tspan></text>
+      <path class="ln" d="M585 155 V176" marker-end="url(#ah2)"/>
+      <path class="ln-r" stroke-dasharray="5 4" d="M560 222 H442" marker-end="url(#ah2r)"/>
+      <text class="sm tr" x="500" y="246" text-anchor="middle">update θ</text>
+    </svg>
+  </div>
+
+  <div class="eq">
+    <div class="body">\[ \mathbf{x}_{k+1} = F_{\Delta t}(\mathbf{x}_k, \mathbf{u}_k; \theta) \triangleq \Phi_{\text{RK4}}\big(\mathbf{x}_k, \mathbf{u}_k, f_{\text{hybrid}}; \Delta t\big) \]</div>
+    <div class="num">(3)</div>
+    <div class="say"><b>Why RK4 and not one Euler step:</b> RK4's middle stages already rotate \(\mathbf{R}\) inside the step, so a position or velocity miss carries a gradient back to \(\class{cr}{\boldsymbol{\omega}_{\text{res}}}\). The rotation is updated with the exponential map, so \(\mathbf{R}\) stays a valid rotation.</div>
+  </div>
+
+  <div class="eq">
+    <div class="body">\[ \mathcal{L}_{\text{res}}(\theta) = \frac{1}{|\mathcal{B}|} \sum_{k \in \mathcal{B}} \mathcal{D}\big(\class{cr}{\mathbf{x}_{k+1}}, \hat{\mathbf{x}}_{k+1}\big) + \lambda_{\text{reg}} \sum_{l} \|\mathbf{W}_l\|_\sigma, \qquad \mathcal{D} \ni \big\| \mathrm{Log}(\hat{\mathbf{R}}^\top \mathbf{R})^\vee \big\|_2^2 \]</div>
+    <div class="num">(4)</div>
+    <div class="say"><b>One-step prediction error</b> over a sliding window \(\mathcal{B}\) of recent real transitions. Rotation error is the angle between predicted and measured attitude: off by 10° gives \(0.175^2 \approx 0.031\). The spectral-norm term \(\|\mathbf{W}_l\|_\sigma\) caps how steep the net can be, which keeps gradients through long rollouts from blowing up.</div>
+  </div>
+</section>
+
+<section id="rash">
+  <div class="sec-head"><div class="eyebrow">§ III-B</div><h2>RASH-BPTT: short rollouts anchored to reality</h2></div>
+  <p class="prose"><b>BPTT</b> (backpropagation through time): run the differentiable simulator forward, then let autodiff send the reward gradient back through every step into the policy weights. A long rollout lets model errors pile up, and the policy learns to exploit them. Fix: start each rollout at a real measured state and stop after \(H\) steps.</p>
+
+  <div class="diagram" role="img" aria-label="Left: standard BPTT starts one long simulated rollout at the beginning, and it drifts far from the real path. Right: RASH-BPTT starts short simulated rollouts at real anchor states along the path, and each stays close to it.">
+    <svg viewBox="0 0 760 290">
+      <defs>
+        <marker id="ah3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker>
+      </defs>
+      <g transform="translate(0,10)">
+        <text class="md b" x="20" y="14">Standard BPTT</text>
+        <text class="sm" x="20" y="32">one rollout from a reset state</text>
+        <polyline class="ln-r" stroke-width="2.6" points="20.0,130.0 24.0,125.9 28.0,121.8 32.0,117.8 36.0,113.8 40.0,110.0 44.0,106.2 48.0,102.6 52.0,99.1 56.0,95.8 60.0,92.7 64.0,89.8 68.0,87.1 72.0,84.6 76.0,82.4 80.0,80.5 84.0,78.9 88.0,77.5 92.0,76.4 96.0,75.6 100.0,75.2 104.0,75.0 108.0,75.1 112.0,75.6 116.0,76.3 120.0,77.4 124.0,78.7 128.0,80.3 132.0,82.2 136.0,84.4 140.0,86.8 144.0,89.5 148.0,92.3 152.0,95.4 156.0,98.7 160.0,102.2 164.0,105.8 168.0,109.6 172.0,113.4 176.0,117.4 180.0,121.4 184.0,125.5 188.0,129.6 192.0,133.7 196.0,137.7 200.0,141.8 204.0,145.8 208.0,149.6 212.0,153.4 216.0,157.1 220.0,160.6 224.0,163.9 228.0,167.0 232.0,169.9 236.0,172.7 240.0,175.1 244.0,177.3 248.0,179.3 252.0,181.0 256.0,182.4 260.0,183.5 264.0,184.3 268.0,184.8 272.0,185.0 276.0,184.9 280.0,184.5 284.0,183.8 288.0,182.8 292.0,181.4 296.0,179.9 300.0,178.0 304.0,175.9 308.0,173.5 312.0,170.8 316.0,168.0 320.0,164.9 324.0,161.6 328.0,158.2 332.0,154.6 336.0,150.8 340.0,147.0"/>
+        <polyline class="ln-s" stroke-dasharray="6 4" points="20.0,130.0 24.0,125.9 28.0,121.9 32.0,117.9 36.0,114.0 40.0,110.3 44.0,106.7 48.0,103.2 52.0,99.9 56.0,96.9 60.0,94.0 64.0,91.4 68.0,89.0 72.0,86.9 76.0,85.0 80.0,83.5 84.0,82.3 88.0,81.3 92.0,80.7 96.0,80.4 100.0,80.5 104.0,80.9 108.0,81.6 112.0,82.6 116.0,84.0 120.0,85.7 124.0,87.7 128.0,90.0 132.0,92.6 136.0,95.6 140.0,98.8 144.0,102.2 148.0,105.9 152.0,109.9 156.0,114.1 160.0,118.5 164.0,123.0 168.0,127.7 172.0,132.6 176.0,137.6 180.0,142.6 184.0,147.8 188.0,153.0 192.0,158.2 196.0,163.5 200.0,168.7 204.0,173.9 208.0,179.0 212.0,184.0 216.0,189.0 220.0,193.8 224.0,198.4 228.0,202.9 232.0,207.3 236.0,211.4 240.0,215.3 244.0,219.0 248.0,222.4 252.0,225.7 256.0,228.6 260.0,231.3 264.0,233.7 268.0,235.8 272.0,237.7 276.0,239.3 280.0,240.6 284.0,241.6 288.0,242.4 292.0,242.9 296.0,243.1 300.0,243.1 304.0,242.8 308.0,242.3 312.0,241.6 316.0,240.7 320.0,239.6 324.0,238.3 328.0,236.9 332.0,235.4 336.0,233.7 340.0,232.0"/>
+        <circle class="dot-r" cx="20" cy="130" r="4.5"/>
+        <path class="ln" d="M352 152 V226" marker-start="url(#ah3)" marker-end="url(#ah3)"/>
+        <text class="sm" x="300" y="270" text-anchor="end">model error compounds over the lap</text>
+      </g>
+      <g transform="translate(400,10)">
+        <text class="md b" x="20" y="14">RASH-BPTT</text>
+        <text class="sm" x="20" y="32">x₀ := latest real state, then H steps</text>
+        <polyline class="ln-r" stroke-width="2.6" points="20.0,130.0 24.0,125.9 28.0,121.8 32.0,117.8 36.0,113.8 40.0,110.0 44.0,106.2 48.0,102.6 52.0,99.1 56.0,95.8 60.0,92.7 64.0,89.8 68.0,87.1 72.0,84.6 76.0,82.4 80.0,80.5 84.0,78.9 88.0,77.5 92.0,76.4 96.0,75.6 100.0,75.2 104.0,75.0 108.0,75.1 112.0,75.6 116.0,76.3 120.0,77.4 124.0,78.7 128.0,80.3 132.0,82.2 136.0,84.4 140.0,86.8 144.0,89.5 148.0,92.3 152.0,95.4 156.0,98.7 160.0,102.2 164.0,105.8 168.0,109.6 172.0,113.4 176.0,117.4 180.0,121.4 184.0,125.5 188.0,129.6 192.0,133.7 196.0,137.7 200.0,141.8 204.0,145.8 208.0,149.6 212.0,153.4 216.0,157.1 220.0,160.6 224.0,163.9 228.0,167.0 232.0,169.9 236.0,172.7 240.0,175.1 244.0,177.3 248.0,179.3 252.0,181.0 256.0,182.4 260.0,183.5 264.0,184.3 268.0,184.8 272.0,185.0 276.0,184.9 280.0,184.5 284.0,183.8 288.0,182.8 292.0,181.4 296.0,179.9 300.0,178.0 304.0,175.9 308.0,173.5 312.0,170.8 316.0,168.0 320.0,164.9 324.0,161.6 328.0,158.2 332.0,154.6 336.0,150.8 340.0,147.0"/>
+        <polyline class="ln-s" stroke-width="2.4" points="40.0,110.0 44.0,106.3 48.0,102.8 52.0,99.7 56.0,96.9 60.0,94.4 64.0,92.3 68.0,90.5 72.0,89.1 76.0,88.1 80.0,87.5"/>
+        <polyline class="ln-s" stroke-width="2.4" points="100.0,75.2 104.0,74.9 108.0,74.9 112.0,74.9 116.0,75.2 120.0,75.6 124.0,76.2 128.0,76.9 132.0,77.7 136.0,78.7 140.0,79.8"/>
+        <polyline class="ln-s" stroke-width="2.4" points="160.0,102.2 164.0,105.9 168.0,109.8 172.0,114.0 176.0,118.5 180.0,123.1 184.0,128.0 188.0,133.0 192.0,138.1 196.0,143.4 200.0,148.8"/>
+        <polyline class="ln-s" stroke-width="2.4" points="220.0,160.6 224.0,163.8 228.0,166.7 232.0,169.3 236.0,171.5 240.0,173.4 244.0,174.8 248.0,175.9 252.0,176.5 256.0,176.7 260.0,176.5"/>
+        <polyline class="ln-s" stroke-width="2.4" points="280.0,184.5 284.0,183.8 288.0,183.0 292.0,182.1 296.0,181.0 300.0,179.7 304.0,178.4 308.0,176.9 312.0,175.3 316.0,173.6 320.0,171.9"/>
+        <circle class="dot-r" cx="40" cy="110" r="4.5"/>
+        <circle class="dot-r" cx="100" cy="75.2" r="4.5"/>
+        <circle class="dot-r" cx="160" cy="102.2" r="4.5"/>
+        <circle class="dot-r" cx="220" cy="160.6" r="4.5"/>
+        <circle class="dot-r" cx="280" cy="184.5" r="4.5"/>
+        <text class="sm" x="20" y="270">each short rollout stays near the real path</text>
+      </g>
+    </svg>
+  </div>
+  <div class="key"><span class="kr"><i></i>real flight (measured)</span><span class="ks"><i></i>simulated rollout used for the gradient</span><span class="kr"><i style="width:9px;height:9px;border-radius:50%"></i>anchor = real state estimate</span></div>
+
+  <div class="eq">
+    <div class="body">\[ \mathbf{x}_0 := \class{cr}{\mathbf{x}_{\text{real}}(t)}, \qquad \mathbf{u}_k = \pi_\phi(\mathbf{o}_k), \qquad \class{cs}{\mathbf{x}_{k+1} = F_{\Delta t}(\mathbf{x}_k, \mathbf{u}_k; \theta)}, \quad k = 0,\dots,H-1 \]</div>
+    <div class="num">(5)</div>
+  </div>
+  <div class="eq">
+    <div class="body">\[ \mathcal{J}(\phi) = \sum_{k=0}^{H-1} \gamma^k\, r(\mathbf{x}_k, \mathbf{u}_k, \mathbf{x}_{\text{ref},k}), \qquad \phi \leftarrow \phi + \eta_\pi \nabla_\phi \mathcal{J} \]</div>
+    <div class="num">(6)</div>
+    <div class="say">The gradient \(\nabla_\phi \mathcal{J}\) is exact: JAX differentiates through the RK4 steps and the residual net. Many anchored rollouts run in parallel on the GPU with <code>jit</code> + <code>vmap</code>.</div>
+  </div>
+  <dl class="sym">
+    <dt>Policy \(\pi_\phi\)</dt><dd>MLP, 2 hidden layers × 256 units; one forward pass ≈ 100 µs, run at 50 Hz</dd>
+    <dt>Input \(\mathbf{o}_k\)</dt><dd>\([\mathbf{x}_k,\ \mathbf{x}_{\text{ref},k},\ \mathbf{h}_k]\): state, reference state, recent actions (for smooth control)</dd>
+    <dt>Output \(\mathbf{u}_k\)</dt><dd>4-D CTBR command</dd>
+  </dl>
+</section>
+
+<section id="ats">
+  <div class="sec-head"><div class="eyebrow">§ III-C</div><h2>Adaptive Temporal Scaling: one knob for speed</h2></div>
+  <p class="prose">The path's shape stays fixed. Only how fast time runs along it changes, through one scalar \(\class{ct}{\alpha}\).</p>
+
+  <div class="eq">
+    <div class="body">\[ \mathbf{p}_{\text{ref}}(\tau; \class{ct}{\alpha}) = \mathbf{C}\,\boldsymbol{\beta}\!\left(\frac{\tau}{\class{ct}{\alpha}}\right), \qquad \boldsymbol{\beta}(t) = [1, t, t^2, \dots, t^{N-1}]^\top \]</div>
+    <div class="num">(7)</div>
+    <div class="say"><b>Example:</b> \(\class{ct}{\alpha} = 0.5\) turns an 8 s lap into a 4 s lap on the same path. Every speed doubles and every acceleration goes ×4, because \(v \propto 1/\alpha\) and \(a \propto 1/\alpha^2\). Differential flatness gives the full reference state (attitude, rates) from these derivatives.</div>
+  </div>
+
+  <div class="play">
+    <svg id="f8" viewBox="0 0 520 240" role="img" aria-label="Figure-8 reference with dots every 0.25 s; fewer dots means a faster lap.">
+      <rect x="0" y="0" width="520" height="240" rx="8" class="zone-s" opacity=".45"/>
+      <path id="f8path" class="grid" stroke-width="6" stroke-linecap="round" d=""/>
+      <g id="f8dots"></g>
+      <circle id="f8drone" r="7" class="dot-r"/>
+      <text class="sm" x="14" y="228">dots every 0.25 s · red dot moves at real speed</text>
+    </svg>
+    <div class="ctrl">
+      <label for="alpha">Time scale α <output id="alphaOut" for="alpha">1.00</output></label>
+      <input type="range" id="alpha" min="0.30" max="1.00" step="0.01" value="1.00" aria-describedby="alphaHelp">
+      <div class="readout">
+        <div><b id="rT">8.0 s</b><span>lap time</span></div>
+        <div><b id="rV">2.5</b><span>peak speed, m/s</span></div>
+        <div><b id="rA">2.5</b><span>peak accel., m/s²</span></div>
+      </div>
+      <p class="note" id="alphaHelp">Drag left to play ATS by hand. Toy figure-8, 5 m × 2 m, 8 s lap at α = 1. Not the paper's exact track.</p>
+    </div>
+  </div>
+
+  <p class="prose">ATS picks \(\class{ct}{\alpha}\) by gradient descent on a cost that rewards a small \(\class{ct}{\alpha}\) and adds a smooth penalty once predicted tracking error passes a threshold.</p>
+
+  <div class="eq">
+    <div class="body">\[ \mathcal{J}_{\text{ATS}}(\class{ct}{\alpha}) = \lambda_{\text{speed}}\,\class{ct}{\alpha} + \lambda_{\text{safe}} \sum_{k=0}^{H-1} \Psi\big(\mathcal{E}_k(\class{ct}{\alpha}) - \mathcal{E}_{\text{th}}\big), \qquad \Psi(z) = \tfrac{1}{\kappa}\ln\!\big(1 + e^{\kappa z}\big) \]</div>
+    <div class="num">(8)</div>
+  </div>
+  <div class="eq">
+    <div class="body">\[ \mathcal{E}_k(\class{ct}{\alpha}) \triangleq \mathcal{D}\big(\hat{\mathbf{x}}_k(\class{ct}{\alpha}),\ \mathbf{x}_{\text{ref},k}(\class{ct}{\alpha})\big) \]</div>
+    <div class="num">(9)</div>
+    <div class="say">\(\Psi\) is a softplus barrier: ≈ 0 when error is below \(\mathcal{E}_{\text{th}}\), ≈ linear above it. Its slope \(\Psi'\) is a smooth on/off switch for the safety term. The ablation uses \(\mathcal{E}_{\text{th}} = 0.35\ \text{m}\).</div>
+  </div>
+
+  <div class="diagram" role="img" aria-label="Plot of the barrier slope versus tracking error. Below 0.35 m the slope is near zero and alpha shrinks; above 0.35 m it is near one and alpha grows.">
+    <svg viewBox="0 0 760 240">
+      <rect class="zone-s" x="70" y="40" width="361.7" height="150"/>
+      <rect class="zone-r" x="431.7" y="40" width="258.3" height="150"/>
+      <path class="grid" d="M70 50 H690"/>
+      <path class="axis" d="M70 190 H690 M70 40 V190"/>
+      <g class="sm">
+        <text class="sm" x="70" y="208" text-anchor="middle">0</text>
+        <text class="sm" x="173.3" y="208" text-anchor="middle">0.1</text>
+        <text class="sm" x="276.7" y="208" text-anchor="middle">0.2</text>
+        <text class="sm" x="380" y="208" text-anchor="middle">0.3</text>
+        <text class="sm" x="483.3" y="208" text-anchor="middle">0.4</text>
+        <text class="sm" x="586.7" y="208" text-anchor="middle">0.5</text>
+        <text class="sm" x="690" y="208" text-anchor="middle">0.6</text>
+      </g>
+      <text class="sm" x="380" y="230" text-anchor="middle">predicted tracking error <tspan font-style="italic">E</tspan> (m)</text>
+      <text class="sm" x="62" y="194" text-anchor="end">0</text>
+      <text class="sm" x="62" y="54" text-anchor="end">1</text>
+      <text class="sm" x="70" y="28">Ψ′(<tspan font-style="italic">E</tspan> − <tspan font-style="italic">E</tspan><tspan class="sub" dy="3">th</tspan><tspan dy="-3">): how much the safety term counts</tspan></text>
+      <path class="ln-d" d="M431.7 40 V190" style="stroke: var(--ink)"/>
+      <text class="sm" x="438" y="28" style="fill: var(--ink)"><tspan font-style="italic">E</tspan><tspan class="sub" dy="3">th</tspan><tspan dy="-3"> = 0.35 m</tspan></text>
+      <polyline fill="none" style="stroke: var(--time)" stroke-width="2.8" points="70.0,190.0 76.2,190.0 82.4,190.0 88.6,190.0 94.8,190.0 101.0,190.0 107.2,190.0 113.4,190.0 119.6,190.0 125.8,190.0 132.0,190.0 138.2,190.0 144.4,190.0 150.6,190.0 156.8,190.0 163.0,190.0 169.2,190.0 175.4,190.0 181.6,190.0 187.8,190.0 194.0,190.0 200.2,190.0 206.4,190.0 212.6,190.0 218.8,190.0 225.0,190.0 231.2,189.9 237.4,189.9 243.6,189.9 249.8,189.9 256.0,189.8 262.2,189.8 268.4,189.7 274.6,189.7 280.8,189.6 287.0,189.5 293.2,189.3 299.4,189.2 305.6,188.9 311.8,188.7 318.0,188.3 324.2,187.8 330.4,187.3 336.6,186.6 342.8,185.7 349.0,184.5 355.2,183.1 361.4,181.3 367.6,179.2 373.8,176.5 380.0,173.3 386.2,169.4 392.4,164.9 398.6,159.5 404.8,153.4 411.0,146.6 417.2,139.1 423.4,131.1 429.6,122.8 435.8,114.4 442.0,106.2 448.2,98.3 454.4,91.0 460.6,84.4 466.8,78.6 473.0,73.5 479.2,69.2 485.4,65.5 491.6,62.5 497.8,60.0 504.0,58.0 510.2,56.4 516.4,55.1 522.6,54.0 528.8,53.2 535.0,52.5 541.2,52.0 547.4,51.6 553.6,51.2 559.8,51.0 566.0,50.8 572.2,50.6 578.4,50.5 584.6,50.4 590.8,50.3 597.0,50.2 603.2,50.2 609.4,50.1 615.6,50.1 621.8,50.1 628.0,50.1 634.2,50.1 640.4,50.0 646.6,50.0 652.8,50.0 659.0,50.0 665.2,50.0 671.4,50.0 677.6,50.0 683.8,50.0 690.0,50.0"/>
+      <text class="md b ts" x="90" y="90">Safe: Ψ′ ≈ 0</text>
+      <text class="sm" x="90" y="112">gradient ≈ λ<tspan class="sub" dy="3">speed</tspan><tspan dy="-3"> &gt; 0</tspan></text>
+      <text class="sm" x="90" y="130">→ α shrinks → fly faster</text>
+      <text class="md b tr" x="478" y="110">Unsafe: Ψ′ ≈ 1</text>
+      <text class="sm" x="478" y="132">safety term dominates</text>
+      <text class="sm" x="478" y="150">→ α grows → slow down</text>
+    </svg>
+  </div>
+  <p class="note">Curve drawn with sharpness κ = 40 /m for illustration; the paper does not state κ.</p>
+
+  <figure>
+    <div class="mat" style="max-width: 620px"><img src="figs/fig3.png" alt="Paper Fig. 3: heatmap of the ATS cost over time scale alpha and tracking error, with safe zone, unsafe zone, error threshold line, physical-limit curve and optimal point."></div>
+    <figcaption><span class="figno">Paper Fig. 3</span>The cost landscape. The green dot is the smallest α (fastest lap) that still keeps error under the threshold. ATS settles there on its own.</figcaption>
+  </figure>
+
+  <p class="prose">The real flight can't be differentiated. So ATS asks a "what if" question with the hybrid model: <i>if α had been slightly different on the last real rollout \(\{(\bar{\mathbf{x}}_k, \bar{\mathbf{u}}_k)\}\), how would the error have changed?</i></p>
+
+  <div class="eq">
+    <div class="body">\[ \frac{d\mathcal{J}_{\text{ATS}}}{d\class{ct}{\alpha}} = \lambda_{\text{speed}} + \lambda_{\text{safe}} \sum_{k=0}^{H-1} \Psi'\big(\mathcal{E}_k - \mathcal{E}_{\text{th}}\big)\, \frac{d\mathcal{E}_k}{d\class{ct}{\alpha}}, \qquad \frac{d\mathcal{E}_k}{d\class{ct}{\alpha}} = \frac{\partial \mathcal{E}_k}{\partial \mathbf{x}_{\text{ref},k}} \frac{\partial \mathbf{x}_{\text{ref},k}}{\partial \class{ct}{\alpha}} + \frac{\partial \mathcal{E}_k}{\partial \hat{\mathbf{x}}_k}\, \mathbf{S}_k \]</div>
+    <div class="num">(10–11)</div>
+  </div>
+  <div class="eq">
+    <div class="body">\[ \mathbf{S}_{k+1} = \mathbf{A}_k \mathbf{S}_k + \mathbf{B}_k \frac{d\mathbf{u}_k}{d\class{ct}{\alpha}}, \quad \mathbf{S}_0 = \mathbf{0}, \qquad \mathbf{A}_k = \left.\frac{\partial F_{\Delta t}}{\partial \mathbf{x}}\right|_{\class{cr}{(\bar{\mathbf{x}}_k, \bar{\mathbf{u}}_k)}}, \quad \mathbf{B}_k = \left.\frac{\partial F_{\Delta t}}{\partial \mathbf{u}}\right|_{\class{cr}{(\bar{\mathbf{x}}_k, \bar{\mathbf{u}}_k)}} \]</div>
+    <div class="num">(12–13)</div>
+  </div>
+  <div class="eq">
+    <div class="body">\[ \frac{d\mathbf{u}_k}{d\class{ct}{\alpha}} = \frac{\partial \pi_\phi}{\partial \mathbf{o}_k}\left( \frac{\partial \mathbf{o}_k}{\partial \hat{\mathbf{x}}_k}\mathbf{S}_k + \frac{\partial \mathbf{o}_k}{\partial \mathbf{x}_{\text{ref},k}} \frac{\partial \mathbf{x}_{\text{ref},k}}{\partial \class{ct}{\alpha}} \right), \qquad \class{ct}{\alpha} \leftarrow \Pi_{[\alpha_{\min}, \alpha_{\max}]}\big(\class{ct}{\alpha} - \eta_\alpha \nabla_{\alpha} \mathcal{J}_{\text{ATS}}\big) \]</div>
+    <div class="num">(14–15)</div>
+    <div class="say">\(\mathbf{S}_k = d\hat{\mathbf{x}}_k / d\alpha\): how far the state at step \(k\) would move if α changed. It is pushed forward step by step with the model's Jacobians, all taken along the <span style="color: var(--real)">real</span> trajectory, and it accounts for the policy reacting to the changed reference. \(\Pi\) clips α into its allowed range.</div>
+  </div>
+</section>
+
+<section id="results">
+  <div class="sec-head"><div class="eyebrow">§ IV · Results</div><h2>What happened in real flight</h2></div>
+  <p class="prose">Setup: 192 g quadrotor (Agilicious platform), motion capture at 100 Hz, commands at 50 Hz from an off-board workstation.</p>
+
+  <div class="pair">
+    <figure>
+      <div class="mat"><img src="figs/fig5.png" alt="Paper Fig. 5: commanded body rates over 95 s for figure-8 and line shuttle; spikes reach the 6 rad/s limit line after about 30 to 40 s."></div>
+      <figcaption><span class="figno">Paper Fig. 5</span>Commanded body rates. After ~30–40 s the raw commands keep hitting the 6 rad/s cap. The drone is now limited by its command interface, not by caution.</figcaption>
+    </figure>
+    <div class="stack">
+      <div class="tablebox">
+        <table>
+          <thead><tr><th>Lap time</th><th class="n">Figure-8 (s)</th><th class="n">Shuttle (s)</th></tr></thead>
+          <tbody>
+            <tr><td>Rotor-thrust bound †</td><td class="n">2.02</td><td class="n">1.42</td></tr>
+            <tr><td>CTBR bound</td><td class="n">2.24</td><td class="n">1.49</td></tr>
+            <tr class="ours"><td>Ours, real flight</td><td class="n">2.60</td><td class="n">2.30</td></tr>
+          </tbody>
+        </table>
+        <span class="note">Paper Table I. Bounds are offline, zero-delay trajectory optimizations with the same limits (c ≤ 25 m/s², 6 rad/s). † Not reachable through CTBR: needs body rates above 28 rad/s.</span>
+      </div>
+      <p class="note">Figure-8: 2.60 s vs. 2.24 s best possible, so within 16 % of the interface limit. The shuttle gap is larger (2.30 vs. 1.49 s) because its hard direction reversals suffer more from delays and aerodynamics.</p>
+    </div>
+  </div>
+
+  <div class="pair">
+    <figure>
+      <div class="mat"><img src="figs/fig4.jpg" alt="Paper Fig. 4: the 192 g quadrotor with clipped propellers and a 60 g added weight."></div>
+      <figcaption><span class="figno">Paper Fig. 4</span>Damage tests: clipped propeller tips and a 60 g weight (+31 % mass).</figcaption>
+    </figure>
+    <figure>
+      <div class="mat"><img src="figs/fig6.png" alt="Paper Fig. 6: lap time and tracking error versus policy version for original, added weight, broken propeller and both."></div>
+      <figcaption><span class="figno">Paper Fig. 6</span>Error jumps right after the hardware change, then drops after <b>one</b> residual update. ATS then speeds each damaged drone up to its own new limit.</figcaption>
+    </figure>
+  </div>
+
+  <figure>
+    <div class="mat" style="max-width: 700px"><img src="figs/fig7.png" alt="Paper Fig. 7: 3D trajectories through three landmarks with a fan; Policy V0 is slow and blue, Policy V10 is fast and red."></div>
+    <figcaption><span class="figno">Paper Fig. 7</span>Inspection mission past three landmarks with a fan blowing. After ~2 min of learning: 12 s → 7 s (−42 %), with tracking error kept low.</figcaption>
+  </figure>
+
+  <div class="pair">
+    <figure>
+      <div class="mat"><img src="figs/fig8.png" alt="Paper Fig. 8: ablation in simulation; lap time and tracking error over policy versions for Baseline, LOTF, Anchor Only, Residual Only and Ours on line and figure-8 tracks."></div>
+      <figcaption><span class="figno">Paper Fig. 8</span>Ablation in simulation. Every variant gets ATS, so all stay under \(\mathcal{E}_{\text{th}} = 0.35\ \text{m}\). The difference is how fast each one gets.</figcaption>
+    </figure>
+    <div class="stack">
+      <h3>What the ablation shows</h3>
+      <ul class="tight">
+        <li><b>Residual learning raises the speed ceiling.</b> Lower model error leaves more room under the threshold, so ATS can shrink α further. The nominal-only baseline hits the threshold early and stalls.</li>
+        <li><b>The rotation residual matters at high speed.</b> LOTF learns only an acceleration residual. Adding \(\boldsymbol{\omega}_{\text{res}}\) tracks better as speed rises.</li>
+        <li><b>Anchoring makes training stable.</b> Rollouts that start from real states stay in the region the policy actually visits.</li>
+        <li><b>Full method = shortest lap</b> on both tracks.</li>
+      </ul>
+    </div>
+  </div>
+
+  <figure>
+    <div class="mat"><img src="figs/fig9.png" alt="Paper Fig. 9: figure-8 trajectories colored by speed for Baseline and Ours at policy versions 0 to 10 in 5 m/s simulated wind, with RMSE and max speed for each."></div>
+    <figcaption><span class="figno">Paper Fig. 9</span>Simulated 5 m/s wind. One residual update cuts error from 0.23 m to 0.06 m (V0 → V1). ATS spends that margin on speed: 2.6 → 6.8 m/s by V10. The baseline never gets past 4.7 m/s.</figcaption>
+  </figure>
+</section>
+
+<section id="limits">
+  <div class="sec-head"><div class="eyebrow">§ V · Discussion</div><h2>Limits the authors name</h2></div>
+  <ul class="tight">
+    <li>The ceiling is the CTBR interface (6 rad/s), not the motors. Commanding single rotors could close the 2.24 s → 2.02 s gap, but sim-to-real gets harder.</li>
+    <li>ATS only changes timing. The path shape is fixed, so it can't reroute or avoid obstacles.</li>
+    <li>The residual net learns only from normal flight, so edge-of-envelope states stay poorly modeled.</li>
+    <li>It relies on motion capture. Onboard sensing at high speed adds noise and delay.</li>
+  </ul>
+</section>
+
+<footer>
+  <a href="https://arxiv.org/abs/2602.10111">Paper (arXiv 2602.10111)</a>
+  <a href="https://rpg.ifi.uzh.ch/lafr/">Project page</a>
+  <a href="https://github.com/uzh-rpg/LAFR">Code (uzh-rpg/LAFR)</a>
+  <span>Figures reproduced from the paper for explanation.</span>
+</footer>
+
+</div>
+
+<script>
+(function () {
+  // Toy reference: x = A sin(2πs), y = B sin(4πs), s = τ/(α·T0). Units: m, s.
+  var A = 2.5, B = 1.0, T0 = 8, DT = 0.25;
+  var SX = 88, CX = 260, CY = 112;
+  var slider = document.getElementById('alpha');
+  var out = document.getElementById('alphaOut');
+  var dotsG = document.getElementById('f8dots');
+  var drone = document.getElementById('f8drone');
+  var path = document.getElementById('f8path');
+  var NS = 'http://www.w3.org/2000/svg';
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function pos(s) { return [CX + A * Math.sin(2 * Math.PI * s) * SX, CY - B * Math.sin(4 * Math.PI * s) * SX]; }
+
+  var d = '';
+  for (var i = 0; i <= 200; i++) { var p = pos(i / 200); d += (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }
+  path.setAttribute('d', d + 'Z');
+
+  var T = T0;
+  function update() {
+    var a = parseFloat(slider.value);
+    T = a * T0;
+    out.textContent = a.toFixed(2);
+    var w = 2 * Math.PI / T;
+    var vmax = w * Math.sqrt(A * A + 4 * B * B);  // peak at s = 0
+    var amax = 0;
+    for (var k = 0; k < 400; k++) {
+      var s = k / 400;
+      var ax = A * w * w * Math.sin(2 * Math.PI * s), ay = 4 * B * w * w * Math.sin(4 * Math.PI * s);
+      amax = Math.max(amax, Math.hypot(ax, ay));
+    }
+    document.getElementById('rT').textContent = T.toFixed(1) + ' s';
+    document.getElementById('rV').textContent = vmax.toFixed(1);
+    document.getElementById('rA').textContent = amax.toFixed(1);
+    while (dotsG.firstChild) dotsG.removeChild(dotsG.firstChild);
+    var n = Math.floor(T / DT + 1e-9);
+    for (var j = 0; j < n; j++) {
+      var q = pos(j * DT / T);
+      var c = document.createElementNS(NS, 'circle');
+      c.setAttribute('cx', q[0].toFixed(1)); c.setAttribute('cy', q[1].toFixed(1)); c.setAttribute('r', '4');
+      c.setAttribute('class', 'dot-t');
+      dotsG.appendChild(c);
+    }
+    if (reduce) { var p0 = pos(0); drone.setAttribute('cx', p0[0]); drone.setAttribute('cy', p0[1]); }
+  }
+  slider.addEventListener('input', update);
+  update();
+
+  if (!reduce) {
+    var t0 = performance.now();
+    (function tick(now) {
+      var s = (((now - t0) / 1000) % T) / T;
+      var p = pos(s);
+      drone.setAttribute('cx', p[0].toFixed(1)); drone.setAttribute('cy', p[1].toFixed(1));
+      requestAnimationFrame(tick);
+    })(t0);
+  }
+})();
+</script>

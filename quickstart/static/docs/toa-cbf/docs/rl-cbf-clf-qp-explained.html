@@ -1,0 +1,947 @@
+<title>RL-CBF-CLF-QP Explained</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,500..800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: one reading column, diagram-first; every section = figure or equation + one-line caption. */
+:root {
+  --bg: #F2F5F6;
+  --surface: #FFFFFF;
+  --soft: #E7ECEF;
+  --ink: #15212A;
+  --muted: #5A6973;
+  --line: #D3DBE0;
+  --clf: #2F5FD0;      /* stability rule */
+  --cbf: #13866F;      /* safety rule */
+  --rl: #C27A0E;       /* learned correction (marks) */
+  --rl-ink: #94590A;   /* learned correction (text) */
+  --cbf-ink: #0F7663;
+  --bad: #C7432F;
+  --clf-bg: rgba(47, 95, 208, .10);
+  --cbf-bg: rgba(19, 134, 111, .13);
+  --rl-bg: rgba(194, 122, 14, .12);
+  --bad-bg: rgba(199, 67, 47, .11);
+  --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1418; --surface: #151E24; --soft: #1D2930; --ink: #E3EAEE; --muted: #93A3AD; --line: #2A3740;
+    --clf: #5B83EE; --cbf: #1FA383; --rl: #C48614; --rl-ink: #E3AA45; --cbf-ink: #3CC3A0; --bad: #E0604A;
+    --clf-bg: rgba(91, 131, 238, .16); --cbf-bg: rgba(31, 163, 131, .17); --rl-bg: rgba(196, 134, 20, .17); --bad-bg: rgba(224, 96, 74, .16);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1418; --surface: #151E24; --soft: #1D2930; --ink: #E3EAEE; --muted: #93A3AD; --line: #2A3740;
+  --clf: #5B83EE; --cbf: #1FA383; --rl: #C48614; --rl-ink: #E3AA45; --cbf-ink: #3CC3A0; --bad: #E0604A;
+  --clf-bg: rgba(91, 131, 238, .16); --cbf-bg: rgba(31, 163, 131, .17); --rl-bg: rgba(196, 134, 20, .17); --bad-bg: rgba(224, 96, 74, .16);
+  color-scheme: dark;
+}
+
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.55; }
+.wrap { max-width: 940px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 64px; }
+a { color: var(--clf); }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(30px, 5.2vw, 46px); font-weight: 800; font-stretch: 112%; line-height: 1.08; letter-spacing: -0.01em; }
+h2 { font-size: clamp(22px, 3.2vw, 28px); font-weight: 750; font-stretch: 108%; line-height: 1.15; }
+h3 { font-size: 17px; font-weight: 700; font-stretch: 104%; }
+p { margin: 0; }
+.eyebrow { font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.lede { font-size: 18px; color: var(--ink); max-width: 62ch; }
+.cap { font-size: 14.5px; color: var(--muted); max-width: 70ch; }
+.cap b, .lede b { color: var(--ink); font-weight: 600; }
+.mono { font-family: var(--f-mono); }
+
+header { display: grid; gap: 14px; padding-bottom: 8px; }
+.byline { font-size: 14px; color: var(--muted); }
+
+section { display: grid; gap: 16px; padding-top: 52px; }
+section > .head { display: grid; gap: 6px; }
+
+.fig { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.scroll > svg { display: block; min-width: 620px; width: 100%; height: auto; }
+svg.dg { display: block; width: 100%; height: auto; }
+
+/* SVG vocabulary */
+.dg text { font-family: var(--f-mono); font-size: 12px; fill: var(--ink); }
+.dg .tt { font-family: var(--f-body); font-size: 14px; font-weight: 600; }
+.dg .sm { font-size: 11px; }
+.dg .mut { fill: var(--muted); }
+.dg .t-cbf { fill: var(--cbf-ink); }
+.dg .t-bad { fill: var(--bad); }
+.dg .t-rl { fill: var(--rl-ink); }
+.dg .t-clf { fill: var(--clf); }
+.halo { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+.fi-ink { fill: var(--ink); } .fi-mut { fill: var(--muted); } .fi-rl { fill: var(--rl); } .fi-cbf { fill: var(--cbf); }
+.fi-bad { fill: var(--bad); } .fi-clf { fill: var(--clf); } .fi-surf { fill: var(--surface); } .fi-soft { fill: var(--soft); }
+.ln { fill: none; stroke: var(--ink); stroke-width: 1.6; }
+.ln-mut { fill: none; stroke: var(--muted); stroke-width: 1.4; }
+.ln-line { fill: none; stroke: var(--line); stroke-width: 1; }
+.ln-rl { fill: none; stroke: var(--rl); stroke-width: 1.8; }
+.ln-cbf { fill: none; stroke: var(--cbf); stroke-width: 2; }
+.ln-clf { fill: none; stroke: var(--clf); stroke-width: 2.2; }
+.ln-bad { fill: none; stroke: var(--bad); stroke-width: 2; }
+.dash { stroke-dasharray: 5 4; }
+.dot { stroke-dasharray: 1.5 3.5; stroke-linecap: round; }
+.bx { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+.bx-ink { fill: var(--surface); stroke: var(--ink); stroke-width: 1.5; }
+.bx-rl { fill: var(--rl-bg); stroke: var(--rl); stroke-width: 1.5; }
+.zone-cbf { fill: var(--cbf-bg); } .zone-bad { fill: var(--bad-bg); } .zone-soft { fill: var(--soft); }
+.limb { fill: none; stroke: var(--ink); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+.joint { fill: var(--surface); stroke: var(--ink); stroke-width: 2; }
+
+/* Colour key */
+.key { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 14px; color: var(--muted); }
+.key span { display: inline-flex; align-items: center; gap: 7px; }
+.sw { width: 18px; height: 4px; border-radius: 2px; display: inline-block; }
+.sw.clf { background: var(--clf); } .sw.cbf { background: var(--cbf); } .sw.rl { background: var(--rl); } .sw.bad { background: var(--bad); } .sw.ink { background: var(--ink); } .sw.mut { background: var(--muted); }
+.sw.dashed { background: repeating-linear-gradient(90deg, var(--rl) 0 5px, transparent 5px 8px); }
+.sw.pt { width: 10px; height: 10px; border-radius: 50%; }
+
+/* Summary strip */
+.strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+.strip > div { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.strip .lbl { font-family: var(--f-mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 7px; }
+.strip .big { font-family: var(--f-display); font-stretch: 108%; font-weight: 750; font-size: 22px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.strip p { font-size: 14.5px; }
+
+/* Equations */
+.eq { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; overflow-x: auto; min-width: 0; }
+.eq .tag { position: absolute; top: 8px; right: 10px; font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.eq mjx-container[display="true"] { margin: 6px 0 !important; }
+.eq .note { font-size: 13.5px; color: var(--muted); margin-top: 4px; }
+mjx-container { font-size: 108% !important; }
+.mx-clf { color: var(--clf); } .mx-cbf { color: var(--cbf-ink); } .mx-rl { color: var(--rl-ink); } .mx-bad { color: var(--bad); } .mx-mut { color: var(--muted); }
+
+/* Building-block cards */
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr)); gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.card .eq { border: 0; padding: 4px 0; background: transparent; }
+.card .cap { font-size: 14px; }
+.card h3 { display: flex; align-items: center; gap: 8px; }
+.pill { font-family: var(--f-mono); font-size: 11px; font-weight: 500; padding: 2px 7px; border-radius: 999px; letter-spacing: .03em; }
+.pill.clf { background: var(--clf-bg); color: var(--clf); }
+.pill.cbf { background: var(--cbf-bg); color: var(--cbf-ink); }
+.pill.rl { background: var(--rl-bg); color: var(--rl-ink); }
+.pill.ink { background: var(--soft); color: var(--ink); }
+.ex { font-size: 13.5px; font-family: var(--f-mono); background: var(--soft); border-radius: 6px; padding: 7px 10px; color: var(--ink); }
+
+/* Stepper */
+.steps { display: flex; flex-wrap: wrap; gap: 8px; }
+.steps button { font: 500 14px var(--f-body); color: var(--ink); background: var(--soft); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+.steps button[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.steps button:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--clf); outline-offset: 2px; }
+.geo-cap { font-size: 15px; min-height: 2.6em; }
+#geo { max-width: 560px; margin: 0 auto; }
+.geo[data-step="1"] :is(.s2, .s23, .s3) { display: none; }
+.geo[data-step="2"] :is(.s1, .s3) { display: none; }
+.geo[data-step="3"] :is(.s1, .s2, .s12) { display: none; }
+.geo[data-step="3"] .model-line { opacity: .45; }
+
+/* Two approaches */
+.flow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-family: var(--f-mono); font-size: 13px; }
+.flow .n { border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; background: var(--surface); }
+.flow .n.rl { border-color: var(--rl); background: var(--rl-bg); }
+.flow .ar { color: var(--muted); }
+
+/* Toy */
+.ctrl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; font-size: 15px; }
+.ctrl input[type="range"] { width: min(320px, 100%); accent-color: var(--ink); }
+.ctrl output { font-family: var(--f-mono); font-weight: 500; font-size: 16px; min-width: 4ch; }
+.readout { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+.readout > div { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 14px; display: grid; gap: 2px; }
+.readout .h { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.readout .v { font-family: var(--f-mono); font-size: 13.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--surface); font: 12.5px/1.45 var(--f-mono); padding: 6px 9px; border-radius: 6px; white-space: nowrap; z-index: 5; font-variant-numeric: tabular-nums; }
+
+/* Robot */
+.robot { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 680px) { .robot { grid-template-columns: 1fr; } .robot svg { max-width: 300px; margin: 0 auto; } }
+
+/* Tables */
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--f-mono); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td .ok { color: var(--cbf-ink); font-weight: 600; }
+td .no { color: var(--bad); font-weight: 600; }
+td code, .sym { font-family: var(--f-mono); font-size: 13.5px; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+
+.limits { display: grid; gap: 8px; padding: 0; margin: 0; list-style: none; }
+.limits li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; font-size: 15px; }
+.limits li::before { content: "!"; font-family: var(--f-mono); font-weight: 600; color: var(--bad); text-align: center; }
+.limits li.mine::before { content: "?"; color: var(--muted); }
+
+footer { padding-top: 48px; font-size: 13.5px; color: var(--muted); }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+  svg: { fontCache: 'global' },
+  options: { enableMenu: false }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg-full.js" async></script>
+
+<!-- Shared arrowheads for all diagrams -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" class="fi-ink"/></marker>
+    <marker id="ah-mut" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" class="fi-mut"/></marker>
+    <marker id="ah-rl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" class="fi-rl"/></marker>
+  </defs>
+</svg>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Paper summary · arXiv 2004.07584 · UC Berkeley · 2020</div>
+  <h1>Learn how wrong the model is, then patch the safety rules</h1>
+  <p class="byline">Choi, Castañeda, Tomlin, Sreenath. <a href="https://arxiv.org/abs/2004.07584">Reinforcement Learning for Safety-Critical Control under Model Uncertainty, using Control Lyapunov Functions and Control Barrier Functions</a></p>
+
+  <figure class="fig" style="margin:0">
+    <div class="scroll">
+      <svg class="dg" viewBox="0 0 760 290" role="img" aria-label="A two-legged robot standing on one stepping stone, swinging its foot toward the next stone. The swing foot must stay inside a shaded safe zone that narrows onto the next stone, between l_min and l_max.">
+        <!-- safe zone between two arcs: lower arc ends at l_min, outer arc ends at l_max -->
+        <path class="zone-cbf" d="M150,210 Q310,-10 470,210 L430,210 Q290,140 150,210 Z"/>
+        <path class="ln-cbf dash" d="M150,210 Q310,-10 470,210"/>
+        <path class="ln-cbf dash" d="M150,210 Q290,140 430,210"/>
+        <!-- ground and stones -->
+        <line x1="20" y1="210" x2="740" y2="210" class="ln-line dash"/>
+        <rect x="110" y="210" width="80" height="26" rx="3" class="zone-soft"/>
+        <rect x="430" y="210" width="40" height="26" rx="3" class="fi-cbf"/>
+        <rect x="680" y="210" width="60" height="26" rx="3" class="zone-soft" opacity=".55"/>
+        <text x="710" y="196" text-anchor="middle" class="tt mut">?</text>
+        <!-- swing foot path -->
+        <path class="ln-mut dash" d="M262,160 Q370,118 448,206" marker-end="url(#ah-mut)"/>
+        <!-- robot: torso, stance leg, swing leg -->
+        <line x1="175" y1="100" x2="168" y2="32" class="limb" style="stroke-width:8"/>
+        <polyline points="175,100 170,157 150,210" class="limb"/>
+        <polyline points="175,100 229,115 262,160" class="limb"/>
+        <circle cx="175" cy="100" r="6" class="joint"/>
+        <circle cx="170" cy="157" r="5" class="joint"/>
+        <circle cx="229" cy="115" r="5" class="joint"/>
+        <!-- labels -->
+        <text x="186" y="38">RABBIT robot</text>
+        <text x="186" y="54" class="mut sm">5 links · 32 kg</text>
+        <text x="296" y="134" class="mut sm halo">swing foot path</text>
+        <line x1="488" y1="100" x2="412" y2="158" class="ln-mut"/>
+        <text x="492" y="96" class="t-cbf">safe zone for the swing foot</text>
+        <text x="492" y="112" class="mut sm">two CBFs: B₁ ≥ 0 and B₂ ≥ 0</text>
+        <text x="752" y="256" text-anchor="end" class="mut sm">not seen yet</text>
+        <text x="752" y="270" text-anchor="end" class="mut sm">(one-step preview)</text>
+        <!-- step-length dimension -->
+        <line x1="150" y1="250" x2="430" y2="250" class="ln-mut" marker-start="url(#ah-mut)" marker-end="url(#ah-mut)"/>
+        <line x1="150" y1="242" x2="150" y2="258" class="ln-mut"/>
+        <line x1="430" y1="242" x2="430" y2="258" class="ln-mut"/>
+        <line x1="470" y1="242" x2="470" y2="258" class="ln-mut"/>
+        <text x="290" y="270" text-anchor="middle" class="mut">l_min ~ N(0.35 m, 0.02 m), random each step</text>
+        <text x="426" y="284" text-anchor="end" class="sm">l_min</text>
+        <text x="474" y="284" class="sm">l_max = l_min + 0.05 m</text>
+      </svg>
+    </div>
+    <p class="cap">The test task. The robot must land each step on a 5 cm wide stone it sees only one step ahead. Its controller's model says every link is <b>half as heavy</b> as it really is.</p>
+  </figure>
+</header>
+
+<section id="summary">
+  <div class="strip">
+    <div><span class="lbl"><span class="sw bad pt"></span>Problem</span><p>The controller's safety math uses a <b>model</b> of the robot. If the model is wrong, a "safe" command can be unsafe.</p></div>
+    <div><span class="lbl"><span class="sw rl pt"></span>Idea</span><p>In every rule, the model error has the form <b>offset + slope × µ</b>. A neural network learns those two terms (β, α).</p></div>
+    <div><span class="lbl"><span class="sw cbf pt"></span>Result</span><span class="big">20 / 20 steps</span><p>on the stones with the fix. Without it: first miss after 5.6 steps on average.</p></div>
+    <div><span class="lbl"><span class="sw mut pt"></span>Catch</span><p>The starting controller must not fall at once, or there is no data to learn from.</p></div>
+  </div>
+  <div class="key" aria-label="Colour key used on this page">
+    <span><i class="sw clf"></i>CLF · stability rule</span>
+    <span><i class="sw cbf"></i>CBF · safety rule</span>
+    <span><i class="sw rl"></i>α, β, θ · learned by RL</span>
+    <span><i class="sw bad"></i>model error / rule broken</span>
+  </div>
+</section>
+
+<section id="picture">
+  <div class="head">
+    <div class="eyebrow">The whole method</div>
+    <h2>One picture, one equation</h2>
+  </div>
+  <figure class="fig" style="margin:0">
+    <div class="scroll">
+      <svg class="dg" viewBox="0 0 760 300" role="img" aria-label="Loop: robot state goes to a neural network that outputs alpha and beta; these patch the rules inside a QP; the QP output drives the real robot; the new state loops back. During training only, measured values are compared with predictions to make a reward that updates the network.">
+        <!-- main loop -->
+        <rect x="16" y="64" width="150" height="76" rx="10" class="bx-ink"/>
+        <text x="91" y="92" text-anchor="middle" class="tt">Robot state</text>
+        <text x="91" y="110" text-anchor="middle" class="mut">x (14 numbers)</text>
+        <text x="91" y="126" text-anchor="middle" class="mut">+ next stone ψ</text>
+
+        <rect x="206" y="64" width="160" height="76" rx="10" class="bx-rl"/>
+        <text x="286" y="92" text-anchor="middle" class="tt">Neural network θ</text>
+        <text x="286" y="110" text-anchor="middle">outputs α, β</text>
+        <text x="286" y="126" text-anchor="middle" class="mut">for every rule</text>
+
+        <rect x="406" y="64" width="174" height="76" rx="10" class="bx-ink"/>
+        <text x="493" y="92" text-anchor="middle" class="tt">QP, every 10 ms</text>
+        <text x="493" y="110" text-anchor="middle">model's rules</text>
+        <text x="493" y="126" text-anchor="middle" class="t-rl">+ α, β patches</text>
+
+        <rect x="620" y="64" width="124" height="76" rx="10" class="bx-ink"/>
+        <text x="682" y="92" text-anchor="middle" class="tt">Real robot</text>
+        <text x="682" y="110" text-anchor="middle" class="mut">masses = 2 ×</text>
+        <text x="682" y="126" text-anchor="middle" class="mut">the model's</text>
+
+        <line x1="166" y1="102" x2="204" y2="102" class="ln" marker-end="url(#ah-ink)"/>
+        <line x1="366" y1="102" x2="404" y2="102" class="ln" marker-end="url(#ah-ink)"/>
+        <line x1="580" y1="102" x2="618" y2="102" class="ln" marker-end="url(#ah-ink)"/>
+        <text x="185" y="94" text-anchor="middle" class="sm mut">x, ψ</text>
+        <text x="385" y="94" text-anchor="middle" class="sm t-rl">α, β</text>
+        <text x="600" y="94" text-anchor="middle" class="sm mut">µ*→u</text>
+
+        <path d="M682,64 V34 H91 V62" class="ln" marker-end="url(#ah-ink)"/>
+        <text x="386" y="26" text-anchor="middle" class="mut">new state, every 10 ms (training and use)</text>
+
+        <!-- training-only branch -->
+        <path d="M712,140 V232 H682" class="ln-rl dash" marker-end="url(#ah-rl)"/>
+        <rect x="376" y="200" width="304" height="64" rx="10" class="bx-rl" style="stroke-dasharray:5 4"/>
+        <text x="528" y="224" text-anchor="middle" class="tt">Measure real V̇, B̈, forces</text>
+        <text x="528" y="243" text-anchor="middle" class="sm">reward = −(measured − predicted)²</text>
+        <text x="528" y="257" text-anchor="middle" class="sm mut">measured by numerical derivative</text>
+        <path d="M376,232 H286 V142" class="ln-rl dash" marker-end="url(#ah-rl)"/>
+        <text x="296" y="190" class="t-rl">update θ</text>
+        <text x="296" y="205" class="sm mut">(DDPG)</text>
+
+        <!-- legend -->
+        <line x1="20" y1="282" x2="48" y2="282" class="ln"/>
+        <text x="56" y="286" class="sm mut">always runs</text>
+        <line x1="150" y1="282" x2="178" y2="282" class="ln-rl dash"/>
+        <text x="186" y="286" class="sm mut">training only</text>
+      </svg>
+    </div>
+    <p class="cap">After training, only the solid loop runs. The QP still uses the model's rules; the network just adds a learned patch to each one.</p>
+  </figure>
+
+  <div class="eq">
+    <span class="tag">eq. 45 · RL-CBF-CLF-QP</span>
+    \[
+    \begin{aligned}
+    \mu^*_{\class{mx-rl}{\theta}}(x) = \underset{\mu,\ \mu_b,\ d}{\arg\min}\ \ &amp; \mu^\top\mu + p\,d^2 \\
+    \text{s.t.}\ \ &amp; \class{mx-clf}{\hat{\dot V}_{\varepsilon,\class{mx-rl}{\theta}}(\eta,z,\mu) + \tfrac{\lambda}{\varepsilon}V_\varepsilon(\eta) \le d} &amp;&amp; \class{mx-clf}{\text{stability}} \\
+    &amp; \class{mx-cbf}{\mu_{b,i} + K_{b,i}\,\eta_{b,i} \ge 0,\ \ \mu_{b,i} = \widehat{B_i^{(r_b)}}_{\class{mx-rl}{\theta}}(x,\mu)} &amp;&amp; \class{mx-cbf}{\text{safety}} \\
+    &amp; A^c_{j,\class{mx-rl}{\theta}}(x)\,\mu + b^c_{j,\class{mx-rl}{\theta}}(x) \le 0 &amp;&amp; \text{friction}
+    \end{aligned}
+    \]
+    <p class="note">Pick the smallest µ that passes every rule. Each hat (^) term = model's value + learned patch (θ). Stability may bend by a slack d, which costs p·d². Safety may not bend.</p>
+  </div>
+</section>
+
+<section id="blocks">
+  <div class="head">
+    <div class="eyebrow">Background you need</div>
+    <h2>Four building blocks</h2>
+  </div>
+  <div class="grid2">
+
+    <article class="card">
+      <h3><span class="pill ink">model</span>The model vs. the real robot</h3>
+      <svg class="dg" viewBox="0 0 400 110" role="img" aria-label="The model's leg link weighs m; the real robot's link weighs 2m.">
+        <text x="100" y="18" text-anchor="middle" class="mut">controller's model</text>
+        <text x="300" y="18" text-anchor="middle" class="mut">real robot</text>
+        <line x1="60" y1="40" x2="140" y2="80" class="limb"/>
+        <circle cx="60" cy="40" r="6" class="joint"/><circle cx="140" cy="80" r="6" class="joint"/>
+        <rect x="86" y="44" width="28" height="22" rx="4" class="fi-soft" style="stroke:var(--ink);stroke-width:1.5"/>
+        <text x="100" y="59" text-anchor="middle">m</text>
+        <line x1="260" y1="40" x2="340" y2="80" class="limb"/>
+        <circle cx="260" cy="40" r="6" class="joint"/><circle cx="340" cy="80" r="6" class="joint"/>
+        <rect x="280" y="40" width="40" height="30" rx="4" class="zone-bad" style="stroke:var(--bad);stroke-width:1.5"/>
+        <text x="300" y="60" text-anchor="middle" class="t-bad">2m</text>
+        <text x="200" y="104" text-anchor="middle" class="sm mut">every link's mass and inertia ×2 in the paper's test</text>
+      </svg>
+      <div class="eq">
+        \[ \begin{aligned} \text{model:}\ \ \dot x &amp;= \tilde f(x) + \tilde g(x)\,u \\ \text{real:}\ \ \dot x &amp;= f(x) + g(x)\,u \end{aligned} \]
+        \[ \begin{aligned} \text{ask for } \mu \text{, model promises:}\ \ y^{(r)} &amp;= \mu \\ \text{real gives:}\ \ y^{(r)} &amp;= \mu + \class{mx-bad}{\Delta_1(x) + \Delta_2(x)\,\mu} \end{aligned} \]
+      </div>
+      <p class="cap"><b>µ</b> = the joint acceleration the controller asks for. <b>r</b> = how many times you differentiate the output before the torque shows up (angle → speed → acceleration, so r = 2).</p>
+      <div class="ex">rough illustration: robot 2× heavier → ask µ = 1.0 rad/s², get ≈ 0.5 rad/s² (Δ₂ ≈ −0.5)</div>
+    </article>
+
+    <article class="card">
+      <h3><span class="pill clf">CLF</span>Stability rule</h3>
+      <svg class="dg" viewBox="0 0 300 140" role="img" aria-label="Tracking error energy V over time stays under a decaying exponential limit curve.">
+        <line x1="34" y1="120" x2="290" y2="120" class="ln-mut" marker-end="url(#ah-mut)"/>
+        <line x1="34" y1="120" x2="34" y2="10" class="ln-mut" marker-end="url(#ah-mut)"/>
+        <path class="ln-mut dash" d="M34.0,24.0 L40.2,30.9 L46.5,37.4 L52.8,43.3 L59.0,48.9 L65.2,54.0 L71.5,58.8 L77.8,63.2 L84.0,67.3 L90.2,71.1 L96.5,74.7 L102.8,77.9 L109.0,81.0 L115.2,83.8 L121.5,86.4 L127.8,88.8 L134.0,91.1 L140.2,93.2 L146.5,95.1 L152.8,96.9 L159.0,98.6 L165.2,100.1 L171.5,101.6 L177.8,102.9 L184.0,104.1 L190.2,105.3 L196.5,106.3 L202.8,107.3 L209.0,108.2 L215.3,109.1 L221.5,109.9 L227.8,110.6 L234.0,111.3 L240.3,111.9 L246.5,112.5 L252.8,113.0 L259.0,113.5 L265.2,114.0 L271.5,114.4 L277.8,114.8 L284.0,115.2"/>
+        <path class="ln-clf" d="M34.0,24.0 L40.2,33.5 L46.5,42.8 L52.8,51.7 L59.0,60.1 L65.2,67.8 L71.5,74.7 L77.8,80.8 L84.0,86.0 L90.2,90.5 L96.5,94.2 L102.8,97.3 L109.0,99.7 L115.2,101.7 L121.5,103.2 L127.8,104.4 L134.0,105.4 L140.2,106.3 L146.5,107.0 L152.8,107.7 L159.0,108.4 L165.2,109.1 L171.5,109.8 L177.8,110.6 L184.0,111.3 L190.2,112.1 L196.5,112.9 L202.8,113.7 L209.0,114.4 L215.3,115.1 L221.5,115.7 L227.8,116.3 L234.0,116.8 L240.3,117.2 L246.5,117.6 L252.8,117.9 L259.0,118.1 L265.2,118.3 L271.5,118.5 L277.8,118.6 L284.0,118.7"/>
+        <text x="40" y="14" class="sm mut">V</text>
+        <text x="286" y="136" text-anchor="end" class="sm mut">time</text>
+        <text x="110" y="62" class="sm mut">limit: V₀·e^(−λt/ε)</text>
+        <text x="76" y="100" class="sm t-clf halo">V(t)</text>
+      </svg>
+      <div class="eq">
+        \[ V_\varepsilon(\eta) = \eta^\top P_\varepsilon\,\eta \qquad \class{mx-clf}{\dot V_\varepsilon + \tfrac{\lambda}{\varepsilon}\,V_\varepsilon \le 0} \]
+      </div>
+      <p class="cap"><b>η</b> = tracking error and its rate. <b>V</b> = one number for "how far off the planned gait". The rule: V must shrink at least this fast.</p>
+      <div class="ex">λ/ε = 10, V = 0.5 now → need V̇ ≤ −5 per second</div>
+    </article>
+
+    <article class="card">
+      <h3><span class="pill cbf">CBF</span>Safety rule</h3>
+      <svg class="dg" viewBox="0 0 300 150" role="img" aria-label="Safety margin B over time: the safe curve approaches zero but stays above it; a broken curve dips below zero into the unsafe region.">
+        <rect x="34" y="96" width="256" height="46" class="zone-bad"/>
+        <text x="40" y="112" class="sm mut">unsafe</text>
+        <line x1="34" y1="96" x2="290" y2="96" class="ln"/>
+        <line x1="34" y1="142" x2="34" y2="10" class="ln-mut" marker-end="url(#ah-mut)"/>
+        <path class="ln-bad dash" d="M34.0,20.0 L38.2,25.7 L42.3,31.5 L46.5,37.4 L50.7,43.2 L54.8,49.0 L59.0,54.8 L63.2,60.5 L67.3,66.0 L71.5,71.5 L75.7,76.8 L79.8,81.9 L84.0,86.9 L88.2,91.6 L92.3,96.2 L96.5,100.5 L100.7,104.6 L104.8,108.4 L109.0,112.0 L113.2,115.4 L117.3,118.5 L121.5,121.3 L125.7,123.9 L129.8,126.2 L134.0,128.2 L138.2,130.0 L142.3,131.5 L146.5,132.8 L150.7,133.9 L154.8,134.7 L159.0,135.3 L163.2,135.6 L167.3,135.8 L171.5,135.7 L175.7,135.5 L179.8,135.1 L184.0,134.5 L188.2,133.7 L192.3,132.8 L196.5,131.8 L200.7,130.6 L204.8,129.4 L209.0,128.0 L213.2,126.5 L217.3,125.0 L221.5,123.4 L225.7,121.7 L229.8,120.0 L234.0,118.3 L238.2,116.5 L242.3,114.8 L246.5,113.0 L250.7,111.2 L254.8,109.4 L259.0,107.7 L263.2,106.0 L267.3,104.3 L271.5,102.7 L275.7,101.1 L279.8,99.5 L284.0,98.0"/>
+        <path class="ln-cbf" d="M34.0,20.0 L38.2,25.5 L42.3,30.7 L46.5,35.5 L50.7,40.0 L54.8,44.1 L59.0,48.0 L63.2,51.7 L67.3,55.0 L71.5,58.1 L75.7,61.1 L79.8,63.7 L84.0,66.2 L88.2,68.6 L92.3,70.7 L96.5,72.7 L100.7,74.5 L104.8,76.2 L109.0,77.8 L113.2,79.2 L117.3,80.6 L121.5,81.8 L125.7,82.9 L129.8,84.0 L134.0,85.0 L138.2,85.9 L142.3,86.7 L146.5,87.4 L150.7,88.1 L154.8,88.8 L159.0,89.4 L163.2,89.9 L167.3,90.4 L171.5,90.9 L175.7,91.3 L179.8,91.7 L184.0,92.1 L188.2,92.4 L192.3,92.7 L196.5,93.0 L200.7,93.2 L204.8,93.4 L209.0,93.7 L213.2,93.9 L217.3,94.0 L221.5,94.2 L225.7,94.4 L229.8,94.5 L234.0,94.6 L238.2,94.7 L242.3,94.8 L246.5,94.9 L250.7,95.0 L254.8,95.1 L259.0,95.2 L263.2,95.3 L267.3,95.3 L271.5,95.4 L275.7,95.4 L279.8,95.5 L284.0,95.5"/>
+        <text x="40" y="14" class="sm mut">B</text>
+        <text x="296" y="100" text-anchor="end" class="sm">0</text>
+        <text x="150" y="70" class="sm t-cbf halo">rule kept</text>
+        <text x="200" y="147" class="sm t-bad halo">rule broken</text>
+      </svg>
+      <div class="eq">
+        \[ B(x) \ge 0 \iff \text{safe} \qquad \class{mx-cbf}{\ddot B + k_1 \dot B + k_0 B \ge 0} \]
+        \[ \text{paper: } \class{mx-cbf}{\mu_b + K_b\,\eta_b \ge 0}, \quad \mu_b = B^{(r_b)} \]
+      </div>
+      <p class="cap"><b>B</b> = safety margin. The rule limits how fast B may head toward 0, so it never crosses.</p>
+      <div class="ex">foot must land past l_min = 0.35 m → B₁ ≈ l − 0.35 ≥ 0 (simplified)</div>
+    </article>
+
+    <article class="card">
+      <h3><span class="pill ink">QP</span>The referee: a quadratic program</h3>
+      <svg class="dg" viewBox="0 0 300 160" role="img" aria-label="In the plane of control inputs, circles of equal effort surround zero. One rule is a straight line; the chosen input is the point on the safe side closest to zero.">
+        <defs><clipPath id="qp-clip"><rect x="20" y="10" width="270" height="140"/></clipPath></defs>
+        <g clip-path="url(#qp-clip)">
+          <polygon points="42,10 290,10 290,150 154,150" class="zone-cbf"/>
+          <circle cx="60" cy="120" r="25" class="ln-line dash"/>
+          <circle cx="60" cy="120" r="54.6" class="ln-mut dash"/>
+          <circle cx="60" cy="120" r="85" class="ln-line dash"/>
+          <circle cx="60" cy="120" r="115" class="ln-line dash"/>
+        </g>
+        <line x1="42" y1="10" x2="154" y2="150" class="ln"/>
+        <line x1="60" y1="120" x2="102.7" y2="85.9" class="ln-mut dot"/>
+        <circle cx="60" cy="120" r="3.5" class="fi-mut"/>
+        <circle cx="102.7" cy="85.9" r="6" class="fi-cbf" style="stroke:var(--surface);stroke-width:2"/>
+        <text x="66" y="136" class="sm mut">µ = 0</text>
+        <text x="112" y="82" class="halo">µ*</text>
+        <text x="186" y="38" class="sm t-cbf">rule passes here</text>
+        <text x="176" y="140" class="sm mut">circles = equal µᵀµ</text>
+      </svg>
+      <div class="eq">
+        \[
+        \begin{aligned}
+        \min_{\mu,\,\mu_b,\,d}\ \ &amp; \mu^\top\mu + p\,d^2 \\
+        \text{s.t.}\ \ &amp; \class{mx-clf}{\dot V_\varepsilon(\eta,\mu) + \tfrac{\lambda}{\varepsilon}V_\varepsilon \le d} \\
+        &amp; \class{mx-cbf}{\mu_b + K_b\,\eta_b \ge 0} \\
+        &amp; A_c(x)\,\mu + b_c(x) \le 0
+        \end{aligned}
+        \]
+        <span class="tag">eq. 18 · CBF-CLF-QP</span>
+      </div>
+      <p class="cap">Every rule is a straight line in µ, so this solves fast enough to rerun every 10 ms. Last line = friction: |F<sub>T</sub>/F<sub>N</sub>| ≤ 0.8 and F<sub>N</sub> ≥ 0 (foot pushes, never pulls).</p>
+    </article>
+
+  </div>
+</section>
+
+<section id="problem">
+  <div class="head">
+    <div class="eyebrow">The problem</div>
+    <h2>A wrong model moves every rule line</h2>
+  </div>
+  <div class="eq">
+    <span class="tag">eqs. 31, 35, 41</span>
+    \[
+    \begin{aligned}
+    \underbrace{\class{mx-clf}{\dot V_\varepsilon}}_{\text{real}} &amp;= \underbrace{\tilde{\dot V}_\varepsilon}_{\text{model predicts}} + \underbrace{\class{mx-bad}{\Delta^V_1 + \Delta^V_2\,\mu}}_{\text{unknown error}} \\[4pt]
+    \class{mx-cbf}{B^{(r_b)}} &amp;= \widetilde{B^{(r_b)}} + \class{mx-bad}{\Delta^b_1 + \Delta^b_2\,\mu} \\[4pt]
+    \zeta &amp;= \tilde\zeta + \class{mx-bad}{\Delta^c_1 + \Delta^c_2\,\mu}
+    \end{aligned}
+    \]
+    <p class="note">Key fact: the error is always <b>offset (Δ₁) + slope × µ (Δ₂)</b>. So it shifts and tilts each rule's line, but the line stays straight. ζ = any other rule, like friction.</p>
+  </div>
+
+  <figure class="fig" style="margin:0">
+    <div class="steps" role="group" aria-label="Diagram step">
+      <button type="button" data-go="1" aria-pressed="false">1 · Model's rule</button>
+      <button type="button" data-go="2" aria-pressed="false">2 · Real robot</button>
+      <button type="button" data-go="3" aria-pressed="true">3 · Learned patch</button>
+    </div>
+    <svg id="geo" class="dg geo" data-step="3" viewBox="0 0 500 410" role="img" aria-label="Control-input plane. The model's rule line and the real rule line differ. The point chosen using the model's line lies on the unsafe side of the real line. The learned line nearly matches the real line, and its chosen point is safe.">
+      <defs><clipPath id="geo-clip"><rect x="40" y="30" width="432" height="360"/></clipPath></defs>
+      <g clip-path="url(#geo-clip)">
+        <polygon points="148,30 472,30 472,390 328,390" class="zone-soft s1"/>
+        <polygon points="108,30 472,30 472,390 438,390" class="zone-cbf s23"/>
+        <circle cx="112" cy="318" r="60" class="ln-line dash"/>
+        <circle cx="112" cy="318" r="120" class="ln-line dash"/>
+        <circle cx="112" cy="318" r="180" class="ln-line dash"/>
+        <circle cx="112" cy="318" r="240" class="ln-line dash"/>
+        <circle cx="112" cy="318" r="300" class="ln-line dash"/>
+      </g>
+      <line x1="40" y1="318" x2="474" y2="318" class="ln-mut" marker-end="url(#ah-mut)"/>
+      <line x1="112" y1="390" x2="112" y2="28" class="ln-mut" marker-end="url(#ah-mut)"/>
+      <text x="480" y="322">µ₁</text>
+      <text x="118" y="24">µ₂</text>
+      <text x="118" y="336" class="sm mut">µ = 0</text>
+
+      <text x="330" y="70" class="mut s1">model's safe side</text>
+      <text x="330" y="70" class="t-cbf s23">real safe side</text>
+
+      <line x1="148" y1="30" x2="328" y2="390" class="ln-mut model-line" style="stroke-width:2.2"/>
+      <line x1="108" y1="30" x2="438" y2="390" class="ln s23" style="stroke-width:2.2"/>
+      <line x1="121.1" y1="30" x2="424" y2="390" class="ln-rl dash s3" style="stroke-width:2.4"/>
+
+      <line x1="112" y1="318" x2="256" y2="246" class="ln-mut dot s12"/>
+      <line x1="112" y1="318" x2="259.3" y2="194.2" class="ln-mut dot s3"/>
+
+      <circle cx="256" cy="246" r="6.5" class="fi-ink s1" style="stroke:var(--surface);stroke-width:2"/>
+      <circle cx="256" cy="246" r="6.5" class="fi-bad s23" style="stroke:var(--surface);stroke-width:2"/>
+      <text x="236" y="222" text-anchor="end" class="halo s1">µ* (model)</text>
+      <text x="236" y="238" text-anchor="end" class="sm mut halo s1">closest passing µ</text>
+      <text x="236" y="222" text-anchor="end" class="halo s2">µ* (model)</text>
+      <text x="236" y="238" text-anchor="end" class="sm t-bad halo s2">✗ breaks real rule</text>
+      <text x="247" y="264" text-anchor="end" class="sm t-bad halo s3">old µ*</text>
+
+      <circle cx="259.3" cy="194.2" r="6.5" class="fi-cbf s3" style="stroke:var(--surface);stroke-width:2"/>
+      <text x="272" y="188" class="halo s3">new µ* ✓ safe</text>
+    </svg>
+    <div class="key" style="justify-content:center">
+      <span><i class="sw mut"></i>model's rule line</span>
+      <span class="s23-key"><i class="sw ink"></i>real rule line</span>
+      <span><i class="sw dashed"></i>learned rule line</span>
+      <span><i class="sw bad pt"></i><i class="sw cbf pt"></i>chosen µ*</span>
+    </div>
+    <p class="geo-cap" id="geo-cap" aria-live="polite">The network learns β (shift) and α (tilt). The learned line lands on the real one, and the new µ* is truly safe.</p>
+    <p class="cap">µ has 4 entries for this robot (one per motor); drawn here with 2. Dashed circles = equal effort µᵀµ.</p>
+  </figure>
+</section>
+
+<section id="fix">
+  <div class="head">
+    <div class="eyebrow">The fix</div>
+    <h2>Learn the offset β and slope α for each rule</h2>
+  </div>
+  <div class="eq">
+    <span class="tag">eqs. 32, 38, 43</span>
+    \[
+    \begin{aligned}
+    \class{mx-clf}{\hat{\dot V}_{\varepsilon,\theta}} &amp;= \tilde{\dot V}_\varepsilon + \class{mx-rl}{\beta^V_\theta(x) + \alpha^V_\theta(x)\,\mu} \\[4pt]
+    \class{mx-cbf}{\widehat{B^{(r_b)}}_\theta} &amp;= \widetilde{B^{(r_b)}} + \class{mx-rl}{\beta^B_\theta(x,\psi) + \alpha^B_\theta(x,\psi)\,\mu} \\[4pt]
+    \hat\zeta_\theta &amp;= \tilde\zeta + \class{mx-rl}{\beta^C_\theta(x) + \alpha^C_\theta(x)\,\mu}
+    \end{aligned}
+    \]
+    <p class="note">Goal: make each \(\class{mx-rl}{\beta}\) match Δ₁ and each \(\class{mx-rl}{\alpha}\) match Δ₂. The patched rule is still a straight line in µ, so the QP stays a QP. ψ = the next stone's l_min, fed to the network.</p>
+  </div>
+
+  <div class="eq">
+    <span class="tag">eqs. 46–48 · reward</span>
+    \[
+    R = -\,w_v \big\| \underbrace{\dot V_\varepsilon}_{\text{measured}} - \underbrace{\class{mx-rl}{\hat{\dot V}_{\varepsilon,\theta}}}_{\text{predicted}} \big\|^2
+    \;-\; \sum_i w_{b,i} \big\| B_i^{(r_b)} - \class{mx-rl}{\widehat{B_i^{(r_b)}}_\theta} \big\|^2
+    \;-\; \sum_j w_{c,j} \big\| \zeta_j - \class{mx-rl}{\hat\zeta_{j,\theta}} \big\|^2
+    \;-\; \underbrace{l_e(x)}_{\text{fall penalty}}
+    \]
+    \[ \max_{\class{mx-rl}{\theta}}\ \mathbb{E}\Big[\int_0^T R\big(x(\tau),\theta\big)\,d\tau\Big], \qquad \text{robot driven by } \mu^*_\theta + w,\ \ w \sim \mathcal N(0,\sigma^2) \]
+    <p class="note">No true model needed: "measured" values come from numerical derivatives of V, B and the contact forces. Noise w makes the robot try new things.</p>
+  </div>
+
+  <figure class="fig" style="margin:0">
+    <div class="eyebrow">Count for this robot</div>
+    <div class="eq" style="border:0;padding:0">
+      \[ \underbrace{5}_{\text{rules: } V,\ B_1,\ B_2,\ \text{normal force},\ \text{friction}} \times \big(\underbrace{4}_{\class{mx-rl}{\alpha}\ \in\ \mathbb R^{4}} + \underbrace{1}_{\class{mx-rl}{\beta}}\big) = 25 \text{ network outputs} \]
+    </div>
+  </figure>
+
+  <figure class="fig" style="margin:0">
+    <div class="eyebrow">Two ways the paper tries for the stability rule</div>
+    <div class="grid2">
+      <div class="card" style="padding:12px">
+        <h3><span class="pill ink">III-A</span>IO-RL + CLF-QP: fix the robot</h3>
+        <div class="flow"><span class="n">µ</span><span class="ar">→</span><span class="n">model torque ũ</span><span class="ar">+</span><span class="n rl">learned u<sub>θ</sub></span><span class="ar">→</span><span class="n">robot</span><span class="ar">→</span><span class="n">ÿ ≈ µ</span></div>
+        <div class="eq" style="border:0;padding:0">\[ R = -\|y^{(r)} - \mu\|^2 \]</div>
+        <p class="cap">Make the robot obey the model. Cannot extend to safety rules (CBFs depend on the full state, not just the tracked joints).</p>
+      </div>
+      <div class="card" style="padding:12px">
+        <h3><span class="pill rl">III-B</span>RL-CLF-QP: fix the rule</h3>
+        <div class="flow"><span class="n">µ</span><span class="ar">→</span><span class="n">model torque ũ</span><span class="ar">→</span><span class="n">robot</span><span class="ar">·</span><span class="n rl">rule: V̇ + β + αµ</span></div>
+        <div class="eq" style="border:0;padding:0">\[ R = -\|\dot V_\varepsilon - \class{mx-rl}{\hat{\dot V}_{\varepsilon,\theta}}\|^2 \]</div>
+        <p class="cap">Leave the robot alone; correct the rule's prediction. Same recipe works for CBFs and friction, so this is the one the paper builds on.</p>
+      </div>
+    </div>
+  </figure>
+</section>
+
+<section id="demo">
+  <div class="head">
+    <div class="eyebrow">Try it</div>
+    <h2>A cart, a stop line, and a wrong mass</h2>
+  </div>
+  <div class="eq">
+    \[ \text{real: } \ddot p = \frac{u}{m}, \quad u = \tilde m\,a,\quad \tilde m = 1\,\text{kg}, \quad \class{mx-bad}{s = m/\tilde m} \qquad B = 3\,\text{m} - p \]
+    \[ \text{rule: } \class{mx-cbf}{\ddot B + 4\dot B + 4B \ge 0} \quad \text{model: } \widetilde{\ddot B} = -a \quad \text{real: } \ddot B = -\tfrac{a}{s} \quad \text{patched: } \hat{\ddot B} = -a + \class{mx-rl}{\beta + \alpha a} \]
+    <p class="note">The cart wants to cruise at 3 m/s (a<sub>des</sub> = 2(3 − v)). The QP picks the a closest to a<sub>des</sub> that passes the rule. The "learned" α, β come from a straight-line fit on the model-only run's data (the paper does this fit with RL).</p>
+  </div>
+  <figure class="fig" style="margin:0">
+    <div class="ctrl">
+      <label for="mass-ratio">Real mass ÷ model mass, s</label>
+      <input type="range" id="mass-ratio" min="1" max="3" step="0.1" value="2">
+      <output id="mass-out" for="mass-ratio">2.0×</output>
+    </div>
+    <div class="key">
+      <span><i class="sw bad"></i>model-only rule</span>
+      <span><i class="sw cbf"></i>rule + learned α, β</span>
+      <span class="mono" style="font-size:12.5px">(the two lines match until the rule starts braking)</span>
+    </div>
+    <div class="scroll" id="toy-box" style="position:relative">
+      <svg id="toy" class="dg" viewBox="0 0 640 290" role="img" aria-label="Distance to the stop line over five seconds for the model-only rule and the patched rule."></svg>
+    </div>
+    <div class="readout">
+      <div><span class="h"><i class="sw bad"></i>Model-only rule</span><span class="v" id="ro-bad">–</span></div>
+      <div><span class="h"><i class="sw cbf"></i>With learned patch</span><span class="v" id="ro-ok">–</span></div>
+    </div>
+    <p class="cap">At s = 2 (the paper's case) the model thinks braking is twice as strong as it really is, so the cart overshoots. With the patch, the cart glides up to the line and stops.</p>
+    <div class="tip" id="toy-tip" hidden></div>
+  </figure>
+</section>
+
+<section id="robot">
+  <div class="head">
+    <div class="eyebrow">The test</div>
+    <h2>RABBIT and the training setup</h2>
+  </div>
+  <figure class="fig" style="margin:0">
+    <div class="robot">
+      <svg class="dg" viewBox="0 0 330 300" role="img" aria-label="RABBIT: torso, two thighs, two shins; motors at both hips and both knees; point feet with no ankle motor.">
+        <rect x="140" y="12" width="40" height="22" rx="4" class="zone-soft" style="stroke:var(--muted);stroke-width:1.2;stroke-dasharray:4 3"/>
+        <text x="186" y="27" class="sm mut">+ load (test only)</text>
+        <line x1="160" y1="150" x2="160" y2="40" class="limb" style="stroke-width:10"/>
+        <polyline points="160,150 140,205 150,266" class="limb"/>
+        <polyline points="160,150 183,204 174,266" class="limb"/>
+        <line x1="70" y1="268" x2="260" y2="268" class="ln-mut"/>
+        <rect x="153" y="143" width="14" height="14" rx="3" class="fi-rl" style="stroke:var(--surface);stroke-width:2"/>
+        <rect x="133" y="198" width="14" height="14" rx="3" class="fi-rl" style="stroke:var(--surface);stroke-width:2"/>
+        <rect x="176" y="197" width="14" height="14" rx="3" class="fi-rl" style="stroke:var(--surface);stroke-width:2"/>
+        <circle cx="150" cy="266" r="3" class="fi-ink"/><circle cx="174" cy="266" r="3" class="fi-ink"/>
+        <line x1="166" y1="80" x2="200" y2="80" class="ln-mut"/><text x="204" y="84">torso</text>
+        <line x1="170" y1="150" x2="200" y2="150" class="ln-mut"/><text x="204" y="154">hip motors ×2</text>
+        <line x1="192" y1="204" x2="204" y2="204" class="ln-mut"/><text x="208" y="208">knee motors ×2</text>
+        <text x="20" y="290" class="sm mut">point feet, no ankle motor (underactuated)</text>
+        <text x="20" y="84" class="sm mut">planar:</text>
+        <text x="20" y="98" class="sm mut">moves in 2D only</text>
+      </svg>
+      <div class="tbl">
+        <table>
+          <tbody>
+            <tr><td>Robot</td><td>5 links, 32 kg, 4 motors</td></tr>
+            <tr><td>State x</td><td>7 positions + 7 speeds = 14 numbers</td></tr>
+            <tr><td>Torque limit</td><td class="mono">200 Nm</td></tr>
+            <tr><td>Gait</td><td>one periodic walk (from FROST), step 0.35 m</td></tr>
+            <tr><td>Model error</td><td>real mass and inertia = <b>2×</b> model</td></tr>
+            <tr><td>Extra, unseen at test</td><td>motor lag (0.004 s); a load on the torso</td></tr>
+            <tr><td>RL algorithm</td><td>DDPG; hidden layers 400, 300; 25 outputs</td></tr>
+            <tr><td>Episode</td><td>10 steps, T<sub>s</sub> = 0.01 s, ≈ 34 s on a 6-core i5 CPU, no GPU</td></tr>
+            <tr><td>Training</td><td class="mono">110 / 79 / 133 episodes ≈ 62 / 45 / 75 min</td></tr>
+          </tbody>
+        </table>
+        <p class="cap" style="margin-top:6px">Training rows: IO-RL + CLF-QP / RL-CLF-QP / RL-CBF-CLF-QP. Minutes = episodes × 34 s.</p>
+      </div>
+    </div>
+  </figure>
+</section>
+
+<section id="results">
+  <div class="head">
+    <div class="eyebrow">Results (simulation)</div>
+    <h2>Stepping stones: 20 of 20 vs. a miss after 5.6</h2>
+  </div>
+
+  <figure class="fig" style="margin:0">
+    <div class="eyebrow">Steps on the stones before the first miss · real mass = 2× model · 10 runs of 20 steps</div>
+    <div class="scroll">
+      <svg class="dg chart" viewBox="0 0 640 132" role="img" aria-label="Bar chart. Model-only CBF-CLF-QP misses after 5.6 plus or minus 4.6 steps. RL-CBF-CLF-QP completes all 20 steps.">
+        <g class="ln-line">
+          <line x1="200" y1="10" x2="200" y2="104"/><line x1="290.9" y1="10" x2="290.9" y2="104"/><line x1="381.8" y1="10" x2="381.8" y2="104"/><line x1="472.7" y1="10" x2="472.7" y2="104"/><line x1="563.6" y1="10" x2="563.6" y2="104"/>
+        </g>
+        <g class="mut sm">
+          <text x="200" y="122" text-anchor="middle" class="mut sm">0</text><text x="290.9" y="122" text-anchor="middle" class="mut sm">5</text><text x="381.8" y="122" text-anchor="middle" class="mut sm">10</text><text x="472.7" y="122" text-anchor="middle" class="mut sm">15</text><text x="563.6" y="122" text-anchor="middle" class="mut sm">20</text>
+        </g>
+        <text x="190" y="40" text-anchor="end">CBF-CLF-QP (model only)</text>
+        <g tabindex="0" data-tip="Model only: first miss after 5.6 ± 4.64 steps (mean ± sd, 10 runs)">
+          <rect x="200" y="28" width="101.8" height="16" rx="4" class="fi-bad"/>
+          <line x1="217.5" y1="36" x2="386.2" y2="36" class="ln"/>
+          <line x1="217.5" y1="30" x2="217.5" y2="42" class="ln"/><line x1="386.2" y1="30" x2="386.2" y2="42" class="ln"/>
+          <rect x="200" y="24" width="190" height="24" fill="transparent"/>
+        </g>
+        <text x="396" y="40" class="mut">5.6 ± 4.6</text>
+        <text x="190" y="80" text-anchor="end">RL-CBF-CLF-QP</text>
+        <g tabindex="0" data-tip="With learned patches: 20 of 20 steps on the stones, friction ratio always ≤ 0.8">
+          <rect x="200" y="68" width="363.6" height="16" rx="4" class="fi-cbf"/>
+        </g>
+        <text x="572" y="80" class="mut">20 / 20</text>
+      </svg>
+    </div>
+    <p class="cap">With the patches, every landing was on the stone and the foot never slipped (|F<sub>T</sub>/F<sub>N</sub>| ≤ 0.8 all 20 steps). The error bar is ± one standard deviation.</p>
+  </figure>
+
+  <figure class="fig" style="margin:0">
+    <div class="eyebrow">Extra torso load handled · never seen in training · robot's own mass = 32 kg</div>
+    <div class="scroll">
+      <svg class="dg chart" viewBox="0 0 640 150" role="img" aria-label="Range chart of extra torso load each method handled. IO-RL plus CLF-QP on flat ground: up to 53 kg. RL-CLF-QP on flat ground: up to 72 kg. RL-CBF-CLF-QP on stepping stones: 43 to 72 kg.">
+        <g class="ln-line">
+          <line x1="200" y1="14" x2="200" y2="122"/><line x1="300" y1="14" x2="300" y2="122"/><line x1="400" y1="14" x2="400" y2="122"/><line x1="500" y1="14" x2="500" y2="122"/><line x1="600" y1="14" x2="600" y2="122"/>
+        </g>
+        <text x="200" y="140" text-anchor="middle" class="mut sm">0</text><text x="300" y="140" text-anchor="middle" class="mut sm">20</text><text x="400" y="140" text-anchor="middle" class="mut sm">40</text><text x="500" y="140" text-anchor="middle" class="mut sm">60</text><text x="600" y="140" text-anchor="middle" class="mut sm">80 kg</text>
+        <line x1="360" y1="14" x2="360" y2="122" class="ln-mut dash"/>
+        <text x="356" y="12" text-anchor="end" class="sm mut">32 kg tested</text>
+
+        <text x="190" y="38" text-anchor="end">IO-RL + CLF-QP · flat</text>
+        <g tabindex="0" data-tip="IO-RL + CLF-QP, flat ground: works at 32 kg, up to 53 kg (166% of robot mass)">
+          <rect x="360" y="27" width="105" height="14" rx="4" class="fi-clf"/>
+        </g>
+        <text x="472" y="38" class="mut">up to 53 kg</text>
+
+        <text x="190" y="74" text-anchor="end">RL-CLF-QP · flat</text>
+        <g tabindex="0" data-tip="RL-CLF-QP, flat ground: works at 32 kg, up to 72 kg (225% of robot mass)">
+          <rect x="360" y="63" width="200" height="14" rx="4" class="fi-clf"/>
+        </g>
+        <text x="567" y="74" class="mut">72 kg</text>
+
+        <text x="190" y="110" text-anchor="end">RL-CBF-CLF-QP · stones</text>
+        <g tabindex="0" data-tip="RL-CBF-CLF-QP, stepping stones: safe from 43 to 72 kg (134–225% of robot mass)">
+          <rect x="415" y="99" width="145" height="14" rx="4" class="fi-clf"/>
+        </g>
+        <text x="567" y="110" class="mut">43–72 kg</text>
+      </svg>
+    </div>
+    <p class="cap">Flat-ground rows: the paper reports the 32 kg test and the maximum only, so the bars start at 32. Also worked with joint friction (−15 % motor power), joint damping, and links bent up to 5 %.</p>
+  </figure>
+
+  <figure class="fig" style="margin:0">
+    <div class="eyebrow">Flat ground · real mass = 2× model · friction was not a rule in these QPs</div>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Controller</th><th>Walks?</th><th>Friction |F<sub>T</sub>/F<sub>N</sub>| ≤ 0.8</th></tr></thead>
+        <tbody>
+          <tr><td>CLF-QP (model only)</td><td><span class="no">✗ falls</span></td><td>–</td></tr>
+          <tr><td>L1 adaptive CLF-QP (older method)</td><td><span class="no">✗ falls</span></td><td><span class="no">✗</span> broken on many steps</td></tr>
+          <tr><td>IO-RL + CLF-QP (III-A)</td><td><span class="ok">✓ walks</span></td><td><span class="no">✗</span> broken in first 2 steps</td></tr>
+          <tr><td>RL-CLF-QP (III-B)</td><td><span class="ok">✓ walks</span></td><td><span class="ok">✓</span> kept every step</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </figure>
+</section>
+
+<section id="limits">
+  <div class="head">
+    <div class="eyebrow">Limits</div>
+    <h2>When it fails</h2>
+  </div>
+  <figure class="fig" style="margin:0">
+    <div class="tbl">
+      <table>
+        <thead><tr><th class="num">Real ÷ model mass</th><th>Model-only controller</th><th>After RL training</th></tr></thead>
+        <tbody>
+          <tr><td class="num">2</td><td>falls on flat ground; misses a stone after ~5.6 steps</td><td><span class="ok">✓</span> 20 / 20 stones</td></tr>
+          <tr><td class="num">0.7</td><td>falls after 1 step</td><td><span class="ok">✓</span> walks safely, no time limit</td></tr>
+          <tr><td class="num">0.5</td><td>falls after <b>0.06 s</b></td><td><span class="no">✗</span> training fails</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="cap">RL learns from data. If the starting controller dies in 0.06 s, there is almost no data.</p>
+  </figure>
+  <ul class="limits">
+    <li>Assumes the CLF built for the model is still a valid CLF for the real robot. Large errors can break this.</li>
+    <li>Measured V̇ and B̈ come from numerical derivatives, which are noisy on real hardware. All results are in simulation.</li>
+    <li>The QP can have no solution when rules conflict. This happened much less after training, but nothing guarantees it.</li>
+    <li class="mine">My note, not the paper's: safety now depends on α, β being right. Nothing proves they are right in every state; the evidence is simulation runs.</li>
+  </ul>
+</section>
+
+<section id="cheats">
+  <div class="head">
+    <div class="eyebrow">Cheat sheets</div>
+    <h2>Symbols, and how to read the paper fast</h2>
+  </div>
+  <div class="grid2">
+    <figure class="fig" style="margin:0">
+      <div class="eyebrow">Symbols</div>
+      <div class="tbl">
+        <table>
+          <tbody>
+            <tr><td>\(x,\ u\)</td><td>state (14 numbers); motor torques (4)</td></tr>
+            <tr><td>\(y = h(x)\)</td><td>joint angles minus the planned gait's angles</td></tr>
+            <tr><td>\(r\)</td><td>relative degree: derivatives until u appears (2)</td></tr>
+            <tr><td>\(\mu\)</td><td>virtual input: the y-acceleration we ask for</td></tr>
+            <tr><td>\(\eta\)</td><td>(y, ẏ): tracking error and its rate</td></tr>
+            <tr><td>\(\class{mx-clf}{V_\varepsilon},\ \lambda/\varepsilon\)</td><td>CLF: error "energy"; how fast it must shrink</td></tr>
+            <tr><td>\(\class{mx-cbf}{B},\ \psi\)</td><td>CBF: safety margin; stone's l<sub>min</sub></td></tr>
+            <tr><td>\(\zeta\)</td><td>other rules: normal force, friction</td></tr>
+            <tr><td>\(d,\ p\)</td><td>slack on the CLF; its cost</td></tr>
+            <tr><td>\(\tilde{\ \ }\) / \(\hat{\ \ }\)</td><td>model's version / learned estimate</td></tr>
+            <tr><td>\(\class{mx-bad}{\Delta_1, \Delta_2}\)</td><td>true model error: offset, slope</td></tr>
+            <tr><td>\(\class{mx-rl}{\beta_\theta, \alpha_\theta, \theta}\)</td><td>learned offset, slope; network weights</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </figure>
+    <figure class="fig" style="margin:0">
+      <div class="eyebrow">15-minute reading path</div>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>Part</th><th>What's there</th><th>Do</th></tr></thead>
+          <tbody>
+            <tr><td>Fig. 1, §I-B</td><td>overview, contributions</td><td><span class="ok">read</span></td></tr>
+            <tr><td>§II</td><td>background; eqs. 13, 18</td><td>skim</td></tr>
+            <tr><td>§III-A</td><td>"fix the robot" variant</td><td>skip</td></tr>
+            <tr><td>§III-B</td><td>core idea, eqs. 29–33</td><td><span class="ok">read</span></td></tr>
+            <tr><td>§IV</td><td>same for CBF, friction; eq. 45</td><td><span class="ok">eq. 45</span></td></tr>
+            <tr><td>§V</td><td>reward, eqs. 46–48</td><td><span class="ok">read</span></td></tr>
+            <tr><td>§VI–VII</td><td>setup; Figs. 2, 3, 5</td><td>figures</td></tr>
+            <tr><td>§VIII</td><td>limits</td><td><span class="ok">read</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<footer>
+  Source: J. Choi, F. Castañeda, C. J. Tomlin, K. Sreenath, arXiv:2004.07584v2 (2020). Numbers on this page come from the paper, except the cart demo and the items marked "rough illustration" or "my note".
+</footer>
+
+</div>
+
+<script>
+(function () {
+  // Diagram stepper for the rule-line picture.
+  const geo = document.getElementById('geo');
+  const cap = document.getElementById('geo-cap');
+  const caps = {
+    1: 'The QP picks µ*: the smallest µ (closest to 0) on the safe side of the model’s rule line.',
+    2: 'The real rule line is shifted (Δ₁) and tilted (Δ₂). µ* sits on the wrong side, so the real safety rule is broken.',
+    3: 'The network learns β (shift) and α (tilt). The learned line lands on the real one, and the new µ* is truly safe.'
+  };
+  const btns = document.querySelectorAll('[data-go]');
+  btns.forEach(b => b.addEventListener('click', () => {
+    const s = b.dataset.go;
+    geo.dataset.step = s;
+    cap.textContent = caps[s];
+    btns.forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  }));
+
+  // Shared tooltip for chart marks.
+  document.querySelectorAll('svg.chart').forEach(svg => {
+    const fig = svg.closest('.fig');
+    let tip = fig.querySelector('.tip');
+    if (!tip) { tip = document.createElement('div'); tip.className = 'tip'; tip.hidden = true; fig.appendChild(tip); }
+    svg.querySelectorAll('[data-tip]').forEach(g => {
+      const show = (x, y) => {
+        tip.textContent = g.dataset.tip; tip.hidden = false;
+        const fr = fig.getBoundingClientRect();
+        const left = Math.min(Math.max(8, x - fr.left + 12), fr.width - tip.offsetWidth - 8);
+        tip.style.left = left + 'px'; tip.style.top = (y - fr.top - 40) + 'px';
+      };
+      g.addEventListener('pointermove', e => show(e.clientX, e.clientY));
+      g.addEventListener('pointerleave', () => { tip.hidden = true; });
+      g.addEventListener('focus', () => { const r = g.getBoundingClientRect(); show(r.left + r.width / 2, r.top); });
+      g.addEventListener('blur', () => { tip.hidden = true; });
+    });
+  });
+
+  // Cart demo: same ECBF, three models of the braking effect.
+  const DT = 0.01, T = 5, K0 = 4, K1 = 4, PW = 3, VD = 3;
+  function simulate(s, alpha, beta) {
+    let p = 0, v = 0;
+    const t = [], B = [], A = [], V = [];
+    for (let k = 0; k < Math.round(T / DT); k++) {
+      const b = PW - p, ades = 2 * (VD - v);
+      const bound = (K0 * b - K1 * v + beta) / (1 - alpha);   // rule solved for a
+      const a = Math.min(ades, bound);                        // QP: closest a to a_des that passes
+      t.push(k * DT); B.push(b); A.push(a); V.push(v);
+      for (let i = 0; i < 10; i++) { v += (a / s) * DT / 10; p += v * DT / 10; }  // real cart, m = s·m̃
+    }
+    return { t, B, A, V };
+  }
+  // Least-squares fit of measured minus model B̈ = β + α·a.
+  function fit(run) {
+    let n = 0, sa = 0, saa = 0, sr = 0, sar = 0;
+    for (let k = 0; k < run.t.length - 1; k++) {
+      const bdd = -(run.V[k + 1] - run.V[k]) / DT;
+      const a = run.A[k], r = bdd + a;
+      n++; sa += a; saa += a * a; sr += r; sar += a * r;
+    }
+    const det = n * saa - sa * sa;
+    if (Math.abs(det) < 1e-12) return { alpha: 0, beta: 0 };
+    const alpha = (n * sar - sa * sr) / det;
+    return { alpha, beta: (sr - alpha * sa) / n };
+  }
+
+  const svg = document.getElementById('toy');
+  const box = document.getElementById('toy-box');
+  const tip = document.getElementById('toy-tip');
+  const L = 64, R = 620, TOP = 14, BOT = 246, BMIN = -0.4, BMAX = 3.2;
+  const X = t => L + (R - L) * t / T;
+  const Y = b => TOP + (BMAX - b) / (BMAX - BMIN) * (BOT - TOP);
+  const path = (run) => run.t.map((t, i) => (i ? 'L' : 'M') + X(t).toFixed(1) + ',' + Y(Math.max(BMIN, run.B[i])).toFixed(1)).join('');
+  let cur = null;
+
+  function draw(s) {
+    const bad = simulate(s, 0, 0);
+    const f = fit(bad);
+    const ok = simulate(s, f.alpha, f.beta);
+    cur = { bad, ok };
+    const kc = bad.B.findIndex(b => b < 0);
+    const minBad = Math.min(...bad.B), minOk = Math.min(...ok.B);
+    let g = '';
+    g += `<rect x="${L}" y="${Y(0)}" width="${R - L}" height="${Y(BMIN) - Y(0)}" class="zone-bad"/>`;
+    g += `<text x="${L + 6}" y="${Y(-0.3)}" class="sm mut">past the stop line: unsafe</text>`;
+    for (const b of [1, 2, 3]) g += `<line x1="${L}" x2="${R}" y1="${Y(b)}" y2="${Y(b)}" class="ln-line"/><text x="${L - 8}" y="${Y(b) + 4}" text-anchor="end" class="sm mut">${b}</text>`;
+    g += `<line x1="${L}" x2="${R}" y1="${Y(0)}" y2="${Y(0)}" class="ln"/><text x="${L - 8}" y="${Y(0) + 4}" text-anchor="end" class="sm">0</text>`;
+    for (let t = 0; t <= T; t++) g += `<text x="${X(t)}" y="${BOT + 18}" text-anchor="middle" class="sm mut">${t}</text>`;
+    g += `<text x="${R}" y="${BOT + 36}" text-anchor="end" class="sm mut">time (s)</text>`;
+    g += `<text x="${L - 8}" y="${TOP - 2}" text-anchor="end" class="sm mut">B (m)</text>`;
+    g += `<path d="${path(ok)}" class="ln-cbf" style="stroke-width:3.5"/>`;
+    g += `<path d="${path(bad)}" class="ln-bad"/>`;
+    if (kc >= 0) {
+      const kmin = bad.B.indexOf(minBad);
+      g += `<circle cx="${X(bad.t[kc])}" cy="${Y(0)}" r="5.5" class="fi-bad" style="stroke:var(--surface);stroke-width:2"/>`;
+      g += `<text x="${X(bad.t[kc]) - 10}" y="${Y(0) - 10}" text-anchor="end" class="sm halo">crosses at ${bad.t[kc].toFixed(2)} s</text>`;
+      g += `<text x="${X(bad.t[kmin]) + 10}" y="${Y(Math.max(BMIN, minBad)) + 4}" class="sm halo">${(-minBad * 100).toFixed(1)} cm past</text>`;
+    }
+    g += `<line id="toy-x" x1="0" x2="0" y1="${TOP}" y2="${BOT}" class="ln-mut" style="display:none"/>`;
+    g += `<rect id="toy-hit" x="${L}" y="${TOP}" width="${R - L}" height="${BOT - TOP}" fill="transparent"/>`;
+    svg.innerHTML = g;
+
+    document.getElementById('ro-bad').textContent = kc >= 0
+      ? `crosses at t = ${bad.t[kc].toFixed(2)} s, overshoots by ${(-minBad * 100).toFixed(1)} cm`
+      : `never crosses (closest ${(minBad * 100).toFixed(1)} cm): the model is right`;
+    document.getElementById('ro-ok').textContent =
+      `α = ${f.alpha.toFixed(2)}, β = ${(Math.abs(f.beta) < 0.005 ? 0 : f.beta).toFixed(2)} → closest ${(Math.max(0, minOk) * 100).toFixed(1)} cm, ${minOk < -0.002 ? 'crosses' : 'never crosses'}`;
+
+    const hit = document.getElementById('toy-hit'), xl = document.getElementById('toy-x');
+    hit.addEventListener('pointermove', e => {
+      const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+      const sp = pt.matrixTransform(svg.getScreenCTM().inverse());
+      const k = Math.max(0, Math.min(cur.bad.t.length - 1, Math.round(((sp.x - L) / (R - L)) * T / DT)));
+      const x = X(cur.bad.t[k]);
+      xl.setAttribute('x1', x); xl.setAttribute('x2', x); xl.style.display = '';
+      tip.innerHTML = `t = ${cur.bad.t[k].toFixed(2)} s<br>model-only B = ${cur.bad.B[k].toFixed(3)} m<br>patched B = ${cur.ok.B[k].toFixed(3)} m`;
+      tip.hidden = false;
+      const fr = box.closest('.fig').getBoundingClientRect();
+      const left = Math.min(Math.max(8, e.clientX - fr.left + 14), fr.width - tip.offsetWidth - 8);
+      tip.style.left = left + 'px'; tip.style.top = (e.clientY - fr.top - 70) + 'px';
+    });
+    hit.addEventListener('pointerleave', () => { tip.hidden = true; xl.style.display = 'none'; });
+  }
+
+  const slider = document.getElementById('mass-ratio'), out = document.getElementById('mass-out');
+  slider.addEventListener('input', () => { out.textContent = Number(slider.value).toFixed(1) + '×'; draw(Number(slider.value)); });
+  draw(Number(slider.value));
+})();
+</script>

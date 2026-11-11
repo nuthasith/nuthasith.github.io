@@ -1,0 +1,137 @@
+/* Reading styles shared by the three guides. No font download is required. */
+:root {
+  --body: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --display: var(--body);
+  --mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --step-0: 1.0625rem;
+  --step-1: 1.25rem;
+  --step-2: 1.7rem;
+  --step-3: 2.65rem;
+}
+
+body { line-height: 1.75; padding-inline: 24px; }
+.shell { max-width: 1160px; grid-template-columns: 225px minmax(0, 1fr); gap: 0 3rem; }
+.masthead { padding-block: 2.5rem 1.8rem; }
+.kicker { font: 500 0.8rem/1.6 var(--body); letter-spacing: 0; color: var(--ink-2); }
+h1 { font-weight: 750; line-height: 1.15; letter-spacing: -0.035em; max-width: 30ch; margin-block: 0.65rem 1rem; }
+.lede { font-size: 1.12rem; line-height: 1.7; max-width: 65ch; }
+.cite { line-height: 1.6; max-width: 88ch; }
+.docnav { gap: 0.5rem; margin-top: 1.4rem; }
+.docnav a { font-size: 0.9rem; line-height: 1.3; padding: 0.55rem 0.8rem; border-radius: 5px; }
+
+main { padding-top: 1.8rem; }
+main > section { padding-block: 2.3rem 1.7rem; }
+main > section:first-child { padding-top: 0; }
+h2 { line-height: 1.3; letter-spacing: -0.025em; margin-block: 0.5rem 1rem; }
+h2 .num { font-family: var(--body); font-size: 0.78rem; letter-spacing: 0.05em; margin-bottom: 0.65rem; }
+h3 { line-height: 1.4; letter-spacing: -0.01em; margin-block: 2rem 0.75rem; overflow-wrap: anywhere; }
+h4 { line-height: 1.5; overflow-wrap: anywhere; }
+p, li { max-width: 66ch; }
+p { margin-block: 0.85rem; }
+li { margin-block: 0.5rem; }
+main li > p { margin-block: 0.4rem; }
+.section-lead { font-size: 1.12rem; line-height: 1.65; color: var(--ink-2); margin-bottom: 1.4rem; }
+.note, .dev { max-width: 100%; padding: 1rem 1.15rem; line-height: 1.7; }
+.tag { font-family: var(--body); text-transform: none; letter-spacing: 0; font-size: 0.85rem; }
+
+/* Orientation comes before the numbered reference sections. */
+main > section.reading-start { background: var(--panel); border: 1px solid var(--rule); border-left: 3px solid var(--accent); padding: 1.4rem 1.6rem; margin-bottom: 0.5rem; border-radius: 5px; }
+.eyebrow { font: 650 0.82rem/1.4 var(--body); color: var(--accent); margin: 0 0 0.6rem; }
+.reading-start h2 { font-size: 1.4rem; margin-top: 0; }
+.reading-start > p { max-width: 63ch; }
+.term-list { display: grid; grid-template-columns: minmax(7rem, 10rem) minmax(0, 1fr); gap: 0.7rem 1rem; font-size: 0.95rem; line-height: 1.6; margin-block: 1.2rem; }
+.term-list dt { font-weight: 650; }
+.term-list dd { margin: 0; color: var(--ink-2); }
+.reading-paths { display: grid; gap: 0.55rem; margin-top: 1.3rem; border-top: 1px solid var(--rule); padding-top: 1rem; }
+.reading-paths a { font-size: 0.95rem; line-height: 1.6; text-decoration: none; }
+.reading-paths a::before { content: "→ "; }
+.reading-paths a:hover { text-decoration: underline; }
+.reading-paths a > span { display: block; padding-left: 1.3em; color: var(--ink-2); font-size: 0.9rem; }
+
+/* Keep the contents visible and show the section being read. */
+nav.toc { padding-top: 2.1rem; }
+nav.toc .inner { max-height: calc(100dvh - 2rem); overflow-y: auto; scrollbar-width: thin; padding-right: 0.35rem; }
+nav.toc h2, nav.toc summary { font-family: var(--body); text-transform: none; letter-spacing: 0; font-size: 0.9rem; color: var(--ink-2); }
+nav.toc li { margin: 0; }
+nav.toc a { font-size: 0.88rem; line-height: 1.55; padding: 0.45rem 0.5rem; border-left: 2px solid transparent; border-radius: 0 4px 4px 0; }
+nav.toc a::before { font-size: 0.75rem; line-height: 1.8; }
+nav.toc a[aria-current="location"] { border-left-color: var(--accent); color: var(--accent); background: var(--accent-soft); font-weight: 650; }
+.reading-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; border-top: 1px solid var(--rule); margin-top: 1rem; padding-top: 1rem; }
+.reading-tools button { color: var(--ink-2); background: var(--panel); border: 1px solid var(--rule); border-radius: 4px; padding: 0.5rem 0.7rem; cursor: pointer; font: 500 0.82rem/1.4 var(--body); }
+nav.toc .reading-tools a { display: inline; padding: 0; font-size: 0.82rem; border: 0; text-decoration: underline; }
+nav.toc .reading-tools a::before { content: none; }
+
+/* Expandable detail is optional; its purpose stays visible in the summary. */
+details.technical-detail { margin-block: 1.2rem; border: 1px solid var(--rule); border-radius: 5px; padding: 0 1.1rem; background: var(--panel); }
+details.technical-detail > summary { padding-block: 0.9rem; cursor: pointer; font-size: 0.98rem; font-weight: 600; line-height: 1.6; color: var(--accent); }
+details.technical-detail[open] { padding-bottom: 0.8rem; }
+details.technical-detail[open] > summary { border-bottom: 1px solid var(--rule); margin-bottom: 0.8rem; }
+summary:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* The copy control has its own row, so it never covers the example. */
+.code { margin-block: 1.2rem; }
+.code-tools { display: flex; justify-content: flex-end; padding: 0.35rem 0.55rem; border: 1px solid var(--rule); border-bottom: 0; border-radius: 5px 5px 0 0; background: var(--panel); }
+.code .code-tools button { position: static; font: 600 0.8rem/1.4 var(--body); text-transform: none; letter-spacing: 0; padding: 0.3rem 0.6rem; }
+.code:has(.code-tools) pre { border-radius: 0 0 5px 5px; }
+.code pre { font-size: 0.87rem; line-height: 1.7; padding: 1rem 1.1rem; }
+.code pre code { padding: 0; background: none; font-size: inherit; }
+.math { line-height: 1.6; }
+.eqblock { font-size: 1.16rem; padding-block: 1.1rem; }
+.table { margin-block: 1.2rem; }
+table { font-size: 0.92rem; line-height: 1.6; }
+th { font: 650 0.86rem/1.5 var(--body); text-transform: none; letter-spacing: 0; color: var(--ink-2); background: var(--panel); }
+th, td { padding: 0.75rem 0.85rem; }
+tbody tr:nth-child(even) { background: var(--panel); }
+.table:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.cols { grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); }
+.demo h4 { font: 650 1rem/1.5 var(--body); text-transform: none; letter-spacing: 0; color: var(--ink); }
+.controls label { font-size: 0.93rem; }
+#cbf-demo .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(145px, 100%), 1fr)); gap: 1rem; align-items: end; }
+#cbf-demo .controls label > span { min-height: 3em; line-height: 1.5; }
+#cbf-demo .controls input[type="range"] { width: 100%; }
+.seg button { line-height: 1.4; }
+figcaption { line-height: 1.65; margin-top: 0.7rem; }
+footer { line-height: 1.65; }
+
+.skip-link { position: absolute; top: 0.5rem; left: 1rem; transform: translateY(-150%); z-index: 10; background: var(--panel); padding: 0.5rem 1rem; border: 2px solid var(--accent); }
+.skip-link:focus { transform: none; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+[id] { scroll-margin-top: 1.5rem; }
+
+@media (max-width: 900px) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .masthead { padding-top: 1.8rem; }
+  nav.toc { padding-top: 1.25rem; }
+  nav.toc .inner { max-height: none; overflow: visible; padding: 0; }
+  nav.toc summary { display: list-item; padding: 0.35rem 0; }
+  main { padding-top: 1.3rem; }
+}
+@media (max-width: 560px) {
+  body { padding-inline: 16px; font-size: 1rem; }
+  h1 { font-size: 2rem; letter-spacing: -0.025em; }
+  h2 { font-size: 1.5rem; }
+  .lede { font-size: 1.03rem; }
+  .kicker { overflow-wrap: anywhere; }
+  main > section.reading-start { padding: 1.1rem; }
+  main > section { padding-block: 1.8rem 1.2rem; }
+  .term-list { grid-template-columns: minmax(0, 1fr); gap: 0.2rem; }
+  .term-list dd { margin-bottom: 0.75rem; }
+  .math { white-space: normal; }
+  .eqblock { font-size: 1.05rem; padding: 0.8rem 0.9rem 1.8rem; }
+  .code pre { font-size: 0.8rem; padding: 0.8rem; }
+  details.technical-detail { padding-inline: 0.8rem; }
+  .pipeline div { flex-basis: 100%; }
+}
+@media print {
+  body { background: white; color: black; padding: 0; font-size: 11pt; }
+  .shell { display: block; max-width: none; }
+  nav.toc, .docnav, .code-tools, .skip-link, .reading-tools { display: none; }
+  .masthead { padding-top: 0; }
+  main > section, main > section.reading-start { border: 0; padding-inline: 0; }
+  details.technical-detail { background: none; break-inside: auto; }
+  details.technical-detail > summary { color: black; }
+  .table, .code pre, .eqblock { overflow: visible; }
+  .code pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+  h2, h3, h4, summary { break-after: avoid; }
+  figure, tr { break-inside: avoid; }
+}
