@@ -1,0 +1,9 @@
+# macOS folder metadata
+.DS_Store
+
+# Hugo build output and lock file; deploy.sh copies public/ to the repo root
+quickstart/public/
+quickstart/.hugo_build.lock
+
+# Local Claude Code settings
+.claude/
