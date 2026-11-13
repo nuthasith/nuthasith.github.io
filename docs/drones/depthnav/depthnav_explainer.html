@@ -611,6 +611,20 @@
       border-radius: 999px;
     }
 
+    /* Paper figures sit on a white mat so they read on the dark page */
+    .paper-fig { margin: 0 0 16px; }
+    .paper-fig .mat { display: block; background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 10px; }
+    .paper-fig img { display: block; width: 100%; height: auto; border-radius: 4px; }
+    .paper-fig figcaption { margin-top: 8px; font-size: 13px; color: var(--ink-secondary); }
+    .figno { font-family: var(--font-mono); font-size: 11.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--brand); margin-right: 8px; }
+    .sketch-note { font-size: 12.5px; color: var(--muted); margin: 0 0 12px; }
+    .sketch-note strong { color: var(--accent); }
+    .plain-box { margin-bottom: 32px; }
+    .plain-box p { margin: 0 0 8px; font-size: 15px; color: var(--ink-secondary); max-width: 90ch; }
+    .plain-box p:last-child { margin-bottom: 0; }
+    .page-foot { margin-top: 8px; font-size: 12.5px; color: var(--muted); }
+    .page-foot a { color: var(--brand); }
+
     @media (max-width: 768px) {
       .hero {
         padding: 24px 18px;
@@ -653,7 +667,7 @@
       <h1>Quadrotor Navigation using Reinforcement Learning with Privileged Information</h1>
       <div class="hero-authors">
         Jonathan Lee, Abhishek Rathod, Kshitij Goel, John Stecklein, and Wennie Tabib<br>
-        <span>Visual breakdown of every figure, architecture diagram, equation (Eq. 1–15), plot, and benchmark table (Tables I–III).</span>
+        <span>Every figure (shown as in the paper), every equation (Eq. 1–15) and all three tables, with short notes.</span>
       </div>
 
       <div class="hero-links">
@@ -669,7 +683,7 @@
         <a href="https://www.kshitijgoel.com/projects/quadrotor-navigation-rl-2026/" target="_blank" rel="noopener" class="ext-btn">
           &#127919; Project Page
         </a>
-        <a rel="noopener" class="ext-btn" data-link-removed aria-disabled="true" role="link" title="Link removed: its address didn't come from this conversation.">
+        <a href="https://youtu.be/RbHJ69o-zUc" target="_blank" rel="noopener" class="ext-btn">
           &#9654; Experiment Video (YouTube)
         </a>
       </div>
@@ -682,9 +696,9 @@
           <div class="kpi-sub">Across 1,350 trials in 11 unseen 3D environments (Fig. 7)</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-val" style="color: var(--brand);">+34% to +36%</div>
-          <div class="kpi-label">Outperforms Baselines</div>
-          <div class="kpi-sub">Over BNL [2] (50% total) &amp; Yaw w/o ToA (52% total)</div>
+          <div class="kpi-val" style="color: var(--brand);">+34 points</div>
+          <div class="kpi-label">Ahead of the Best Baseline</div>
+          <div class="kpi-sub">Yaw w/o ToA reaches 52%, BNL [2] reaches 38% (Fig. 7)</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-val" style="color: var(--accent);">589 m / 20</div>
@@ -694,10 +708,17 @@
         <div class="kpi-card">
           <div class="kpi-val" style="color: var(--purple);">~0 ms vs 200 ms</div>
           <div class="kpi-label">Attitude Control Latency</div>
-          <div class="kpi-sub">Body-rate feedback &omega;<sub>d</sub> eliminates 200 ms lag (Fig. 6)</div>
+          <div class="kpi-sub">Adding the body-rate term &omega;<sub>d</sub> removes a ~200 ms lag (Fig. 6)</div>
         </div>
       </div>
     </header>
+
+    <section class="card plain-box" aria-label="Summary in plain words">
+      <span class="fig-badge">In plain words</span>
+      <p>A drone flies to a goal using only a depth camera and its own velocity and attitude estimate. One small neural network turns those inputs straight into thrust and a yaw angle. There is no map and no separate planner on board.</p>
+      <p>Earlier networks of this kind keep the nose pointed at the goal, so they get stuck or crash when a big wall is in the way. This paper adds two things during training: a loss that rewards pointing the camera where the drone is moving, and a time-of-arrival (ToA) map, which is a grid that stores how long the fastest collision-free route to the goal takes from every point. The map is used only to compute the training loss. The trained network never sees it.</p>
+      <p>Result: 86% success over 1,350 simulated trials (best baseline: 52%), and 20 real outdoor flights covering 589 m with no crash.</p>
+    </section>
 
     <!-- SECTION 1: FIGURES 1 & 2 -->
     <section id="fig1-2" class="section-block">
@@ -712,11 +733,13 @@
       <div class="grid-2">
         <!-- Fig 1 Card -->
         <div class="card">
-          <span class="fig-badge">Fig. 1 &amp; Fig. 8 Concept · Interactive Trajectory Comparison</span>
-          <h3 class="fig-title">Why Fixed-Heading &amp; Local Losses Fail vs. Proposed (Yaw + ToA)</h3>
-          <p class="fig-desc">
-            Select a policy below to see how it behaves when a large concave wall blocks the direct line-of-sight to the goal.
-          </p>
+          <span class="fig-badge">Fig. 1 · Real Flight + Interactive Sketch</span>
+          <h3 class="fig-title">The Result, and Why Fixed Heading Fails Behind a Big Wall</h3>
+          <figure class="paper-fig">
+            <a class="mat" href="figs/fig1.webp" target="_blank" rel="noopener"><img src="figs/fig1.webp" width="1033" height="604" loading="lazy" alt="Long-exposure night photo: the drone's LED leaves a light trail that curves around white panel obstacles in an outdoor arena."></a>
+            <figcaption><span class="figno">Paper Fig. 1</span>A real flight, shot with long exposure. The light trail is the drone's path around the panels.</figcaption>
+          </figure>
+          <p class="sketch-note"><strong>Sketch, not from the paper:</strong> pick a policy to see how it behaves when a large wall blocks the straight line to the goal.</p>
 
           <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
             <div class="btn-group" role="tablist" aria-label="Policy trajectory selector">
@@ -812,90 +835,19 @@
 
         <!-- Fig 2 Card -->
         <div class="card">
-          <span class="fig-badge">Fig. 2 · Differentiable Dynamics Rollout &amp; Backprop</span>
+          <span class="fig-badge">Fig. 2 · Training by Backprop Through the Physics</span>
           <h3 class="fig-title">Analytical Policy Gradients (APG) Through Physics</h3>
           <p class="fig-desc">
-            Unlike sample-inefficient model-free RL (e.g., PPO) or expensive expert imitation, the system dynamics <var>s<sub>k+1</sub> = f(s<sub>k</sub>, u<sub>k</sub>)</var> are differentiable, allowing direct backpropagation of step losses <var>L<sub>k</sub></var> through time.
+            The simulated physics <var>s<sub>k+1</sub> = f(s<sub>k</sub>, u<sub>k</sub>)</var> is differentiable. So the loss <var>L<sub>k</sub></var> at each step can be pushed backwards through the dynamics to the policy weights (red arrows). No expert demonstrations are needed.
           </p>
 
-          <div class="diagram-box">
-            <svg viewBox="0 0 540 270" aria-label="Figure 2 Differentiable dynamics rollout diagram">
-              <defs>
-                <marker id="fwdArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8"/>
-                </marker>
-                <marker id="gradArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#f43f5e"/>
-                </marker>
-              </defs>
-
-              <!-- Legend Top -->
-              <line x1="20" y1="20" x2="55" y2="20" stroke="#94a3b8" stroke-width="2" marker-end="url(#fwdArrow)"/>
-              <text x="62" y="24" fill="#cbd5e1" font-size="11.5">Forward Simulation Rollout</text>
-              <line x1="250" y1="20" x2="285" y2="20" stroke="#f43f5e" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#gradArrow)"/>
-              <text x="292" y="24" fill="#fda4af" font-size="11.5">Analytical Policy Gradient (BPTT)</text>
-
-              <!-- Recurrent Hidden State Row -->
-              <rect x="25" y="55" width="70" height="34" rx="6" fill="#1e2942" stroke="#38bdf8" stroke-width="1.5"/>
-              <text x="60" y="76" fill="#38bdf8" font-size="12" font-weight="700" text-anchor="middle">h<tspan baseline-shift="sub" font-size="9">k-1</tspan></text>
-
-              <line x1="95" y1="72" x2="165" y2="72" stroke="#94a3b8" stroke-width="2" marker-end="url(#fwdArrow)"/>
-
-              <!-- Policy Node -->
-              <rect x="170" y="48" width="115" height="48" rx="8" fill="#0284c7" stroke="#38bdf8" stroke-width="2"/>
-              <text x="227" y="70" fill="#fff" font-size="13" font-weight="700" text-anchor="middle">Policy &pi;<tspan baseline-shift="sub" font-size="9">&theta;</tspan></text>
-              <text x="227" y="86" fill="#e0f2fe" font-size="10.5" text-anchor="middle">(GRU + Extractors)</text>
-
-              <line x1="285" y1="72" x2="355" y2="72" stroke="#94a3b8" stroke-width="2" marker-end="url(#fwdArrow)"/>
-
-              <rect x="360" y="55" width="70" height="34" rx="6" fill="#1e2942" stroke="#38bdf8" stroke-width="1.5"/>
-              <text x="395" y="76" fill="#38bdf8" font-size="12" font-weight="700" text-anchor="middle">h<tspan baseline-shift="sub" font-size="9">k</tspan></text>
-
-              <!-- Observation o_k & Action u_k -->
-              <rect x="105" y="122" width="68" height="30" rx="6" fill="#161f33" stroke="#64748b"/>
-              <text x="139" y="141" fill="#e2e8f0" font-size="12" font-weight="600" text-anchor="middle">Obs o<tspan baseline-shift="sub" font-size="9">k</tspan></text>
-              <path d="M 139 122 L 190 96" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#fwdArrow)"/>
-
-              <rect x="275" y="122" width="110" height="32" rx="6" fill="#161f33" stroke="#10b981" stroke-width="1.5"/>
-              <text x="330" y="142" fill="#6ee7b7" font-size="12" font-weight="700" text-anchor="middle">Action u<tspan baseline-shift="sub" font-size="9">k</tspan> = [t<tspan baseline-shift="sub" font-size="9">k</tspan>, &psi;<tspan baseline-shift="sub" font-size="9">k</tspan>]</text>
-              <path d="M 265 96 L 310 122" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#fwdArrow)"/>
-
-              <!-- Dynamics Row -->
-              <rect x="25" y="185" width="80" height="38" rx="6" fill="#1e2942" stroke="#94a3b8"/>
-              <text x="65" y="208" fill="#f1f5f9" font-size="12.5" font-weight="700" text-anchor="middle">State s<tspan baseline-shift="sub" font-size="9">k</tspan></text>
-
-              <path d="M 65 185 L 125 152" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#fwdArrow)"/>
-              <line x1="105" y1="204" x2="175" y2="204" stroke="#94a3b8" stroke-width="2" marker-end="url(#fwdArrow)"/>
-
-              <rect x="180" y="180" width="145" height="48" rx="8" fill="#1e1b4b" stroke="#a855f7" stroke-width="2"/>
-              <text x="252" y="202" fill="#f3e8ff" font-size="12.5" font-weight="700" text-anchor="middle">Diff. Dynamics f(s<tspan baseline-shift="sub" font-size="9">k</tspan>, u<tspan baseline-shift="sub" font-size="9">k</tspan>)</text>
-              <text x="252" y="218" fill="#d8b4fe" font-size="10.5" text-anchor="middle">Point-Mass (Eq. 1–3)</text>
-
-              <path d="M 330 154 L 285 180" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#fwdArrow)"/>
-              <line x1="325" y1="204" x2="415" y2="204" stroke="#94a3b8" stroke-width="2" marker-end="url(#fwdArrow)"/>
-
-              <rect x="420" y="185" width="90" height="38" rx="6" fill="#1e2942" stroke="#94a3b8"/>
-              <text x="465" y="208" fill="#f1f5f9" font-size="12.5" font-weight="700" text-anchor="middle">State s<tspan baseline-shift="sub" font-size="9">k+1</tspan></text>
-
-              <!-- Loss Node -->
-              <rect x="425" y="110" width="90" height="42" rx="8" fill="#3f1d2e" stroke="#f43f5e" stroke-width="2"/>
-              <text x="470" y="130" fill="#fda4af" font-size="12.5" font-weight="700" text-anchor="middle">Loss L<tspan baseline-shift="sub" font-size="9">k</tspan></text>
-              <text x="470" y="144" fill="#fecdd3" font-size="10" text-anchor="middle">(Eq. 14)</text>
-
-              <line x1="385" y1="135" x2="420" y2="135" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#fwdArrow)"/>
-              <path d="M 465 185 L 465 156" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#fwdArrow)"/>
-
-              <!-- Backward Analytical Gradients -->
-              <path d="M 425 122 C 370 100, 330 105, 290 88" fill="none" stroke="#f43f5e" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#gradArrow)"/>
-              <path d="M 450 152 L 330 185" fill="none" stroke="#f43f5e" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#gradArrow)"/>
-              <path d="M 225 180 L 110 200" fill="none" stroke="#f43f5e" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#gradArrow)"/>
-              <text x="368" y="102" fill="#fda4af" font-size="10.5" font-family="monospace">&part;L<tspan baseline-shift="sub" font-size="8">k</tspan>/&part;u<tspan baseline-shift="sub" font-size="8">k</tspan></text>
-              <text x="395" y="176" fill="#fda4af" font-size="10.5" font-family="monospace">&part;L<tspan baseline-shift="sub" font-size="8">k</tspan>/&part;s<tspan baseline-shift="sub" font-size="8">k+1</tspan></text>
-            </svg>
-          </div>
+          <figure class="paper-fig">
+            <a class="mat" href="figs/fig2.webp" target="_blank" rel="noopener"><img src="figs/fig2.webp" width="1010" height="704" loading="lazy" alt="Two time steps of a rollout. Each step: state, observation, policy, action, then the dynamics model produces the next state. Red arrows show loss gradients flowing backwards through the dynamics model and the policy."></a>
+            <figcaption><span class="figno">Paper Fig. 2</span>Black arrows: the forward rollout (state &rarr; observation &rarr; policy &rarr; action &rarr; dynamics &rarr; next state). Red arrows: gradients of the loss flowing back.</figcaption>
+          </figure>
 
           <div style="margin-top: 12px; font-size: 13px; color: var(--ink-secondary); background: var(--surface-elevated); padding: 10px 14px; border-radius: 8px;">
-            <strong style="color: var(--brand);">Key Advantage:</strong> Even a single trajectory rollout provides an exact analytical gradient <code style="color:var(--ink)">&part;L/&part;&theta;</code> via Backpropagation Through Time (BPTT) with temporal gradient decay (batch size 16, 10K iterations).
+            <strong style="color: var(--brand);">Why it helps:</strong> even one rollout gives a usable gradient <code style="color:var(--ink)">&part;L/&part;&theta;</code>. Training uses backpropagation through time with temporal gradient decay, batch size 16, 10K iterations. The dynamics is a simple point mass (Eq. 1–3), which trains faster than the full quadrotor model.
           </div>
         </div>
       </div>
@@ -908,113 +860,20 @@
           <span class="sec-num">FIG. 3</span>
           <h2>End-to-End Neural Network Architecture</h2>
         </div>
-        <p class="section-caption">Three dedicated feature extractors project inputs into 192-D embeddings, LayerNorm + Sum into a GRUCell.</p>
+        <p class="section-caption">Three inputs, each turned into a 192-number vector, summed, then passed through a GRU (a small recurrent layer that keeps memory).</p>
       </div>
 
       <div class="card">
-        <span class="fig-badge">Fig. 3 · Complete Tensor Shapes &amp; Layer Pipeline</span>
+        <span class="fig-badge">Fig. 3 · Layers and Tensor Shapes</span>
         <h3 class="fig-title">Single-Network Planning &amp; Control Policy</h3>
         <p class="fig-desc">
           Unlike Zhang et al. [2], this architecture uses a dedicated <strong>Target Extractor</strong> incorporating <em>goal importance</em> (<var>1 / d<sub>goal</sub></var> so the network knows whether the goal is in front of or behind an obstacle in the depth map), applies <strong>LayerNorm</strong> before summing, and predicts <strong>Yaw <var>&psi;<sub>k</sub></var></strong> alongside 3D mass-normalized thrust <var>t<sub>k</sub></var>.
         </p>
 
-        <div class="diagram-box">
-          <svg viewBox="0 0 980 310" aria-label="Figure 3 Network Architecture Diagram">
-            <defs>
-              <marker id="netArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-                <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b"/>
-              </marker>
-              <marker id="netArrowCyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-                <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8"/>
-              </marker>
-            </defs>
-
-            <!-- BRANCH 1: Depth Image -->
-            <rect x="20" y="24" width="145" height="68" rx="8" fill="#161f33" stroke="#38bdf8" stroke-width="1.5"/>
-            <text x="92" y="48" fill="#38bdf8" font-size="13" font-weight="700" text-anchor="middle">Depth Image</text>
-            <text x="92" y="65" fill="#94a3b8" font-size="11" font-family="monospace" text-anchor="middle">Shape: (B, 64, 64)</text>
-            <text x="92" y="81" fill="#64748b" font-size="10" text-anchor="middle">Inverted + Max-Pooled</text>
-
-            <line x1="165" y1="58" x2="205" y2="58" stroke="#64748b" stroke-width="2" marker-end="url(#netArrow)"/>
-
-            <rect x="210" y="30" width="135" height="56" rx="8" fill="#1e2942" stroke="#475569"/>
-            <text x="277" y="55" fill="#f1f5f9" font-size="12.5" font-weight="700" text-anchor="middle">Depth Extractor</text>
-            <text x="277" y="72" fill="#94a3b8" font-size="11" text-anchor="middle">CNN + Flatten</text>
-
-            <line x1="345" y1="58" x2="385" y2="58" stroke="#64748b" stroke-width="2" marker-end="url(#netArrow)"/>
-
-            <rect x="390" y="32" width="135" height="52" rx="8" fill="#1e2942" stroke="#38bdf8"/>
-            <text x="457" y="54" fill="#e2e8f0" font-size="12" font-weight="600" text-anchor="middle">Linear &rarr; LayerNorm</text>
-            <text x="457" y="71" fill="#38bdf8" font-size="11" font-family="monospace" text-anchor="middle">Dim: (B, 192)</text>
-
-            <!-- BRANCH 2: Target Vector -->
-            <rect x="20" y="118" width="145" height="72" rx="8" fill="#161f33" stroke="#f59e0b" stroke-width="1.5"/>
-            <text x="92" y="140" fill="#f59e0b" font-size="13" font-weight="700" text-anchor="middle">Target Input</text>
-            <text x="92" y="157" fill="#cbd5e1" font-size="11" text-anchor="middle">Velocity + 1/d<tspan baseline-shift="sub" font-size="8">goal</tspan></text>
-            <text x="92" y="175" fill="#94a3b8" font-size="11" font-family="monospace" text-anchor="middle">Shape: (B, 4)</text>
-
-            <line x1="165" y1="154" x2="205" y2="154" stroke="#64748b" stroke-width="2" marker-end="url(#netArrow)"/>
-
-            <rect x="210" y="126" width="135" height="56" rx="8" fill="#1e2942" stroke="#475569"/>
-            <text x="277" y="151" fill="#f1f5f9" font-size="12.5" font-weight="700" text-anchor="middle">Target Extractor</text>
-            <text x="277" y="168" fill="#94a3b8" font-size="11" text-anchor="middle">MLP Projection</text>
-
-            <line x1="345" y1="154" x2="385" y2="154" stroke="#64748b" stroke-width="2" marker-end="url(#netArrow)"/>
-
-            <rect x="390" y="128" width="135" height="52" rx="8" fill="#1e2942" stroke="#f59e0b"/>
-            <text x="457" y="150" fill="#e2e8f0" font-size="12" font-weight="600" text-anchor="middle">Linear &rarr; LayerNorm</text>
-            <text x="457" y="167" fill="#f59e0b" font-size="11" font-family="monospace" text-anchor="middle">Dim: (B, 192)</text>
-
-            <!-- BRANCH 3: Robot State -->
-            <rect x="20" y="214" width="145" height="72" rx="8" fill="#161f33" stroke="#a855f7" stroke-width="1.5"/>
-            <text x="92" y="236" fill="#c084fc" font-size="13" font-weight="700" text-anchor="middle">Robot State</text>
-            <text x="92" y="253" fill="#cbd5e1" font-size="11" text-anchor="middle">Velocity + Orientation</text>
-            <text x="92" y="271" fill="#94a3b8" font-size="11" font-family="monospace" text-anchor="middle">Shape: (B, 7)</text>
-
-            <line x1="165" y1="250" x2="205" y2="250" stroke="#64748b" stroke-width="2" marker-end="url(#netArrow)"/>
-
-            <rect x="210" y="222" width="135" height="56" rx="8" fill="#1e2942" stroke="#475569"/>
-            <text x="277" y="247" fill="#f1f5f9" font-size="12.5" font-weight="700" text-anchor="middle">State Extractor</text>
-            <text x="277" y="264" fill="#94a3b8" font-size="11" text-anchor="middle">MLP Projection</text>
-
-            <line x1="345" y1="250" x2="385" y2="250" stroke="#64748b" stroke-width="2" marker-end="url(#netArrow)"/>
-
-            <rect x="390" y="224" width="135" height="52" rx="8" fill="#1e2942" stroke="#a855f7"/>
-            <text x="457" y="246" fill="#e2e8f0" font-size="12" font-weight="600" text-anchor="middle">Linear &rarr; LayerNorm</text>
-            <text x="457" y="263" fill="#c084fc" font-size="11" font-family="monospace" text-anchor="middle">Dim: (B, 192)</text>
-
-            <!-- Element-wise Sum Node -->
-            <path d="M 525 58 L 578 135" stroke="#64748b" stroke-width="2" marker-end="url(#netArrow)"/>
-            <line x1="525" y1="154" x2="565" y2="154" stroke="#64748b" stroke-width="2" marker-end="url(#netArrow)"/>
-            <path d="M 525 250 L 578 173" stroke="#64748b" stroke-width="2" marker-end="url(#netArrow)"/>
-
-            <circle cx="592" cy="154" r="22" fill="#0284c7" stroke="#38bdf8" stroke-width="2"/>
-            <text x="592" y="161" fill="#fff" font-size="22" font-weight="700" text-anchor="middle">&plus;</text>
-            <text x="592" y="195" fill="#94a3b8" font-size="10.5" font-family="monospace" text-anchor="middle">Sum (192)</text>
-
-            <line x1="614" y1="154" x2="655" y2="154" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#netArrowCyan)"/>
-
-            <!-- GRU Cell -->
-            <rect x="660" y="114" width="120" height="80" rx="10" fill="#1e1b4b" stroke="#38bdf8" stroke-width="2"/>
-            <text x="720" y="148" fill="#fff" font-size="14" font-weight="800" text-anchor="middle">GRUCell</text>
-            <text x="720" y="166" fill="#38bdf8" font-size="11" font-family="monospace" text-anchor="middle">Hidden: (192)</text>
-            <text x="720" y="182" fill="#94a3b8" font-size="10" text-anchor="middle">Temporal Memory</text>
-
-            <!-- Recurrent loop on GRU -->
-            <path d="M 700 114 C 690 72, 750 72, 740 114" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-dasharray="3,3" marker-end="url(#netArrowCyan)"/>
-            <text x="720" y="74" fill="#38bdf8" font-size="11" font-family="monospace" text-anchor="middle">h<tspan baseline-shift="sub" font-size="8">k-1</tspan> &rarr; h<tspan baseline-shift="sub" font-size="8">k</tspan></text>
-
-            <line x1="780" y1="154" x2="820" y2="154" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#netArrowCyan)"/>
-
-            <!-- Output Linear Head -->
-            <rect x="825" y="96" width="135" height="116" rx="10" fill="#064e3b" stroke="#10b981" stroke-width="2"/>
-            <text x="892" y="122" fill="#a7f3d0" font-size="12" font-weight="700" text-anchor="middle">Linear Output Head</text>
-            <rect x="840" y="132" width="105" height="32" rx="5" fill="#042f2e" stroke="#10b981"/>
-            <text x="892" y="152" fill="#fff" font-size="12" font-weight="700" font-family="monospace" text-anchor="middle">Thrust t<tspan baseline-shift="sub" font-size="8">k</tspan> (B,3)</text>
-            <rect x="840" y="170" width="105" height="32" rx="5" fill="#042f2e" stroke="#f59e0b"/>
-            <text x="892" y="190" fill="#fcd34d" font-size="12" font-weight="700" font-family="monospace" text-anchor="middle">Yaw &psi;<tspan baseline-shift="sub" font-size="8">k</tspan> (B,1)</text>
-          </svg>
-        </div>
+        <figure class="paper-fig" style="margin-bottom:0;">
+            <a class="mat" href="figs/fig3.webp" target="_blank" rel="noopener"><img src="figs/fig3.webp" width="1800" height="608" loading="lazy" alt="Network diagram. Depth image (B,64,64) goes through invert, max-pool, three conv layers with 32, 64 and 128 channels, a linear layer and LayerNorm. Target (B,4) and state (B,7) each go through a linear layer and LayerNorm. The three 192-wide vectors are summed, normalised, fed to a GRUCell with the previous latent, and a final linear layer outputs thrust (B,3) and yaw (B,1)."></a>
+            <figcaption><span class="figno">Paper Fig. 3</span>B is the batch size. Depth image 64&times;64 &rarr; invert &rarr; max-pool &rarr; 3 conv layers (32, 64, 128 channels) &rarr; linear. Target (velocity + 1/distance, 4 numbers) and state (velocity + orientation, 7 numbers) each go through one linear layer. The three 192-wide vectors are summed, layer-normalised, and fed to the GRU with the previous latent. A last linear layer gives thrust (3 numbers) and yaw (1 number).</figcaption>
+          </figure>
       </div>
     </section>
 
@@ -1031,12 +890,17 @@
       <div class="grid-2">
         <!-- Fig 4 Card: Interactive ToA Heatmap & FMM Gradient Field -->
         <div class="card">
-          <span class="fig-badge">Fig. 4(a) &amp; 4(b) · Interactive Fast Marching Method (FMM) Map</span>
+          <span class="fig-badge">Fig. 4 · ToA Map + Interactive Sketch</span>
           <h3 class="fig-title">Time-of-Arrival Heatmap <var>T(x)</var> &amp; Shortest-Path Gradients</h3>
           <p class="fig-desc">
             Local ESDF maps only push the robot away from walls, trapping it in concave rooms. The ToA map propagates wavefront travel time from the red goal using speed <var>F(x)</var> (Eq. 12), so <var>-&nabla;T(x)</var> guides trajectories smoothly around corners.
           </p>
 
+          <figure class="paper-fig">
+            <a class="mat" href="figs/fig4.webp" target="_blank" rel="noopener"><img src="figs/fig4.webp" width="1043" height="671" loading="lazy" alt="Two heatmaps of time of arrival around a U-shaped wall. Left: arrows show the gradient field pointing along the fastest route to the red goal. Right: black paths from green start dots bend around the wall to the goal."></a>
+            <figcaption><span class="figno">Paper Fig. 4</span>(a) Colour = travel time to the red goal, arrows = direction of fastest travel. (b) Following the arrows from the green starts leads around the U-shaped wall instead of into it.</figcaption>
+          </figure>
+          <p class="sketch-note"><strong>Sketch, not the paper's data:</strong> a small 2D grid solved in your browser with a simple wavefront search. Click free space to add a start point.</p>
           <div class="control-row">
             <label class="control-item">
               <input type="checkbox" id="toggle-fmm-arrows" checked onchange="drawFig4Canvas()">
@@ -1061,27 +925,17 @@
 
         <!-- Fig 5 Card: Cylindrical Training Environment -->
         <div class="card">
-          <span class="fig-badge">Fig. 5 · Multi-Agent GPU Training Environment</span>
+          <span class="fig-badge">Fig. 5 · Training Environment</span>
           <h3 class="fig-title">Top-Down Cylindrical Training Arena (<var>r<sub>cyl</sub> = 12.5</var> m)</h3>
           <p class="fig-desc">
             Trained in a customized VisFly + Habitat-Sim simulator with pre-generated random primitives (spheres, cylinders, cuboids). Agents spawn on a <var>12.5</var> m circle (<var>&theta; &sim; U(0, 2&pi;)</var>) and converge to the center goal (<var>blue</var>).
           </p>
 
-          <div class="control-row" style="justify-content:space-between;">
-            <span style="font-size:12.5px; color:var(--ink-secondary);">Curriculum: 500 iters empty warmup &rarr; 10K iters full obstacles (Batch 16)</span>
-            <button type="button" class="btn-tab active" onclick="regenerateFig5()" style="border:1px solid var(--brand);">
-              &#8635; Sample Random Rollouts
-            </button>
-          </div>
-
-          <div class="diagram-box" style="text-align:center;">
-            <canvas id="fig5-canvas" width="480" height="260" style="max-width:100%; border-radius:8px;"></canvas>
-            <div class="legend-bar" style="justify-content:center;">
-              <span><span class="legend-dot" style="background:#facc15;"></span>Outer Spawn Ring (<var>r<sub>cyl</sub> = 12.5</var> m)</span>
-              <span><span class="legend-dot" style="background:#38bdf8;"></span>Center Goal</span>
-              <span><span class="legend-dot" style="background:#64748b;"></span>Random Boxes / Cylinders / Spheres</span>
-            </div>
-          </div>
+          <figure class="paper-fig">
+            <a class="mat" href="figs/fig5.webp" target="_blank" rel="noopener"><img src="figs/fig5.webp" width="1043" height="513" loading="lazy" alt="Top-down view of two round training arenas filled with random boxes. Many paths start on the outer ring (yellow) and converge on the goal at the centre (blue)."></a>
+            <figcaption><span class="figno">Paper Fig. 5</span>Two training arenas seen from above. Paths follow the ToA map from the outer ring (yellow) to the goal in the middle (blue). Many drones share one arena, so one batch sees many different directions.</figcaption>
+          </figure>
+          <p class="sketch-note" style="margin-bottom:0;">Schedule: the first 500 iterations use an empty arena with no collision loss, which keeps gradients stable. Then obstacles are added. Arenas and ToA maps are generated once, before training.</p>
         </div>
       </div>
     </section>
@@ -1102,13 +956,13 @@
         <div class="eq-card">
           <div>
             <div class="eq-header">
-              <span class="eq-name">Differentiable Point-Mass Dynamics</span>
+              <span class="eq-name">Differentiable Point-Mass Dynamics (velocity Verlet)</span>
               <span class="eq-num">Eq. (1)–(3)</span>
             </div>
             <div class="math-block">
-              <b>a</b><sub>k</sub> = <b>t</b><sub>k</sub> &minus; <var>g</var><b>z</b><sup>W</sup>, &nbsp;&nbsp;
-              <b>v</b><sub>k+1</sub> = <b>v</b><sub>k</sub> + <b>a</b><sub>k</sub>&Delta;<var>t</var>, &nbsp;&nbsp;
-              <b>p</b><sub>k+1</sub> = <b>p</b><sub>k</sub> + <b>v</b><sub>k</sub>&Delta;<var>t</var> + &frac12;<b>a</b><sub>k</sub>&Delta;<var>t</var><sup>2</sup>
+              <b>p</b><sub>k+1</sub> = <b>p</b><sub>k</sub> + <b>v</b><sub>k</sub>&Delta;<var>t</var> + &frac12;<b>a</b><sub>k</sub>&Delta;<var>t</var><sup>2</sup><br>
+              <b>v</b><sub>k+1</sub> = <b>v</b><sub>k</sub> + &frac12;(<b>a</b><sub>k</sub> + <b>a</b><sub>k+1</sub>)&Delta;<var>t</var>, &nbsp;&nbsp;
+              <b>a</b><sub>k+1</sub> = <b>t</b><sub>k+1</sub> &minus; [0, 0, <var>g</var>]<sup>&#8868;</sup>
             </div>
           </div>
           <p class="eq-explain">
@@ -1202,12 +1056,13 @@
             <div class="math-block">
               |&nabla;<var>T</var>(<b>x</b>)| <var>F</var>(<b>x</b>) = 1, &nbsp;&nbsp;
               <var>F</var>(<b>x</b>) = <var>m d</var>(<b>x</b>) + (<var>v</var><sub>slow</sub> &minus; <var>mr</var>) &nbsp;if <var>d</var>(<b>x</b>) &le; <var>d</var><sub>safe</sub> else 1<br>
-              <span style="font-size:13.5px; color:var(--ink-secondary);">where <var>m</var> = (1 &minus; <var>v</var><sub>slow</sub>) / (<var>d</var><sub>safe</sub> &minus; <var>r</var>)</span>
+              <span style="font-size:13.5px; color:var(--ink-secondary);">where <var>m</var> = (<var>d</var><sub>safe</sub> &minus; <var>v</var><sub>slow</sub>) / (<var>d</var><sub>safe</sub> &minus; <var>r</var>)</span>
             </div>
           </div>
           <p class="eq-explain">
             <span class="sym-pill"><code>T(x)</code> Minimum travel time</span>
             <span class="sym-pill"><code>F(x)</code> Slows wavefront near walls to bias paths toward safe clearance</span>
+            <span class="sym-pill"><var>m</var> is as printed in the paper. It makes <var>F</var> = <var>d</var><sub>safe</sub> at the threshold, so the two pieces meet only when <var>d</var><sub>safe</sub> = 1 m</span>
           </p>
         </div>
 
@@ -1331,13 +1186,13 @@
           <span class="fig-badge">Interactive Math Visualizer · Eq. (4) &amp; Eq. (12)</span>
           <h3 class="fig-title">How Obstacle Distance <var>d(x)</var> Shapes Loss &amp; ToA Wavefront Speed</h3>
           <p class="fig-desc">
-            Adjust the safe distance <var>d<sub>safe</sub></var> and minimum wavefront speed <var>v<sub>slow</sub></var> to inspect the softplus clearance penalty <var>L<sub>clearance</sub></var> (<var>&beta;<sub>1</sub>=2.5, &beta;<sub>2</sub>=&minus;6.0</var>) and Eikonal speed <var>F(x)</var>.
+            Move the sliders to see the softplus clearance penalty (<var>&beta;<sub>1</sub>=2.5, &beta;<sub>2</sub>=&minus;6.0</var>, from Table I) and the wavefront speed <var>F(x)</var>. The paper does not list <var>d<sub>safe</sub></var>, <var>v<sub>slow</sub></var> or <var>r</var>, so the slider values and <var>r</var> = 0.15 m are examples.
           </p>
 
           <div class="control-row">
             <label class="control-item">
-              <span><var>d<sub>safe</sub></var>: <strong id="dsafe-val">1.2 m</strong></span>
-              <input type="range" id="dsafe-slider" min="0.6" max="2.0" step="0.1" value="1.2" oninput="drawLossCurves()">
+              <span><var>d<sub>safe</sub></var>: <strong id="dsafe-val">1.0 m</strong></span>
+              <input type="range" id="dsafe-slider" min="0.6" max="2.0" step="0.1" value="1.0" oninput="drawLossCurves()">
             </label>
             <label class="control-item">
               <span><var>v<sub>slow</sub></var>: <strong id="vslow-val">0.2 m/s</strong></span>
@@ -1373,7 +1228,7 @@
             <span class="fig-badge">Fig. 7 · Planner Success Rate &amp; Failure Modes Across 11 Environments</span>
             <h3 class="fig-title">Out-of-Distribution Generalization Benchmark (1,350 Total Trials)</h3>
             <p class="fig-desc" style="margin-bottom:0;">
-              Comparison of <strong>BNL [2]</strong> (fixed heading), <strong>Yaw w/o ToA</strong> (ablated model without privileged ToA supervision), and <strong>Ours (Yaw w/ ToA)</strong> across Caves, Industrial facilities, Mine corridors, and Sewers.
+              <strong>BNL [2]</strong> keeps a fixed heading. <strong>Yaw w/o ToA</strong> is this paper's network trained without the ToA map. <strong>Ours</strong> uses both. Solid = success, stripes = timed out, cross-hatch = collision. The chart below the figure repeats the success rates so you can filter them.
             </p>
           </div>
           <div class="btn-group" role="tablist" aria-label="Environment filter">
@@ -1383,12 +1238,16 @@
           </div>
         </div>
 
+        <figure class="paper-fig">
+            <a class="mat" href="figs/fig7.webp" target="_blank" rel="noopener"><img src="figs/fig7.webp" width="1800" height="580" loading="lazy" alt="Stacked bar chart of success, timeout and collision percentages for BNL, yaw without ToA, and the proposed method in 11 environments plus the total. Totals: BNL 38% success, yaw without ToA 52%, proposed 86%."></a>
+            <figcaption><span class="figno">Paper Fig. 7</span>Each bar adds up to 100% of trials. The proposed method (blue) has the most solid colour (success) almost everywhere. All three score 0% in the maze-like Mine.</figcaption>
+          </figure>
         <div class="diagram-box">
           <canvas id="fig7-canvas" width="1100" height="330" style="max-width:100%;"></canvas>
           <div class="legend-bar" style="justify-content:center; margin-top:12px;">
-            <span><span class="legend-dot" style="background:#64748b;"></span><strong>BNL [2]</strong> (Total Success: 50%)</span>
+            <span><span class="legend-dot" style="background:#64748b;"></span><strong>BNL [2]</strong> (Total Success: 38%)</span>
             <span><span class="legend-dot" style="background:#f59e0b;"></span><strong>Yaw w/o ToA</strong> (Total Success: 52%)</span>
-            <span><span class="legend-dot" style="background:#10b981;"></span><strong>Ours: Yaw w/ ToA</strong> (Total Success: 86% · +34% to +36% over baselines)</span>
+            <span><span class="legend-dot" style="background:#10b981;"></span><strong>Ours: Yaw w/ ToA</strong> (Total Success: 86%, 34 points above Yaw w/o ToA)</span>
           </div>
         </div>
       </div>
@@ -1396,87 +1255,42 @@
       <div class="grid-2">
         <!-- Fig 6 Attitude Control Latency Plot -->
         <div class="card">
-          <span class="fig-badge">Fig. 6(a) &amp; 6(b) · Attitude Control Ablation Plot</span>
+          <span class="fig-badge">Fig. 6 · Attitude Control With and Without Body Rates</span>
           <h3 class="fig-title">Eliminating the 200 ms Attitude Tracking Latency</h3>
           <p class="fig-desc">
             Controllers tracking only desired orientation <var>R<sub>d</sub></var> (as in [2]) suffer a <strong>~200 ms response lag</strong> (Fig. 6a). Adding the Euler-Jacobian body-rate derivative term <var>&omega;<sub>d</sub></var> (Eq. 15) achieves near-zero latency (Fig. 6b).
           </p>
 
-          <div class="diagram-box">
-            <canvas id="fig6-canvas" width="480" height="230" style="max-width:100%;"></canvas>
-            <div class="legend-bar" style="justify-content:center;">
-              <span><span class="legend-dot" style="background:#f8fafc;"></span>Desired Angle Setpoint</span>
-              <span><span class="legend-dot" style="background:#10b981;"></span>Actual w/ <var>&omega;<sub>d</sub></var> (Fig. 6b, ~0 ms lag)</span>
-              <span><span class="legend-dot" style="background:#f43f5e;"></span>Actual w/o <var>&omega;<sub>d</sub></var> (Fig. 6a, ~200 ms lag)</span>
-            </div>
-          </div>
+          <figure class="paper-fig" style="margin-bottom:0; max-width:520px;">
+            <a class="mat" href="figs/fig6.webp" target="_blank" rel="noopener"><img src="figs/fig6.webp" width="1020" height="1171" loading="lazy" alt="Pitch and roll over 16 seconds. In panel (a), without body rate control, the solid actual curve trails the dashed desired curve. In panel (b), with body rate control, the two curves overlap."></a>
+            <figcaption><span class="figno">Paper Fig. 6</span>Dashed = commanded angle, solid = actual angle. (a) Tracking orientation only: the solid line trails by about 200 ms. (b) With the body-rate term the two lines overlap.</figcaption>
+          </figure>
         </div>
 
         <!-- Fig 8 Point-Cloud Trajectory Profiles -->
         <div class="card">
-          <span class="fig-badge">Fig. 8(a)–(f) · Point-Cloud Cross-Section Trajectories</span>
-          <h3 class="fig-title">Why Baselines Fail in Industry 2 &amp; Cave 2</h3>
+          <span class="fig-badge">Fig. 8 · Example Flights in Industry 2 and Cave 2</span>
+          <h3 class="fig-title">Where the Baselines Fail</h3>
           <p class="fig-desc">
-            Summary of the 6 trajectory cross-sections shown in Fig. 8 (<var>v<sub>max</sub> = 3</var> m/s, body frames plotted every 2 s from blue start to magenta goal).
+            Paths are drawn on a cut-away of the environment and coloured by speed (red to yellow, up to <var>v<sub>max</sub> = 3</var> m/s). Blue = start, magenta = goal.
           </p>
-
+          <figure class="paper-fig">
+            <a class="mat" href="figs/fig8.webp" target="_blank" rel="noopener"><img src="figs/fig8.webp" width="1800" height="981" loading="lazy" alt="Six 3D views. Top row, Industry 2: BNL fails, yaw without ToA fails, yaw with ToA succeeds by flying around a wall. Bottom row, Cave 2: BNL fails, the other two succeed."></a>
+            <figcaption><span class="figno">Paper Fig. 8</span>Top row: Industry 2. Bottom row: Cave 2. &#10007; = failed, &#10003; = reached the goal.</figcaption>
+          </figure>
           <div class="table-wrapper">
             <table>
               <thead>
-                <tr>
-                  <th>Sub-Figure</th>
-                  <th>Environment</th>
-                  <th>Policy</th>
-                  <th>Outcome</th>
-                  <th>Observed Flight Behavior</th>
-                </tr>
+                <tr><th>Policy</th><th>Industry 2 (top)</th><th>Cave 2 (bottom)</th></tr>
               </thead>
               <tbody>
-                <tr>
-                  <td><code>Fig. 8(a)</code></td>
-                  <td>Industry 2</td>
-                  <td>BNL [2]</td>
-                  <td style="color:var(--rose); font-weight:700;">&#10007; Crash</td>
-                  <td>Fixed heading toward goal; collides into wide flat wall.</td>
-                </tr>
-                <tr>
-                  <td><code>Fig. 8(b)</code></td>
-                  <td>Industry 2</td>
-                  <td>Yaw w/o ToA</td>
-                  <td style="color:var(--amber, #f59e0b); font-weight:700;">&#10007; Timeout</td>
-                  <td>Turns away from wall but gets trapped in concave corner.</td>
-                </tr>
-                <tr>
-                  <td><code>Fig. 8(c)</code></td>
-                  <td>Industry 2</td>
-                  <td><strong style="color:var(--emerald);">Yaw w/ ToA</strong></td>
-                  <td style="color:var(--emerald); font-weight:700;">&#10003; Success</td>
-                  <td>Yaws 90&deg; around large industrial wall and reaches goal at 3 m/s.</td>
-                </tr>
-                <tr>
-                  <td><code>Fig. 8(d)</code></td>
-                  <td>Cave 2</td>
-                  <td>BNL [2]</td>
-                  <td style="color:var(--rose); font-weight:700;">&#10007; Crash</td>
-                  <td>Cannot align depth camera FOV with twisting cave tunnel.</td>
-                </tr>
-                <tr>
-                  <td><code>Fig. 8(e)</code></td>
-                  <td>Cave 2</td>
-                  <td>Yaw w/o ToA</td>
-                  <td style="color:var(--emerald); font-weight:700;">&#10003; Success</td>
-                  <td>Yaw alignment turns camera along smooth curving cavern.</td>
-                </tr>
-                <tr>
-                  <td><code>Fig. 8(f)</code></td>
-                  <td>Cave 2</td>
-                  <td><strong style="color:var(--emerald);">Yaw w/ ToA</strong></td>
-                  <td style="color:var(--emerald); font-weight:700;">&#10003; Success</td>
-                  <td>Takes shortest global path through cavern with smooth speed profile.</td>
-                </tr>
+                <tr><td>BNL [2]</td><td style="color:var(--rose); font-weight:700;">&#10007; (a)</td><td style="color:var(--rose); font-weight:700;">&#10007; (d)</td></tr>
+                <tr><td>Yaw w/o ToA</td><td style="color:var(--rose); font-weight:700;">&#10007; (b)</td><td style="color:var(--emerald); font-weight:700;">&#10003; (e)</td></tr>
+                <tr><td><strong style="color:var(--emerald);">Ours (Yaw w/ ToA)</strong></td><td style="color:var(--emerald); font-weight:700;">&#10003; (c)</td><td style="color:var(--emerald); font-weight:700;">&#10003; (f)</td></tr>
               </tbody>
             </table>
           </div>
+          <p class="sketch-note" style="margin:12px 0 0;">The paper's reading: BNL struggles with large flat obstacles because its heading stays fixed on the goal. Yaw alone lets the drone turn, but without ToA guidance it often times out in concave (pocket-shaped) regions.</p>
         </div>
       </div>
     </section>
@@ -1495,20 +1309,16 @@
       <div class="grid-2" style="margin-bottom: 20px;">
         <!-- Fig 9 Gravity Randomization Ablation -->
         <div class="card">
-          <span class="fig-badge">Fig. 9(a) &amp; 9(b) · Hardware Gravity Randomization Ablation</span>
+          <span class="fig-badge">Fig. 9 · Hover Test With and Without Gravity Randomization</span>
           <h3 class="fig-title">Compensating for 15% Real-World Thrust Mismatch</h3>
           <p class="fig-desc">
-            Due to battery voltage drop and airflow, the real drone needs <strong>~1.15<var>g</var></strong> commanded thrust just to hover. Without gravity randomization (Fig. 9a), the policy outputs <var>1.0g</var> and drops to the ground. With <var>g &sim; N(9.81, 1.5<sup>2</sup>)</var> (Fig. 9b), it adapts thrust up to <var>1.3g</var> via velocity feedback and holds the red setpoint!
+            Due to battery voltage drop and airflow, the real drone needs <strong>~1.15<var>g</var></strong> commanded thrust just to hover. Without gravity randomization (Fig. 9a), the policy outputs <var>1.0g</var> and drops to the ground. With <var>g &sim; N(9.81, 1.5<sup>2</sup>)</var> in training (Fig. 9b), it raises thrust up to <var>1.3g</var> from velocity feedback and reaches the red setpoint.
           </p>
 
-          <div class="diagram-box">
-            <canvas id="fig9-canvas" width="480" height="250" style="max-width:100%;"></canvas>
-            <div class="legend-bar" style="justify-content:center;">
-              <span><span class="legend-dot" style="background:#ef4444;"></span>Goal Altitude Setpoint</span>
-              <span><span class="legend-dot" style="background:#10b981;"></span>(b) With Gravity Rand (<var>1.3g</var> peak &rarr; Hover)</span>
-              <span><span class="legend-dot" style="background:#f59e0b;"></span>(a) Without Gravity Rand (<var>1.0g</var> &rarr; Drops)</span>
-            </div>
-          </div>
+          <figure class="paper-fig" style="margin-bottom:0;">
+            <a class="mat" href="figs/fig9.webp" target="_blank" rel="noopener"><img src="figs/fig9.webp" width="1800" height="865" loading="lazy" alt="Two columns. Left, policy without gravity randomization: flight snapshots, a height plot where the drone drops after autonomous mode starts, and a thrust plot near 1 g. Right, with gravity randomization: the height plot climbs to the goal and thrust starts near 1.3 g."></a>
+            <figcaption><span class="figno">Paper Fig. 9</span>Left: trained without gravity randomization. Right: with it. Top: flight snapshots, goal in red. Middle: height from motion capture; the hatched area is the height error. Bottom: thrust the policy asks for, in units of g.</figcaption>
+          </figure>
         </div>
 
         <!-- Table II + Hardware Specs -->
@@ -1567,77 +1377,29 @@
             <strong style="color:var(--brand); display:block; margin-bottom:4px;">Custom Hardware Platform (Section V):</strong>
             &bull; <strong>Frame &amp; Mass:</strong> 15 cm rotor-to-rotor span, <strong>1.7 kg</strong> total mass<br>
             &bull; <strong>Compute &amp; FC:</strong> NVIDIA <strong>Orin NX (16 GB RAM)</strong> + TBS Lucid H7 (Betaflight @ <strong>1000 Hz IMU</strong>)<br>
-            &bull; <strong>Sensors:</strong> Forward Intel <strong>RealSense D456</strong> depth camera, downward Lightware SF20/C rangefinder, Matrix Vision BlueFox2 global-shutter greyscale camera
+            &bull; <strong>Sensors:</strong> Forward Intel <strong>RealSense D456</strong> depth camera, downward Lightware SF20/C rangefinder, Matrix Vision BlueFox2 global-shutter greyscale camera<br>
+            &bull; <strong>Rates:</strong> depth images at 60 Hz (640&times;480), policy at <strong>50 Hz</strong>. Position comes from monocular visual-inertial odometry, no GPS
           </div>
         </div>
       </div>
 
       <!-- Fig 10 & Fig 11 Visual Summary Card -->
       <div class="card" style="margin-bottom: 20px;">
-        <span class="fig-badge">Fig. 10 &amp; Fig. 11 · Forest Canopy Flight 4 Profile &amp; Night LED Flight Trials</span>
+        <span class="fig-badge">Fig. 10 &amp; Fig. 11 · Forest Flight and Night Flights</span>
         <h3 class="fig-title">Real-World Forest Underbrush Navigation (Fig. 10) &amp; Night Flights (Fig. 11)</h3>
         <p class="fig-desc">
-          In <strong>Table III Forest Flight 4 (Fig. 10)</strong>, the quadrotor traverses <strong>70.1 m in 23.7 s</strong> under dense tree canopy, predicting up to <strong>30&deg; yaw changes</strong> to weave through branches at speeds up to <strong>3.8 m/s</strong> (<var>v<sub>max</sub> = 5.0</var> m/s). Notice how <em>inverted + max-pooled depth</em> thickens thin twigs so the 64&times;64 CNN never misses narrow branches.
+          In <strong>Table III Forest Flight 4 (Fig. 10)</strong>, the quadrotor traverses <strong>70.1 m in 23.7 s</strong> under dense tree canopy, predicting up to <strong>30&deg; yaw changes</strong> to weave through branches at speeds up to <strong>3.8 m/s</strong> (<var>v<sub>max</sub> = 5.0</var> m/s). The third row of Fig. 10 shows what the network actually sees: the depth image after it is inverted and max-pooled down to a coarse grid.
         </p>
 
-        <div class="diagram-box">
-          <svg viewBox="0 0 1050 220" aria-label="Figure 10 Forest Flight 4 Velocity and Yaw Profile">
-            <!-- Left Panel: VINS Top-Down Trajectory in Forest Flight 4 -->
-            <rect x="15" y="15" width="460" height="190" rx="8" fill="#0f172a" stroke="#334155"/>
-            <text x="30" y="36" fill="#38bdf8" font-size="12" font-weight="700">Fig. 10 (Top): Forest Flight 4 VINS Trajectory (70.1 m, Max 3.8 m/s)</text>
-
-            <!-- Foliage / Tree Clusters -->
-            <circle cx="115" cy="95" r="18" fill="#14532d" stroke="#22c55e" stroke-width="1.5"/>
-            <circle cx="175" cy="145" r="22" fill="#14532d" stroke="#22c55e" stroke-width="1.5"/>
-            <circle cx="245" cy="85" r="24" fill="#14532d" stroke="#22c55e" stroke-width="1.5"/>
-            <circle cx="320" cy="150" r="20" fill="#14532d" stroke="#22c55e" stroke-width="1.5"/>
-            <circle cx="385" cy="92" r="19" fill="#14532d" stroke="#22c55e" stroke-width="1.5"/>
-
-            <!-- Trajectory weaving through trees -->
-            <path d="M 45 145 C 85 145, 110 135, 140 112 C 175 85, 200 125, 250 132 C 295 138, 325 95, 365 122 C 395 140, 420 125, 445 115"
-                  fill="none" stroke="#f59e0b" stroke-width="4"/>
-
-            <!-- Yaw Heading Ticks along Forest Path (up to 30 deg) -->
-            <line x1="140" y1="112" x2="156" y2="98" stroke="#38bdf8" stroke-width="2"/>
-            <line x1="250" y1="132" x2="270" y2="135" stroke="#38bdf8" stroke-width="2"/>
-            <line x1="365" y1="122" x2="383" y2="132" stroke="#38bdf8" stroke-width="2"/>
-
-            <circle cx="45" cy="145" r="6" fill="#3b82f6"/>
-            <circle cx="445" cy="115" r="6" fill="#ef4444"/>
-            <text x="45" y="165" fill="#93c5fd" font-size="10.5" text-anchor="middle">0 m</text>
-            <text x="440" y="102" fill="#fda4af" font-size="10.5" text-anchor="middle">70.1 m</text>
-            <text x="245" y="192" fill="#94a3b8" font-size="11" text-anchor="middle">Up to &plusmn;30&deg; active yaw alignment around tree trunks &amp; underbrush</text>
-
-            <!-- Right Panel: Inverted & Max-Pooled Depth + Speed Profile -->
-            <rect x="495" y="15" width="540" height="190" rx="8" fill="#0f172a" stroke="#334155"/>
-            <text x="512" y="36" fill="#10b981" font-size="12" font-weight="700">Fig. 10 (Bottom) &amp; Fig. 11: Depth Max-Pooling &amp; Night LED Flight</text>
-
-            <!-- Mini Diagram of Raw Depth vs Inverted Max-Pooled Depth -->
-            <rect x="515" y="52" width="145" height="95" rx="6" fill="#1e293b" stroke="#475569"/>
-            <text x="587" y="70" fill="#cbd5e1" font-size="11" font-weight="600" text-anchor="middle">1. Inverted + Max-Pooled</text>
-            <!-- Dilated tree trunk & branch blocks -->
-            <rect x="542" y="80" width="24" height="58" fill="#f59e0b" opacity="0.85"/>
-            <rect x="566" y="92" width="38" height="14" fill="#fbbf24" opacity="0.85"/>
-            <rect x="612" y="78" width="18" height="60" fill="#38bdf8" opacity="0.75"/>
-            <text x="587" y="164" fill="#94a3b8" font-size="10.5" text-anchor="middle">Dilates thin twigs for safety</text>
-
-            <!-- Speed Profile Box -->
-            <rect x="680" y="52" width="165" height="95" rx="6" fill="#1e293b" stroke="#475569"/>
-            <text x="762" y="70" fill="#cbd5e1" font-size="11" font-weight="600" text-anchor="middle">2. Forest Flight 4 Speed</text>
-            <polyline points="695,132 715,105 735,92 755,102 775,82 795,90 815,86 832,128"
-                      fill="none" stroke="#10b981" stroke-width="3"/>
-            <line x1="695" y1="82" x2="832" y2="82" stroke="#f59e0b" stroke-width="1" stroke-dasharray="3,3"/>
-            <text x="762" y="79" fill="#fcd34d" font-size="9.5" text-anchor="middle">Peak: 3.8 m/s (Avg: 2.7 m/s)</text>
-            <text x="762" y="164" fill="#94a3b8" font-size="10.5" text-anchor="middle">Time: 23.7 s (<var>v<sub>max</sub></var> = 5.0 m/s)</text>
-
-            <!-- Night Flight LED Box -->
-            <rect x="862" y="52" width="155" height="95" rx="6" fill="#1e293b" stroke="#a855f7"/>
-            <text x="940" y="70" fill="#e9d5ff" font-size="11" font-weight="600" text-anchor="middle">3. Night Flights (Fig. 11)</text>
-            <path d="M 880 128 Q 915 80 945 108 T 1002 86" fill="none" stroke="#c084fc" stroke-width="3.5"/>
-            <circle cx="912" cy="98" r="10" fill="#475569"/>
-            <circle cx="965" cy="105" r="12" fill="#475569"/>
-            <text x="940" y="164" fill="#94a3b8" font-size="10.5" text-anchor="middle">Onboard LED + Stereo Depth</text>
-          </svg>
+        <div class="grid-2">
+          <figure class="paper-fig" style="margin-bottom:0;">
+            <a class="mat" href="figs/fig10.webp" target="_blank" rel="noopener"><img src="figs/fig10.webp" width="1045" height="920" loading="lazy" alt="Forest flight 4. Top: the flown path drawn on an aerial photo from the blue start to the magenta goal. Then four onboard colour images, the four matching coarse depth inputs, and a plot of velocity over about 24 seconds peaking near 3.8 m/s."></a>
+            <figcaption><span class="figno">Paper Fig. 10</span>Forest Flight 4. Top to bottom: flown path on a terrain map, onboard camera images, the depth input the policy gets, and velocity over time (black = speed).</figcaption>
+          </figure>
+          <figure class="paper-fig" style="margin-bottom:0;">
+            <a class="mat" href="figs/fig11.webp" target="_blank" rel="noopener"><img src="figs/fig11.webp" width="1038" height="889" loading="lazy" alt="Three night flights. Left: long-exposure photos with the drone's light trail weaving between panels. Right: the velocity plot for each flight."></a>
+            <figcaption><span class="figno">Paper Fig. 11</span>Three night flights with onboard LED lighting. Left: long-exposure photos. Right: velocity of each flight.</figcaption>
+          </figure>
         </div>
       </div>
 
@@ -1679,6 +1441,8 @@
       </div>
     </section>
 
+    <p class="page-foot">Figures are from the paper: J. Lee, A. Rathod, K. Goel, J. Stecklein and W. Tabib, <a href="https://arxiv.org/abs/2509.08177" target="_blank" rel="noopener">arXiv:2509.08177</a>. They belong to the authors. Click a figure to open it full size.</p>
+
   </main>
 
   <script>
@@ -1696,7 +1460,7 @@
 
       const cap = document.getElementById('traj-caption-box');
       if (mode === 'bnl') {
-        cap.innerHTML = '<strong style="color: var(--rose);">(a) BNL [2] (Fixed Heading):</strong> Keeps yaw pointed directly toward the goal without a yaw prediction objective. When a wide wall blocks the goal, local collision penalties slow it down or cause a collision (50% overall success rate).';
+        cap.innerHTML = '<strong style="color: var(--rose);">(a) BNL [2] (Fixed Heading):</strong> Keeps yaw pointed directly toward the goal without a yaw prediction objective. When a wide wall blocks the goal, local collision penalties slow it down or cause a collision (38% overall success rate).';
       } else if (mode === 'notoa') {
         cap.innerHTML = '<strong style="color: var(--accent);">(b) Yaw w/o ToA (Ablated):</strong> Uses <code style="color:var(--brand)">L<sub>yaw</sub></code> to turn the camera toward velocity, helping in simple turns (e.g., Cave 2), but without global Time-of-Arrival guidance it gets stuck in concave pockets and times out (52% overall success rate).';
       } else {
@@ -1910,133 +1674,6 @@
     });
 
     // =========================================================================
-    // 3. FIG. 5 CYLINDRICAL MULTI-AGENT TRAINING ARENA
-    // =========================================================================
-    let seedOffset = 1;
-    function regenerateFig5() {
-      seedOffset += 1;
-      drawFig5Canvas();
-    }
-
-    function drawFig5Canvas() {
-      const c = document.getElementById('fig5-canvas');
-      const ctx = c.getContext('2d');
-      ctx.clearRect(0, 0, c.width, c.height);
-
-      // Draw two side-by-side cylinder arenas matching Fig. 5
-      const centers = [
-        { cx: 125, cy: 130, label: 'Cylinder Arena A (r_cyl = 12.5 m)' },
-        { cx: 355, cy: 130, label: 'Cylinder Arena B (r_cyl = 12.5 m)' }
-      ];
-      const R = 96;
-
-      centers.forEach((arena, idx) => {
-        // Outer boundary
-        ctx.beginPath();
-        ctx.arc(arena.cx, arena.cy, R, 0, Math.PI * 2);
-        ctx.fillStyle = '#0f172a';
-        ctx.fill();
-        ctx.strokeStyle = '#334155';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        // Radial ToA rings
-        for (let r = R * 0.75; r > 15; r -= R * 0.25) {
-          ctx.beginPath();
-          ctx.arc(arena.cx, arena.cy, r, 0, Math.PI * 2);
-          ctx.strokeStyle = 'rgba(56, 189, 248, 0.12)';
-          ctx.lineWidth = 1;
-          ctx.stroke();
-        }
-
-        // Random primitive obstacles (cuboids, cylinders, spheres)
-        const obsCount = 14;
-        const obsList = [];
-        for (let i = 0; i < obsCount; i++) {
-          const ang = ((i * 2.39996) + (idx + seedOffset) * 1.1) % (Math.PI * 2);
-          const rad = 24 + ((i * 19 + seedOffset * 7) % 54);
-          const ox = arena.cx + Math.cos(ang) * rad;
-          const oy = arena.cy + Math.sin(ang) * rad;
-          const sz = 7 + (i % 5) * 2;
-          obsList.push({ ox, oy, sz, type: i % 3 });
-
-          ctx.fillStyle = '#475569';
-          ctx.strokeStyle = '#94a3b8';
-          ctx.lineWidth = 1;
-          if (i % 3 === 0) {
-            ctx.beginPath();
-            ctx.arc(ox, oy, sz, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
-          } else {
-            ctx.fillRect(ox - sz, oy - sz * 0.8, sz * 2, sz * 1.6);
-            ctx.strokeRect(ox - sz, oy - sz * 0.8, sz * 2, sz * 1.6);
-          }
-        }
-
-        // Multi-agent trajectories from outer radius (theta ~ U(0, 2pi)) to center goal
-        const numAgents = 8;
-        for (let a = 0; a < numAgents; a++) {
-          const startAng = (a / numAgents) * Math.PI * 2 + seedOffset * 0.35;
-          let px = arena.cx + Math.cos(startAng) * (R - 6);
-          let py = arena.cy + Math.sin(startAng) * (R - 6);
-
-          // Spawn marker
-          ctx.beginPath();
-          ctx.arc(px, py, 3.5, 0, Math.PI * 2);
-          ctx.fillStyle = '#facc15';
-          ctx.fill();
-
-          ctx.beginPath();
-          ctx.moveTo(px, py);
-          for (let step = 0; step < 45; step++) {
-            const dx = arena.cx - px, dy = arena.cy - py;
-            const dist = Math.hypot(dx, dy);
-            if (dist < 8) break;
-            let vx = dx / dist, vy = dy / dist;
-            // Repel from primitive obstacles
-            for (const ob of obsList) {
-              const odx = px - ob.ox, ody = py - ob.oy;
-              const od = Math.hypot(odx, ody);
-              if (od < ob.sz + 12) {
-                vx += (odx / od) * 1.3;
-                vy += (ody / od) * 1.3;
-              }
-            }
-            const vnorm = Math.hypot(vx, vy);
-            px += (vx / vnorm) * 2.5;
-            py += (vy / vnorm) * 2.5;
-            ctx.lineTo(px, py);
-          }
-          const grad = ctx.createLinearGradient(
-            arena.cx + Math.cos(startAng) * R,
-            arena.cy + Math.sin(startAng) * R,
-            arena.cx, arena.cy
-          );
-          grad.addColorStop(0, '#facc15');
-          grad.addColorStop(1, '#38bdf8');
-          ctx.strokeStyle = grad;
-          ctx.lineWidth = 2;
-          ctx.stroke();
-        }
-
-        // Center Goal (Blue)
-        ctx.beginPath();
-        ctx.arc(arena.cx, arena.cy, 7, 0, Math.PI * 2);
-        ctx.fillStyle = '#38bdf8';
-        ctx.fill();
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        ctx.fillStyle = '#cbd5e1';
-        ctx.font = '600 11.5px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(arena.label, arena.cx, 248);
-      });
-    }
-
-    // =========================================================================
     // 4. INTERACTIVE LOSS & EIKONAL SPEED CURVES (EQ. 4 & EQ. 12)
     // =========================================================================
     function drawLossCurves() {
@@ -2062,7 +1699,7 @@
       ctx.lineTo(padL + plotW, padT + plotH);
       ctx.stroke();
 
-      const rRobot = 0.15; // 15 cm span
+      const rRobot = 0.15; // example value, m (not given in the paper)
       const maxD = 2.2;
       const maxY = 2.6;
 
@@ -2116,7 +1753,7 @@
       ctx.stroke();
 
       // Curve 2: Eq. 12-13 Piecewise Eikonal Speed Cost F(x)
-      const m = (1.0 - vSlow) / (dSafe - rRobot);
+      const m = (dSafe - vSlow) / (dSafe - rRobot); // Eq. 13 as printed
       ctx.beginPath();
       for (let i = 0; i <= 200; i++) {
         const d = (i / 200) * maxD;
@@ -2136,7 +1773,7 @@
     // =========================================================================
     // 5. FIG. 7 SIMULATION BENCHMARK BAR CHART (11 ENVIRONMENTS + TOTAL)
     // =========================================================================
-    // Exact percentages extracted from Figure 7 of arXiv:2509.08177
+    // Success rates (%) as labelled on the bars of paper Fig. 7
     const fig7Data = [
       { env: 'Cave 1',     cat: 'complex', bnl: 50, notoa: 50, ours: 100 },
       { env: 'Cave 2',     cat: 'complex', bnl: 0,  notoa: 20, ours: 80  },
@@ -2147,9 +1784,9 @@
       { env: 'Sewer 2',    cat: 'sewer',   bnl: 50, notoa: 62, ours: 75  },
       { env: 'Sewer 3',    cat: 'sewer',   bnl: 67, notoa: 33, ours: 67  },
       { env: 'Sewer 4',    cat: 'sewer',   bnl: 33, notoa: 67, ours: 100 },
-      { env: 'Sewer 5',    cat: 'sewer',   bnl: 60, notoa: 60, ours: 90  },
-      { env: 'Sewer 6',    cat: 'sewer',   bnl: 67, notoa: 67, ours: 100 },
-      { env: 'Total (All)',cat: 'all',     bnl: 50, notoa: 52, ours: 86  }
+      { env: 'Sewer 5',    cat: 'sewer',   bnl: 42, notoa: 67, ours: 92  },
+      { env: 'Sewer 6',    cat: 'sewer',   bnl: 40, notoa: 70, ours: 90  },
+      { env: 'Total (All)',cat: 'all',     bnl: 38, notoa: 52, ours: 86  }
     ];
     let currentFig7Filter = 'all';
 
@@ -2231,191 +1868,6 @@
     }
 
     // =========================================================================
-    // 6. FIG. 6 ATTITUDE CONTROL LATENCY PLOT (200 ms vs ~0 ms)
-    // =========================================================================
-    function drawFig6Plot() {
-      const c = document.getElementById('fig6-canvas');
-      const ctx = c.getContext('2d');
-      const W = c.width, H = c.height;
-      ctx.clearRect(0, 0, W, H);
-
-      const padL = 46, padR = 20, padT = 22, padB = 34;
-      const plotW = W - padL - padR, plotH = H - padT - padB;
-
-      ctx.strokeStyle = '#334155';
-      ctx.beginPath();
-      ctx.moveTo(padL, padT);
-      ctx.lineTo(padL, padT + plotH);
-      ctx.lineTo(padL + plotW, padT + plotH);
-      ctx.stroke();
-
-      // Horizontal center zero line
-      const midY = padT + plotH / 2;
-      ctx.strokeStyle = 'rgba(51,65,85,0.5)';
-      ctx.beginPath();
-      ctx.moveTo(padL, midY);
-      ctx.lineTo(padL + plotW, midY);
-      ctx.stroke();
-
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '10.5px monospace';
-      ctx.textAlign = 'right';
-      ctx.fillText('+25°', padL - 6, padT + 10);
-      ctx.fillText('0°', padL - 6, midY + 4);
-      ctx.fillText('-25°', padL - 6, padT + plotH);
-
-      ctx.textAlign = 'center';
-      ctx.fillText('Time t (0.0 s → 2.0 s) · 200 ms Lag Annotation', padL + plotW / 2, H - 6);
-
-      const drawSignal = (phaseShiftSec, ampScale, color, dashed) => {
-        ctx.beginPath();
-        ctx.setLineDash(dashed ? [5, 4] : []);
-        for (let i = 0; i <= 200; i++) {
-          const t = (i / 200) * 2.0;
-          const tau = Math.max(0, t - phaseShiftSec);
-          const angle = ampScale * (Math.sin(tau * Math.PI * 1.6) * 0.75 + 0.25 * Math.sin(tau * Math.PI * 3.2));
-          const px = padL + (t / 2.0) * plotW;
-          const py = midY - angle * (plotH * 0.44);
-          if (i === 0) ctx.moveTo(px, py);
-          else ctx.lineTo(px, py);
-        }
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 2.6;
-        ctx.stroke();
-        ctx.setLineDash([]);
-      };
-
-      // Desired orientation setpoint
-      drawSignal(0.0, 1.0, '#f8fafc', true);
-      // Fig 6b: With body rate control omega_d (~0.015s negligible lag)
-      drawSignal(0.018, 0.98, '#10b981', false);
-      // Fig 6a: Without body rate control (~0.20s = 200 ms lag)
-      drawSignal(0.20, 0.90, '#f43f5e', false);
-
-      // Callout arrow showing 200 ms lag between peaks
-      const peak1X = padL + (0.31 / 2.0) * plotW;
-      const peak2X = padL + (0.51 / 2.0) * plotW;
-      const peakY = midY - plotH * 0.36;
-      ctx.strokeStyle = '#f59e0b';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(peak1X, peakY);
-      ctx.lineTo(peak2X, peakY);
-      ctx.stroke();
-      ctx.fillStyle = '#fcd34d';
-      ctx.font = '700 11px monospace';
-      ctx.fillText('~200 ms lag (Fig. 6a)', (peak1X + peak2X) / 2 + 28, peakY - 6);
-    }
-
-    // =========================================================================
-    // 7. FIG. 9 GRAVITY RANDOMIZATION HARDWARE ABLATION PLOT
-    // =========================================================================
-    function drawFig9Plot() {
-      const c = document.getElementById('fig9-canvas');
-      const ctx = c.getContext('2d');
-      const W = c.width, H = c.height;
-      ctx.clearRect(0, 0, W, H);
-
-      const padL = 52, padR = 20, padT = 18, padB = 28;
-      const plotW = W - padL - padR;
-      const topH = 95, botH = 85, gap = 26;
-
-      // Top subplot: z-Height (m)
-      ctx.strokeStyle = '#334155';
-      ctx.strokeRect(padL, padT, plotW, topH);
-      ctx.fillStyle = '#cbd5e1';
-      ctx.font = '700 11px sans-serif';
-      ctx.textAlign = 'left';
-      ctx.fillText('Middle Row (Fig. 9): Motion-Capture Altitude z (m)', padL + 8, padT + 15);
-
-      // Goal setpoint z = 1.2m (red dashed)
-      const zGoalY = padT + 28;
-      ctx.strokeStyle = '#ef4444';
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      ctx.moveTo(padL, zGoalY);
-      ctx.lineTo(padL + plotW, zGoalY);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      // (a) Without gravity rand -> drops rapidly
-      ctx.beginPath();
-      for (let i = 0; i <= 100; i++) {
-        const s = i / 100;
-        const px = padL + s * plotW;
-        const py = zGoalY + Math.pow(s, 1.5) * (topH - 34);
-        if (i === 0) ctx.moveTo(px, py);
-        else ctx.lineTo(px, py);
-      }
-      ctx.strokeStyle = '#f59e0b';
-      ctx.lineWidth = 2.6;
-      ctx.stroke();
-
-      // (b) With gravity rand -> holds setpoint
-      ctx.beginPath();
-      for (let i = 0; i <= 100; i++) {
-        const s = i / 100;
-        const px = padL + s * plotW;
-        const py = zGoalY + Math.exp(-s * 4) * 14 * Math.sin(s * 6);
-        if (i === 0) ctx.moveTo(px, py);
-        else ctx.lineTo(px, py);
-      }
-      ctx.strokeStyle = '#10b981';
-      ctx.lineWidth = 2.6;
-      ctx.stroke();
-
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '10px monospace';
-      ctx.textAlign = 'right';
-      ctx.fillText('1.2m', padL - 5, zGoalY + 4);
-      ctx.fillText('0.0m', padL - 5, padT + topH);
-
-      // Bottom subplot: Normalized Commanded Thrust (g)
-      const botTop = padT + topH + gap;
-      ctx.strokeStyle = '#334155';
-      ctx.strokeRect(padL, botTop, plotW, botH);
-      ctx.fillStyle = '#cbd5e1';
-      ctx.font = '700 11px sans-serif';
-      ctx.textAlign = 'left';
-      ctx.fillText('Bottom Row (Fig. 9): Policy Predicted Thrust (g)', padL + 8, botTop + 15);
-
-      // (b) With gravity rand: starts at 1.3g and settles at ~1.15g hover
-      ctx.beginPath();
-      for (let i = 0; i <= 100; i++) {
-        const s = i / 100;
-        const gVal = 1.15 + 0.15 * Math.exp(-s * 5); // 1.3g -> 1.15g
-        const px = padL + s * plotW;
-        const py = botTop + botH - ((gVal - 0.85) / 0.6) * botH;
-        if (i === 0) ctx.moveTo(px, py);
-        else ctx.lineTo(px, py);
-      }
-      ctx.strokeStyle = '#10b981';
-      ctx.lineWidth = 2.6;
-      ctx.stroke();
-
-      // (a) Without gravity rand: outputs ~1.0g (< 1.15g needed to hover)
-      ctx.beginPath();
-      for (let i = 0; i <= 100; i++) {
-        const s = i / 100;
-        const gVal = 1.0 + 0.03 * Math.min(1, s * 2);
-        const px = padL + s * plotW;
-        const py = botTop + botH - ((gVal - 0.85) / 0.6) * botH;
-        if (i === 0) ctx.moveTo(px, py);
-        else ctx.lineTo(px, py);
-      }
-      ctx.strokeStyle = '#f59e0b';
-      ctx.lineWidth = 2.6;
-      ctx.stroke();
-
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '10px monospace';
-      ctx.textAlign = 'right';
-      ctx.fillText('1.30g', padL - 5, botTop + botH - ((1.30 - 0.85) / 0.6) * botH + 3);
-      ctx.fillText('1.15g', padL - 5, botTop + botH - ((1.15 - 0.85) / 0.6) * botH + 3);
-      ctx.fillText('1.00g', padL - 5, botTop + botH - ((1.00 - 0.85) / 0.6) * botH + 3);
-    }
-
-    // =========================================================================
     // 8. TABLE III: ALL 20 HARDWARE FLIGHT TRIALS (EXACT VERIFIED DATA)
     // =========================================================================
     const table3Flights = [
@@ -2488,11 +1940,8 @@
     window.addEventListener('DOMContentLoaded', () => {
       initFig4FMM();
       drawFig4Canvas();
-      drawFig5Canvas();
       drawLossCurves();
       drawFig7Chart();
-      drawFig6Plot();
-      drawFig9Plot();
       filterTable3('all');
     });
   </script>
