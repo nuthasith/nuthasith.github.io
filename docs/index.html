@@ -23,7 +23,16 @@
             /* Extra selectors so this beats the theme's ".content ul" padding and bullets. */
             .page.single .content ul.docs-list { list-style: none; padding: 0; margin: 0; }
             /* Theme adds 16px under each li and 8px around each p; zero those so only the padding sets the gap. */
-            .page.single:not(.projects-page) .content > ul.docs-list > li { margin: 0; padding: 0.6rem 0; line-height: 1.5; border-bottom: 1px solid #f0f0f0; }
+            /* Left padding and min-height leave room for the 120x80 thumbnail, so long text never wraps under it. */
+            .page.single:not(.projects-page) .content > ul.docs-list > li { position: relative; margin: 0; padding: 0.6rem 0 0.6rem calc(120px + 1rem); min-height: calc(80px + 1.2rem); line-height: 1.5; border-bottom: 1px solid #f0f0f0; }
+            .page.single .content .docs-list img.docs-thumb { position: absolute; left: 0; top: 0.6rem; width: 120px; height: 80px; margin: 0; object-fit: cover; border-radius: 6px; border: 1px solid #e3e3e3; background: #fff; }
+            [theme=dark] .page.single .content .docs-list img.docs-thumb { border-color: #444; }
+            /* Stretch the title link over the thumbnail, so the image is clickable without a second link. */
+            .docs-list > li > a::before { content: ""; position: absolute; left: 0; top: 0.6rem; width: 120px; height: 80px; }
+            @media (max-width: 680px) {
+                .page.single:not(.projects-page) .content > ul.docs-list > li { padding-left: calc(84px + 0.75rem); min-height: calc(56px + 1.2rem); }
+                .page.single .content .docs-list img.docs-thumb, .docs-list > li > a::before { width: 84px; height: 56px; }
+            }
             .page.single:not(.projects-page) .content > ul.docs-list > li:last-child { border-bottom: none; }
             [theme=dark] .page.single:not(.projects-page) .content > ul.docs-list > li { border-bottom-color: #363636; }
             .docs-list a { font-weight: 600; }
@@ -72,61 +81,61 @@
 
         <h2 class="docs-group">Humanoids</h2>
         <ul class="docs-list">
-            <li><a href="humanoid/supermimic-primer.html">SuperMimic, world models, and training humanoids</a>
+            <li><img class="docs-thumb" src="thumbs/supermimic.webp" alt="" width="120" height="80" loading="lazy"><a href="humanoid/supermimic-primer.html">SuperMimic, world models, and training humanoids</a>
                 <p>Start here. Four parts covering the RL loop, rewards, PD control and world models, with a worked number for every equation.</p></li>
-            <li><a href="humanoid/supermimic-reproduction.html">SuperMimic reproduction</a><span class="docs-tag">NOTES</span>
+            <li><img class="docs-thumb" src="thumbs/supermimic-reproduction.webp" alt="" width="120" height="80" loading="lazy"><a href="humanoid/supermimic-reproduction.html">SuperMimic reproduction</a><span class="docs-tag">NOTES</span>
                 <p>A Unitree G1 motion tracker trained through a learned world model, rebuilt from the paper alone.</p></li>
-            <li><a href="humanoid/puppeteer-primer.html">Puppeteer: a world model that pulls the strings</a>
+            <li><img class="docs-thumb" src="thumbs/puppeteer.webp" alt="" width="120" height="80" loading="lazy"><a href="humanoid/puppeteer-primer.html">Puppeteer: a world model that pulls the strings</a>
                 <p>A second world-model paper explained the same way. Builds on the SuperMimic primer.</p></li>
-            <li><a href="humanoid/halo-primer.html">HALO: humanoid home skills learned entirely in simulation</a>
+            <li><img class="docs-thumb" src="thumbs/halo.webp" alt="" width="120" height="80" loading="lazy"><a href="humanoid/halo-primer.html">HALO: humanoid home skills learned entirely in simulation</a>
                 <p>A G1 follows requests like "crouch under the table, then sit on the chair" in unseen homes, trained only on simulated data.</p></li>
-            <li><a href="humanoid/wholebody-locomotion-primer.html">Whole-body humanoid locomotion via motion generation and tracking</a>
+            <li><img class="docs-thumb" src="thumbs/wholebody-locomotion.webp" alt="" width="120" height="80" loading="lazy"><a href="humanoid/wholebody-locomotion-primer.html">Whole-body humanoid locomotion via motion generation and tracking</a>
                 <p>A diffusion model sketches the next 0.5 s of motion from the terrain ahead, and an RL tracker turns it into joint commands.</p></li>
-            <li><a href="humanoid/attention-contacts-primer.html">Humanoid mobility via attention-based contacts</a>
+            <li><img class="docs-thumb" src="thumbs/attention-contacts.webp" alt="" width="120" height="80" loading="lazy"><a href="humanoid/attention-contacts-primer.html">Humanoid mobility via attention-based contacts</a>
                 <p>Predict only where 9 body parts should touch the terrain next, and let RL work out how to get there. One G1 policy climbs, crawls and vaults.</p></li>
         </ul>
 
         <h2 class="docs-group">Drones</h2>
         <ul class="docs-list">
-            <li><a href="drones/skydreamer-primer.html">SkyDreamer: Dreamer world models and racing drones from pixels</a>
+            <li><img class="docs-thumb" src="thumbs/skydreamer.webp" alt="" width="120" height="80" loading="lazy"><a href="drones/skydreamer-primer.html">SkyDreamer: Dreamer world models and racing drones from pixels</a>
                 <p>Four parts, read in order. Part 4 compares it with SuperMimic.</p></li>
-            <li><a href="drones/diffdreamer/diffdreamer_explainer.html">DiffDreamer</a>
+            <li><img class="docs-thumb" src="thumbs/diffdreamer.webp" alt="" width="120" height="80" loading="lazy"><a href="drones/diffdreamer/diffdreamer_explainer.html">DiffDreamer</a>
                 <p>Coupling world models with differentiable simulation for agile quadrotor control.</p></li>
-            <li><a href="drones/diffsim-avoidance/diffsim-avoidance_explainer.html">Simple but stable, fast and safe</a>
+            <li><img class="docs-thumb" src="thumbs/diffsim-avoidance.webp" alt="" width="120" height="80" loading="lazy"><a href="drones/diffsim-avoidance/diffsim-avoidance_explainer.html">Simple but stable, fast and safe</a>
                 <p>End-to-end obstacle avoidance trained through a high-fidelity differentiable simulator.</p></li>
-            <li><a href="drones/lafr/lafr_explainer.html">Learning agile quadrotor flight in the real world</a>
+            <li><img class="docs-thumb" src="thumbs/lafr.webp" alt="" width="120" height="80" loading="lazy"><a href="drones/lafr/lafr_explainer.html">Learning agile quadrotor flight in the real world</a>
                 <p>A drone starts with a slow, safe policy, learns what its physics model gets wrong, and speeds itself up while flying.</p></li>
-            <li><a href="drones/diffcoord_explained.html">DiffCoord</a>
+            <li><img class="docs-thumb" src="thumbs/diffcoord.webp" alt="" width="120" height="80" loading="lazy"><a href="drones/diffcoord_explained.html">DiffCoord</a>
                 <p>Tuning a multi-drone planner with exact gradients computed through the planner itself.</p></li>
-            <li><a href="drones/hjb-gnn_explainer.html">Safe multi-agent navigation via constrained HJB-informed learning</a>
+            <li><img class="docs-thumb" src="thumbs/hjb-gnn.webp" alt="" width="120" height="80" loading="lazy"><a href="drones/hjb-gnn_explainer.html">Safe multi-agent navigation via constrained HJB-informed learning</a>
                 <p>HJB-GNN: one closed-form weight, λ, that balances goal-reaching and collision safety for many drones.</p></li>
-            <li><a href="drones/depthnav/depthnav_explainer.html">Quadrotor navigation using RL with privileged information</a>
+            <li><img class="docs-thumb" src="thumbs/depthnav.webp" alt="" width="120" height="80" loading="lazy"><a href="drones/depthnav/depthnav_explainer.html">Quadrotor navigation using RL with privileged information</a>
                 <p>Time-of-arrival maps, used only in training, teach a drone to turn and fly around large walls instead of getting stuck. Tested in 1,350 simulated trials and 20 outdoor flights.</p></li>
         </ul>
 
         <h2 class="docs-group">Safety and control</h2>
         <ul class="docs-list">
-            <li><a href="cbf-clf-rl/cbf-clf-rl.html">CBF-RL and CLF-RL</a>
+            <li><img class="docs-thumb" src="thumbs/cbf-clf-rl.webp" alt="" width="120" height="80" loading="lazy"><a href="cbf-clf-rl/cbf-clf-rl.html">CBF-RL and CLF-RL</a>
                 <p>Two papers that use control barrier and Lyapunov functions only during RL training, so the robot runs a plain policy.</p></li>
-            <li><a href="toa-cbf/docs/rl-cbf-clf-qp-explained.html">Learn how wrong the model is, then patch the safety rules</a>
+            <li><img class="docs-thumb" src="thumbs/rl-cbf-clf-qp.webp" alt="" width="120" height="80" loading="lazy"><a href="toa-cbf/docs/rl-cbf-clf-qp-explained.html">Learn how wrong the model is, then patch the safety rules</a>
                 <p>Choi et al., RL for safety-critical control under model uncertainty using CLFs and CBFs.</p></li>
-            <li><a href="toa-cbf/docs/paper.html">TOA-CBF paper guide</a><span class="docs-tag">3-PART GUIDE</span>
+            <li><img class="docs-thumb" src="thumbs/toa-cbf.webp" alt="" width="120" height="80" loading="lazy"><a href="toa-cbf/docs/paper.html">TOA-CBF paper guide</a><span class="docs-tag">3-PART GUIDE</span>
                 <p>The RA-L 2026 paper explained, with a matching <a href="toa-cbf/docs/manual.html">reproduction manual</a> and <a href="toa-cbf/docs/code.html">code guide</a>.</p></li>
-            <li><a href="learning-based-control/learning-based-control_explainer.html">A decade of learning-based control</a><span class="docs-tag">SURVEY</span>
+            <li><img class="docs-thumb" src="thumbs/learning-based-control.webp" alt="" width="120" height="80" loading="lazy"><a href="learning-based-control/learning-based-control_explainer.html">A decade of learning-based control</a><span class="docs-tag">SURVEY</span>
                 <p>Schoellig et al. Three method families (learned dynamics, direct data-driven control, and RL with Bayesian optimisation) and the stability and safety ideas behind them.</p></li>
-            <li><a href="ps2-rl/ps2-rl_explainer.html">PS2-RL: provably safe, yet scalable RL</a>
+            <li><img class="docs-thumb" src="thumbs/ps2-rl.webp" alt="" width="120" height="80" loading="lazy"><a href="ps2-rl/ps2-rl_explainer.html">PS2-RL: provably safe, yet scalable RL</a>
                 <p>Yun, Li and Azizan. Learn a "get home safely" backup policy first, then train the task policy through a QP layer that only allows inputs the backup can recover from. 100% safe on a 10-state quadrotor powerloop.</p></li>
         </ul>
 
         <h2 class="docs-group">Talk slides with summaries</h2>
         <ul class="docs-list">
-            <li><a href="slides/CLF_CBF_Lecture_Slides.pdf" target="_blank" rel="noopener">Introduction to control Lyapunov and control barrier functions</a><span class="docs-tag">PDF · 44 p · 10 MB</span>
+            <li><img class="docs-thumb" src="thumbs/slides-clf-cbf.webp" alt="" width="120" height="80" loading="lazy"><a href="slides/CLF_CBF_Lecture_Slides.pdf" target="_blank" rel="noopener">Introduction to control Lyapunov and control barrier functions</a><span class="docs-tag">PDF · 44 p · 10 MB</span>
                 <p>Jason J. Choi.</p></li>
-            <li><a href="slides/Choi_PhD_Seminar_Generalizable_Safety_slides.pdf" target="_blank" rel="noopener">Towards generalizable safety for robot autonomy</a><span class="docs-tag">PDF · 65 p · 14 MB</span>
+            <li><img class="docs-thumb" src="thumbs/slides-choi.webp" alt="" width="120" height="80" loading="lazy"><a href="slides/Choi_PhD_Seminar_Generalizable_Safety_slides.pdf" target="_blank" rel="noopener">Towards generalizable safety for robot autonomy</a><span class="docs-tag">PDF · 65 p · 14 MB</span>
                 <p>Jason J. Choi, PhD seminar.</p></li>
-            <li><a href="slides/Herbert_HJ_Reachability_CBF_slides.pdf" target="_blank" rel="noopener">Connections between HJ reachability analysis and control barrier functions</a><span class="docs-tag">PDF · 45 p · 7 MB</span>
+            <li><img class="docs-thumb" src="thumbs/slides-herbert.webp" alt="" width="120" height="80" loading="lazy"><a href="slides/Herbert_HJ_Reachability_CBF_slides.pdf" target="_blank" rel="noopener">Connections between HJ reachability analysis and control barrier functions</a><span class="docs-tag">PDF · 45 p · 7 MB</span>
                 <p>Sylvia Herbert, UC San Diego.</p></li>
-            <li><a href="slides/Berkenkamp_Exploration_Safety_MBRL_slides.pdf" target="_blank" rel="noopener">Exploration and safety in model-based reinforcement learning</a><span class="docs-tag">PDF · 50 p · 11 MB</span>
+            <li><img class="docs-thumb" src="thumbs/slides-berkenkamp.webp" alt="" width="120" height="80" loading="lazy"><a href="slides/Berkenkamp_Exploration_Safety_MBRL_slides.pdf" target="_blank" rel="noopener">Exploration and safety in model-based reinforcement learning</a><span class="docs-tag">PDF · 50 p · 11 MB</span>
                 <p>Felix Berkenkamp.</p></li>
         </ul>
     </div>
